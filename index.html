@@ -628,6 +628,36 @@ const DEFAULT_CLASSES = [
 ];
 
 
+/* Sam's kit details (colours, lights) from Gemini, Nov 2026 — applied to the example kit */
+const SAM_NEW_V3=[
+ {id:"hivis",name:"XL Fluorescent Orange High-Vis Vests (5-pack)",cat:"Clothing",qty:5,g:35,kind:"other",colour:"fluorescent orange",vis:3,seasons:ALL4,
+  notes:"Two-band and brace layout in XL for wearing over bulky winter layers or wrapping around a rucksack on dark lanes.",research:"est."}
+];
+const SAM_UPDATES_V3=[
+ {name:"Double Eiger Trekker Tent (Pinnacle Summit)",colour:"olive green",vis:1,research:"Sam"},
+ {name:"Wise Owl Wisefly Lite Tarp 11'×9'",colour:"black",vis:0,research:"Sam"},
+ {name:"COVACURE Camping Hammock",colour:"olive green",vis:1,notes:"Olive green hammock with built-in bug net; best for mild, still nights or sheltered woodland.",research:"Sam"},
+ {name:"Karrimor Orkney 65 L Rucksack",colour:"dark blue/navy",vis:2,research:"Sam"},
+ {name:"North-Gate 30 L Dry Bag",colour:"yellow",vis:3,notes:"Bright yellow dry bag—keep inside your rucksack or shelter for stealth, as it stands out outdoors.",research:"Sam"},
+ {name:"Quiksilver Wool/Fleece-Lined Parka (Large)",colour:"black",vis:1,research:"Sam"},
+ {name:"Mountain Warehouse Zipped Fleece Jumper",colour:"grey",vis:1,research:"Sam"},
+ {name:"Thermalite Insulated Trousers",colour:"navy blue",vis:2,research:"Sam"},
+ {name:"Wool-Lined Nantwich Town FC Hat",colour:"grey and blue",vis:2,research:"Sam"},
+ {name:"Warm Thermal Neck Gaiter",colour:"black",vis:1,research:"Sam"},
+ {name:"USB Rechargeable LED Headlamp",colour:"black",vis:1,redlight:false,notes:"Black USB rechargeable LED headlamp; has a dim mode rather than a dedicated red light.",research:"Sam"},
+ {name:"Mini Rechargeable Torch",redlight:false,notes:"Backup rechargeable torch with dim mode rather than a dedicated red light.",research:"Sam"},
+ {name:"Regatta LED Tent Lantern",redlight:false,notes:"Features a dim mode rather than a dedicated red light; useful for gentle camp/tent lighting.",research:"Sam"},
+ {name:"Coolzon 3–4 Season Sleeping Bag",colour:"black",vis:1,research:"Sam"},
+ {name:"AKSOUL 10 cm Inflatable Sleeping Mat",colour:"blue",vis:2,research:"Sam"},
+ {name:"TheFitLife Lever-Lock Trekking Poles (pair)",colour:"black and blue",vis:2,research:"Sam"}
+];
+function applySamV3(inv){
+  SAM_NEW_V3.forEach(n=>{if(!inv.some(i=>i.id===n.id||i.name===n.name)) inv.push(JSON.parse(JSON.stringify(n)));});
+  SAM_UPDATES_V3.forEach(u=>{const it=inv.find(i=>i.name===u.name);if(!it)return;const {name,research,...rest}=u;
+    Object.assign(it,rest); it.research=(it.research&&it.research!=="Sam"?it.research+" · ":"")+"Colour etc. from Sam (Nov 2026).";});
+}
+applySamV3(DEFAULT_INV);
+
 /* Quick-fill templates for common items not in the original notebook */
 const TEMPLATES = [
  {name:"Waterproof jacket",cat:"Clothing",g:400,kind:"other",seasons:ALL4,notes:"Shell layer for rain and wind."},
@@ -646,8 +676,8 @@ const KEY="sams-camp-planner-v1";
 const clone=o=>JSON.parse(JSON.stringify(o));
 const WX_DEFAULT={low:5,high:12,rain:0,wind:0,windAvg:5,humid:80,bugs:0,ground:"normal",nights:1,water:2,food:0.7,meals:2,drinks:3,hwb:true,gasLeft:230,kcal:2800,stealth:0};
 let S;
-function freshState(){return {seed:2,ver:2,inv:clone(DEFAULT_INV),classes:clone(DEFAULT_CLASSES),active:"cls_winter",trips:[],calibOn:true,loc:null,welcomed:true};}
-function emptyState(){const c=newClassObj("My first class");return {seed:2,ver:2,inv:[],classes:[c],active:c.id,trips:[],calibOn:true,loc:null,welcomed:true};}
+function freshState(){return {seed:3,ver:2,inv:clone(DEFAULT_INV),classes:clone(DEFAULT_CLASSES),active:"cls_winter",trips:[],calibOn:true,loc:null,welcomed:true};}
+function emptyState(){const c=newClassObj("My first class");return {seed:3,ver:2,inv:[],classes:[c],active:c.id,trips:[],calibOn:true,loc:null,welcomed:true};}
 function load(){
   let stored=false;
   try{const raw=localStorage.getItem(KEY); if(raw){S=JSON.parse(raw);stored=true;}}catch(e){S=null;}
@@ -656,6 +686,7 @@ function load(){
   S.trips=S.trips||[]; if(S.calibOn===undefined) S.calibOn=true; S.ver=2;
   // one-time: add items Sam added to the example kit later, if this is his kit and they're missing
   if((S.seed||1)<2){ if(S.inv.some(i=>i.id==="tent_eiger")) ["nfchat","parka","mwfleece","thermtrousers"].forEach(id=>{const d=DEFAULT_INV.find(x=>x.id===id); if(d&&!S.inv.some(i=>i.id===id||i.name===d.name)) S.inv.push(clone(d));}); S.seed=2; }
+  if((S.seed||1)<3){ if(S.inv.some(i=>i.id==="tent_eiger")) applySamV3(S.inv); S.seed=3; }
 }
 function save(){try{localStorage.setItem(KEY,JSON.stringify(S));}catch(e){}}
 load();
