@@ -89,6 +89,29 @@ details summary{cursor:pointer;color:var(--muted);font-size:13px}
 .reasons{margin:0;padding-left:18px;font-size:13px}
 .src{font-size:12px;color:var(--muted);margin-top:6px}
 .chart{width:100%;height:auto;display:block;margin-top:10px}
+details.sec>summary{list-style:none;cursor:pointer;display:flex;align-items:center;gap:8px;flex-wrap:wrap;color:var(--text);font-size:15px}
+details.sec>summary::-webkit-details-marker{display:none}
+details.sec>summary::after{content:"▸";margin-left:auto;color:var(--muted);transition:transform .2s}
+details.sec[open]>summary::after{transform:rotate(90deg)}
+details.sec>summary .st{font-weight:700}
+details.sec>summary .sm{font-size:12px;color:var(--muted)}
+details.sub{margin-top:10px;border-top:1px solid var(--line);padding-top:8px}
+details.sub>summary{font-size:13px;color:var(--accent);font-weight:600}
+.menu{position:relative}
+.menu>summary{list-style:none;cursor:pointer;padding:7px 12px}
+.menu>summary::-webkit-details-marker{display:none}
+.menu-pop{position:absolute;right:0;top:110%;z-index:40;background:var(--panel2);border:1px solid var(--line);border-radius:10px;padding:6px;display:flex;flex-direction:column;gap:4px;min-width:210px;box-shadow:0 8px 24px #000a}
+.menu-pop button{text-align:left;border:0;background:none}
+.menu-pop button:hover{background:var(--panel)}
+.clamp{display:-webkit-box;-webkit-line-clamp:1;-webkit-box-orient:vertical;overflow:hidden}
+.draft{background:#2a3d52;border:1px solid #4a6a8a;border-radius:10px;padding:8px 10px;margin-top:8px;font-size:13px}
+.ess>summary{list-style:none;cursor:pointer;display:flex;gap:8px;align-items:center;padding:8px 2px}
+.ess>summary::-webkit-details-marker{display:none}
+.ess>summary .lab{flex:1}
+.ess>summary::after{content:"ⓘ";color:var(--muted)}
+.ess{border-bottom:1px solid var(--line)}
+.ess .body{padding:0 2px 10px 26px;font-size:13px}
+.ess .body p{margin:4px 0}
 .chart text{font-size:10px;fill:var(--muted)}
 @media print{
   header,.sumbar,nav,.noprint{display:none!important}
@@ -142,20 +165,30 @@ details summary{cursor:pointer;color:var(--muted);font-size:13px}
   <div class="card">
     <div class="row">
       <select id="classSel" class="grow"></select>
-      <button id="newClass">New</button>
-      <button id="dupClass">Duplicate</button>
-      <button id="renClass">Rename</button>
-      <button class="danger" id="delClass">Delete</button>
+      <button class="pri" id="saveClass">💾 Save</button>
+      <details class="menu"><summary class="btn">⋯</summary>
+        <div class="menu-pop">
+          <button id="newClass">➕ New empty class</button>
+          <button id="dupClass">📄 Save as a copy…</button>
+          <button id="renClass">✏️ Rename</button>
+          <button id="expClass2">⬇️ Export this class</button>
+          <button class="danger" id="delClass">🗑️ Delete</button>
+        </div>
+      </details>
     </div>
-    <div class="small muted" style="margin-top:8px">Set how many of each item this class takes. Tap <b>Worn</b> for things on your body (not counted in pack weight). Or let the Weather tab <b>suggest a class</b> from the forecast.</div>
-    <div class="row" style="margin-top:8px">
-      <input id="clsSearch" class="grow" placeholder="Filter items…">
-      <label class="inl"><input type="checkbox" id="clsOnlySel"> only selected</label>
-    </div>
+    <div id="draftBar"></div>
+    <div class="small muted" id="savedNote" style="margin-top:6px"></div>
   </div>
   <div id="clsReasons"></div>
   <div id="clsWeights" class="card"></div>
   <div id="kitCheckCls"></div>
+  <div class="card">
+    <div class="row">
+      <input id="clsSearch" class="grow" placeholder="Filter items…">
+      <label class="inl"><input type="checkbox" id="clsOnlySel"> only packed</label>
+    </div>
+    <div class="small muted" style="margin-top:6px">Use − / + to set how many of each item this class takes. <b>Worn</b> = on your body (not counted in pack weight).</div>
+  </div>
   <div id="clsList"></div>
 </section>
 
@@ -163,9 +196,13 @@ details summary{cursor:pointer;color:var(--muted);font-size:13px}
 <section class="view" id="v-pack">
   <div class="card">
     <div class="row"><h2 class="grow" id="packTitle">Packing checklist</h2>
-      <button class="noprint" id="packReset">Untick all</button>
-      <button class="noprint" id="packPrint">Print</button>
-      <button class="noprint" id="packCopy">Copy as text</button>
+      <details class="menu noprint"><summary class="btn">⋯</summary>
+        <div class="menu-pop">
+          <button id="packReset">↩️ Untick all</button>
+          <button id="packPrint">🖨️ Print</button>
+          <button id="packCopy">📋 Copy as text</button>
+        </div>
+      </details>
     </div>
     <div class="prog"><div id="packProg"></div></div>
     <div class="small muted" id="packStat" style="margin-top:6px"></div>
@@ -173,37 +210,30 @@ details summary{cursor:pointer;color:var(--muted);font-size:13px}
   <div id="packList"></div>
 </section>
 
-<!-- WEATHER -->
+<!-- PLAN -->
 <section class="view" id="v-weather">
-  <div class="card">
-    <h2>🥾 Route (GPX)</h2>
-    <div class="row">
-      <input type="file" id="gpxFile" accept=".gpx,application/gpx+xml,application/octet-stream" class="grow">
-      <button id="gpxClear" hidden>Remove route</button>
-    </div>
-    <div class="src" id="gpxHelp">Import a GPX from HiiKER (hike page → Download/More → Export GPX). If you split the hike into days, each day's end becomes a camp. Otherwise camps are spaced evenly, and you can move them to any waypoint.</div>
-    <div id="routeOut"></div>
-  </div>
-  <div class="card">
-    <h2>🌍 Live forecast</h2>
-    <div class="row">
+  <div id="draftBarPlan"></div>
+  <details class="card sec" data-sec="wx" open>
+    <summary><span class="st">🌦️ Conditions</span><span class="sm" id="sumWx"></span></summary>
+    <div class="row" style="margin-top:8px">
       <input id="fcLoc" class="grow" placeholder="Town, village or postcode area">
       <label class="inl" style="color:var(--muted)">First night <input type="date" id="fcDate"></label>
       <button class="pri" id="fcGo">Get forecast</button>
     </div>
-    <div class="src" id="fcSrc">Fills in the conditions below for the night you pick (up to 16 days ahead). Free data from Open-Meteo.</div>
-  </div>
-  <div class="card">
-    <h2>Expected conditions <span class="small muted" id="wxClassName"></span></h2>
-    <div class="grid2">
-      <label>Overnight low (°C)<input type="number" id="wxLow" step="1"></label>
-      <label>Daytime high (°C)<input type="number" id="wxHigh" step="1"></label>
-      <label>Rain<select id="wxRain"><option value="0">Dry</option><option value="1">Showers / drizzle</option><option value="2">Heavy / persistent</option></select></label>
-      <label>Gusts<select id="wxWind"><option value="0">Calm (&lt;15 mph)</option><option value="1">Breezy (15–25 mph)</option><option value="2">Gusty / gale (25+ mph)</option></select></label>
-      <label>Avg night wind (mph)<input type="number" id="wxWindAvg" min="0" step="1"></label>
-      <label>Night humidity (%)<input type="number" id="wxHumid" min="0" max="100" step="5"></label>
-      <label>Midges / mozzies<select id="wxBugs"><option value="0">None</option><option value="1">Some</option><option value="2">Swarming (canal, still water)</option></select></label>
-      <label>Ground<select id="wxGround"><option value="normal">Normal turf</option><option value="soft">Soft peat / mud</option><option value="hard">Rock-hard dry soil</option><option value="frozen">Frozen</option></select></label>
+    <div class="src" id="fcSrc"></div>
+    <details class="sub" data-sec="wxEdit"><summary>Edit conditions by hand</summary>
+      <div class="grid2" style="margin-top:8px">
+        <label>Overnight low (°C)<input type="number" id="wxLow" step="1"></label>
+        <label>Daytime high (°C)<input type="number" id="wxHigh" step="1"></label>
+        <label>Rain<select id="wxRain"><option value="0">Dry</option><option value="1">Showers / drizzle</option><option value="2">Heavy / persistent</option></select></label>
+        <label>Gusts<select id="wxWind"><option value="0">Calm (&lt;15 mph)</option><option value="1">Breezy (15–25 mph)</option><option value="2">Gusty / gale (25+ mph)</option></select></label>
+        <label>Avg night wind (mph)<input type="number" id="wxWindAvg" min="0" step="1"></label>
+        <label>Night humidity (%)<input type="number" id="wxHumid" min="0" max="100" step="5"></label>
+        <label>Midges / mozzies<select id="wxBugs"><option value="0">None</option><option value="1">Some</option><option value="2">Swarming (canal, still water)</option></select></label>
+        <label>Ground<select id="wxGround"><option value="normal">Normal turf</option><option value="soft">Soft peat / mud</option><option value="hard">Rock-hard dry soil</option><option value="frozen">Frozen</option></select></label>
+      </div>
+    </details>
+    <div class="grid2" style="margin-top:8px">
       <label>Nights<input type="number" id="wxNights" min="1" step="1"></label>
       <label>Water carried (L)<input type="number" id="wxWater" min="0" step="0.5"></label>
       <label>Food per day (kg)<input type="number" id="wxFood" min="0" step="0.1"></label>
@@ -211,83 +241,90 @@ details summary{cursor:pointer;color:var(--muted);font-size:13px}
     <div class="row" style="margin-top:10px">
       <button class="pri" id="suggestBtn">✨ Suggest a class for these conditions</button>
     </div>
-    <p class="small muted" style="margin:8px 0 0">Conditions are saved with the current class.</p>
-  </div>
-  <div class="card">
-    <h2>Heat retention stack</h2>
-    <div id="thermVerdict"></div>
+  </details>
+
+  <details class="card sec" data-sec="route">
+    <summary><span class="st">🥾 Route (GPX)</span><span class="sm" id="sumRoute"></span></summary>
+    <div class="row" style="margin-top:8px">
+      <input type="file" id="gpxFile" accept=".gpx,application/gpx+xml,application/octet-stream" class="grow">
+      <button id="gpxClear" hidden>Remove route</button>
+    </div>
+    <div class="src" id="gpxHelp">Import a GPX from HiiKER (hike page → Download / More → Export GPX). If you split the hike into days, each day's end becomes a camp. Otherwise camps are spaced evenly, and you can move them to any waypoint.</div>
+    <div id="routeOut"></div>
+  </details>
+
+  <details class="card sec" data-sec="heat" open>
+    <summary><span class="st">🌡️ Warmth</span><span class="sm" id="sumHeat"></span></summary>
+    <div id="thermVerdict" style="margin-top:8px"></div>
     <div class="gauge"><div class="needle" id="needle"></div></div>
     <div class="gl"><span>Too cold</span><span>Just right</span><span>Too warm</span></div>
     <div id="nightChart"></div>
     <div id="nightTable"></div>
-    <h3>How your layers stack up</h3>
-    <table id="thermTable"></table>
-    <h3>Ground insulation (R-value)</h3>
-    <div id="rBox"></div>
-    <h3>Cheapest warmth to add</h3>
-    <div id="warmAdd"></div>
-  </div>
+    <details class="sub" data-sec="heatStack"><summary>How your layers stack up</summary><table id="thermTable" style="margin-top:6px"></table></details>
+    <details class="sub" data-sec="heatR"><summary>Ground insulation (R-value)</summary><div id="rBox" style="margin-top:6px"></div></details>
+    <details class="sub" data-sec="heatAdd" open><summary>Cheapest warmth to add</summary><div id="warmAdd" style="margin-top:6px"></div></details>
+    <details class="sub" data-sec="heatMaths"><summary>How the maths works</summary>
+      <div class="small muted" style="margin-top:8px">
+        <p><b>Sleep rating</b> starts at your sleeping bag's comfort temperature. Each extra layer lowers it by its warmth bonus (each item counted once). Shelters add a little: tent +3°C, bivvy +2°C, tarp +1°C (max +5°C).</p>
+        <p><b>Ground R-value</b>: mat R-values add when stacked. Target: ≥10°C → R1, 5–10°C → R2, 0–5°C → R3, −5–0°C → R4, below −5°C → R5 (hammocks at least R2). Each point short adds ~3°C.</p>
+        <p><b>Wind chill</b>: the average night wind is reduced by your best shelter's wind rating (3/3 blocks it all). What gets through costs about 1°C per 4 mph, up to 5°C.</p>
+        <p><b>Damp</b>: humidity of 90%+ or rain costs 1°C (synthetic fill loses a little loft). Rain your shelter can't handle costs another 2°C.</p>
+        <p><b>Your calibration</b>: once you log trips on the Trips tab, the app learns whether you sleep warmer or colder than the maths says.</p>
+        <p><b>Limit</b>: below the bag's comfort rating but above its limit, you'll get through the night curled up but sleep badly. Below the limit is dangerous.</p>
+        <p><b>Camp height</b>: with a route loaded, each camp's forecast uses its GPX elevation (air cools ~0.65°C per 100 m).</p>
+        <p><b>Verdict</b>: rating above the low = cold. More than 8°C below the low = more warmth (and weight) than needed.</p>
+      </div>
+    </details>
+  </details>
+
   <div id="kitCheckPlan"></div>
-  <div class="card">
-    <h2>Weather protection</h2>
-    <table id="protTable"></table>
-    <h3>Warnings &amp; tips</h3>
+
+  <details class="card sec" data-sec="prot">
+    <summary><span class="st">🛡️ Weather protection &amp; tips</span><span class="sm" id="sumProt"></span></summary>
+    <table id="protTable" style="margin-top:8px"></table>
     <ul class="warnings" id="wxWarn"></ul>
-  </div>
-  <div class="card">
-    <h2>🔥 Fuel &amp; water planner</h2>
-    <div class="grid2">
+  </details>
+
+  <details class="card sec" data-sec="fuel">
+    <summary><span class="st">🔥 Fuel &amp; water</span><span class="sm" id="sumFuel"></span></summary>
+    <div class="grid2" style="margin-top:8px" id="fpInputs">
       <label>Hot meals per day<input type="number" id="fpMeals" min="0" step="1"></label>
       <label>Hot drinks per day<input type="number" id="fpDrinks" min="0" step="1"></label>
       <label>Gas left per canister (g)<input type="number" id="fpGasLeft" min="0" max="230" step="10"></label>
       <label class="inl" style="align-self:end"><input type="checkbox" id="fpHwb"> Hot-water bottle on cold nights</label>
     </div>
     <div id="fpOut" style="margin-top:10px"></div>
-  </div>
-  <details class="card"><summary>How the stacking maths works</summary>
-    <div class="small muted" style="margin-top:8px">
-      <p><b>Sleep rating</b> starts at your sleeping bag's comfort temperature. Each extra layer lowers it by its warmth bonus (each item counted once). Shelters add a little: tent +3°C, bivvy +2°C, tarp +1°C (max +5°C).</p>
-      <p><b>Ground R-value</b>: mat R-values add when stacked. Target: ≥10°C → R1, 5–10°C → R2, 0–5°C → R3, −5–0°C → R4, below −5°C → R5 (hammocks at least R2). Each point short adds ~3°C.</p>
-      <p><b>Wind chill</b>: the average night wind is reduced by your best shelter's wind rating (3/3 blocks it all). What gets through costs about 1°C per 4 mph, up to 5°C.</p>
-      <p><b>Damp</b>: humidity of 90%+ or rain costs 1°C (synthetic fill loses a little loft). Rain your shelter can't handle costs another 2°C.</p>
-      <p><b>Your calibration</b>: once you log trips on the Trips tab, the app learns whether you sleep warmer or colder than the maths says and adjusts.</p>
-      <p><b>Limit</b>: below the bag's comfort rating but above its limit, you'll get through the night curled up but sleep badly. Below the limit is dangerous.</p>
-      <p><b>Camp height</b>: when a route is loaded, each camp's forecast uses its elevation from the GPX. Air cools about 0.65°C per 100 m, so a hilltop camp can be noticeably colder than the valley.</p>
-      <p><b>Verdict</b>: rating above the low = cold. More than 8°C below the low = you're carrying more warmth (and weight) than needed.</p>
-    </div>
   </details>
 </section>
 
 <!-- FOOD -->
 <section class="view" id="v-food">
   <div class="card">
-    <h2>🍲 Meal plan <span class="small muted" id="foodClass"></span></h2>
+    <div class="row"><h2 class="grow">🍲 Meal plan <span class="small muted" id="foodClass"></span></h2>
+      <details class="menu"><summary class="btn">⋯</summary>
+        <div class="menu-pop">
+          <button id="mealShop">🛒 Copy shopping list</button>
+          <button id="mealCsv">⬇️ Export meals (CSV)</button>
+          <button class="danger" id="mealClear">🗑️ Clear meal plan</button>
+        </div>
+      </details>
+    </div>
     <div class="row">
       <button class="pri" id="mealAiBtn">🤖 Plan meals with AI</button>
       <button id="mealAddBtn">+ Add meal</button>
-    </div>
-    <div class="grid2" style="margin-top:10px">
-      <label>Calorie target per day (kcal)<input type="number" id="wxKcal" min="0" step="100"></label>
+      <label class="inl">Target <input type="number" id="wxKcal" min="0" step="100" style="width:80px"> kcal/day</label>
     </div>
     <div id="foodTotals" style="margin-top:10px"></div>
   </div>
   <div id="foodUtensils"></div>
   <div id="foodDays"></div>
-  <div class="card">
-    <div class="row">
-      <button id="mealShop">Copy shopping list</button>
-      <button id="mealCsv">Export meals (CSV)</button>
-      <button class="danger" id="mealClear">Clear meal plan</button>
-    </div>
-  </div>
 </section>
 
 <!-- TRIPS -->
 <section class="view" id="v-trips">
-  <div class="card">
-    <h2>📓 Log a night out</h2>
-    <p class="small muted" style="margin-top:0">After a trip, record how warm you actually slept. The app compares it with what it predicted and learns your personal offset.</p>
-    <div class="grid2">
+  <details class="card sec" data-sec="tripLog" open>
+    <summary><span class="st">📓 Log a night out</span><span class="sm">teach the app how warm you sleep</span></summary>
+    <div class="grid2" style="margin-top:8px">
       <label>Date<input type="date" id="trDate"></label>
       <label>Location<input id="trLoc" placeholder="e.g. Shropshire Union canal"></label>
       <label>Class used<select id="trClass"></select></label>
@@ -298,44 +335,46 @@ details summary{cursor:pointer;color:var(--muted);font-size:13px}
       <label style="grid-column:1/-1">Notes<textarea id="trNotes" rows="2" placeholder="Condensation, wind direction, what you'd change…"></textarea></label>
     </div>
     <div class="row" style="margin-top:10px"><button class="pri" id="trSave">Save trip</button></div>
-  </div>
+  </details>
   <div class="card" id="calibCard"></div>
   <div id="tripList"></div>
 </section>
 
 <!-- DATA -->
 <section class="view" id="v-data">
-  <div class="card" id="installCard">
-    <h2>📲 Install on your phone</h2>
-    <div class="row"><button class="pri" id="installBtn" hidden>Install app</button></div>
-    <p class="small muted" id="installHelp">Open the GitHub Pages link in your phone browser. On Android Chrome, tap ⋮ → <b>Add to Home screen</b> (or the Install button here when it appears). On iPhone Safari, tap Share → <b>Add to Home Screen</b>. After that it works offline, though the forecast needs signal.</p>
-  </div>
-  <div class="card">
-    <h2>Export</h2>
-    <div class="row">
-      <button id="expInvCsv">Kit list (CSV)</button>
-      <button id="expInvJson">Kit list (JSON)</button>
-      <button id="expClass">Current class (JSON)</button>
-      <button id="expClassCsv">Current class (CSV)</button>
-      <button id="expTrips">Trip log (CSV)</button>
-      <button class="pri" id="expAll">Full backup (JSON)</button>
-    </div>
-    <p class="small muted">CSV opens in Excel / Google Sheets. JSON can be imported back into this app on any device.</p>
-  </div>
-  <div class="card">
-    <h2>Import</h2>
-    <div class="row"><input type="file" id="impFile" accept=".json,application/json"></div>
+  <details class="card sec" data-sec="install">
+    <summary><span class="st">📲 Install on your phone</span><span class="sm">works offline</span></summary>
+    <div class="row" style="margin-top:8px"><button class="pri" id="installBtn" hidden>Install app</button></div>
+    <p class="small muted" id="installHelp">Open the GitHub Pages link in your phone browser. On Android Chrome, tap ⋮ → <b>Add to Home screen</b> (or the Install button here when it appears). On iPhone Safari, tap Share → <b>Add to Home Screen</b>. After that it works offline; the forecast needs signal.</p>
+  </details>
+  <details class="card sec" data-sec="export" open>
+    <summary><span class="st">⬇️ Back up &amp; export</span></summary>
+    <div class="row" style="margin-top:8px"><button class="pri" id="expAll">Full backup (JSON)</button></div>
+    <details class="sub" data-sec="exportMore"><summary>Other exports</summary>
+      <div class="row" style="margin-top:8px">
+        <button id="expInvCsv">Kit list (CSV)</button>
+        <button id="expInvJson">Kit list (JSON)</button>
+        <button id="expClass">Current class (JSON)</button>
+        <button id="expClassCsv">Current class (CSV)</button>
+        <button id="expTrips">Trip log (CSV)</button>
+      </div>
+      <p class="small muted">CSV opens in Excel / Google Sheets. JSON can be imported back here on any device.</p>
+    </details>
+  </details>
+  <details class="card sec" data-sec="import">
+    <summary><span class="st">⬆️ Import</span></summary>
+    <div class="row" style="margin-top:8px"><input type="file" id="impFile" accept=".json,application/json"></div>
     <p class="small muted">Accepts a full backup, a kit list, or a single class file. A class file is added to your classes; a kit list merges new items in by name.</p>
-  </div>
-  <div class="card">
-    <h2>Reset</h2>
-    <div class="row">
+  </details>
+  <details class="card sec" data-sec="reset">
+    <summary><span class="st">♻️ Reset</span></summary>
+    <div class="row" style="margin-top:8px">
       <button class="danger" id="resetEmpty">Start fresh — empty kit</button>
       <button id="resetAll">Load example kit (Sam's)</button>
     </div>
-    <p class="small muted"><b>Start fresh</b> removes every item, class and trip so you can add your own gear (try 🤖 Add with AI on the Kit tab). <b>Load example kit</b> brings back Sam's researched gear list and three preset classes. Both replace what's here — make a backup first if you want to keep it.</p>
+    <p class="small muted"><b>Start fresh</b> removes every item, class and trip so you can add your own gear. <b>Load example kit</b> brings back Sam's researched gear list and three preset classes. Both replace what's here (you can undo straight away).</p>
     <p class="small muted">Your data is saved on this device only. Back up before clearing browser data or switching phones.</p>
-  </div>
+  </details>
 </section>
 </main>
 
@@ -611,6 +650,14 @@ function cls(){let c=S.classes.find(c=>c.id===S.active); if(!c){c=S.classes[0]; 
 function newClassObj(name){return {id:"cls_"+Date.now().toString(36)+Math.random().toString(36).slice(2,5),name,items:{},worn:{},packed:{},wx:clone(WX_DEFAULT)};}
 const CAT_COLORS=["#9ccc65","#64b5f6","#ba68c8","#ffb74d","#4db6ac","#fff176","#f06292","#a1887f","#90a4ae"];
 
+/* ---- collapsible sections remember open/closed ---- */
+const isOpen=(id,def)=>{const v=S.ui&&S.ui[id];return v==null?def:v;};
+document.addEventListener("toggle",e=>{const d=e.target;if(d&&d.dataset&&d.dataset.sec){S.ui=S.ui||{};S.ui[d.dataset.sec]=d.open;save();}},true);
+function sec(id,title,sum,body,def,extra=""){return `<details class="card sec" data-sec="${id}" ${isOpen(id,def)?"open":""} ${extra}><summary><span class="st">${title}</span><span class="sm">${sum||""}</span></summary>${body}</details>`;}
+/* close ⋯ menus after choosing / tapping elsewhere */
+document.addEventListener("click",e=>{document.querySelectorAll("details.menu[open]").forEach(m=>{if(!m.contains(e.target)||e.target.closest(".menu-pop button")) m.open=false;});});
+const seasonLabel=s=>!s||!s.length?"":s.length===4?"All year":s.map(x=>x.slice(0,3)).join("·");
+
 /* ---- toast with optional undo ---- */
 function toast(m,undo){
   const t=$("#toast"),b=$("#toastBtn");$("#toastMsg").textContent=m;
@@ -855,7 +902,7 @@ function suggestClass(){
   if(bugs>=1||high>=18){const ht=first("hat",it=>(+it.bug||0)>=1)||null;if(ht&&add(ht))c.worn[ht.id]=1;}
   if(mode==="bivvy"){const op=first("optic");if(op)add(op);}
   ["firstaid","trowel","tooth","bidet"].forEach(k=>{const it=first(k);if(it)add(it,1);});
-  c.reasons=R;
+  c.reasons=R; c.draft=true;
   S.classes.push(c); S.active=c.id; save();
   showView("classes"); toast("Suggested class created");
 }
@@ -1040,21 +1087,21 @@ function warmthOptions(c){
 /* ============================================================
    RENDER
    ============================================================ */
-function chipsFor(it){
+function chipsFor(it,compact){
   const ch=[];
   if(it.status==="retired") ch.push('<span class="chip ret">retired</span>');
   if(it.status==="wishlist"){ch.push('<span class="chip wish">wishlist</span>'); const r=item(it.replaces); if(r){const d=it.g-r.g; ch.push(`<span class="chip wish">vs ${esc(r.name.split(" ").slice(0,3).join(" "))}: ${d<0?"saves "+fmtW(-d):"+"+fmtW(d)}</span>`);} if(+it.price) ch.push(`<span class="chip">£${(+it.price).toFixed(2)}</span>`);}
   if(it.condition==="repair") ch.push('<span class="chip rep">needs repair</span>');
   if(it.condition==="worn") ch.push('<span class="chip rep" style="background:#5a4c18;color:#ffe9a3">worn</span>');
   if(it.measured) ch.push('<span class="chip ok">weighed ✓</span>');
-  (it.seasons||[]).forEach(s=>ch.push(`<span class="chip">${esc(s)}</span>`));
+  if(!compact&&it.seasons&&it.seasons.length) ch.push(`<span class="chip">${seasonLabel(it.seasons)}</span>`);
   if(+it.rain) ch.push(`<span class="chip rain">rain ${it.rain}/3</span>`);
   if(+it.wind) ch.push(`<span class="chip wind">wind ${it.wind}/3</span>`);
   if(+it.bug) ch.push(`<span class="chip bug">bugs ${it.bug}/3</span>`);
   if(+it.r) ch.push(`<span class="chip r">R${it.r}</span>`);
   if(it.kind==="bag") ch.push(`<span class="chip warm">comfort ${it.comfort}°C${it.limit!=null?" / limit "+it.limit+"°C":""}</span>`);
   if(+it.warmth&&it.kind!=="bag") ch.push(`<span class="chip warm">+${it.warmth}°C</span>`);
-  if(it.custom) ch.push('<span class="chip">added by you</span>');
+  if(it.custom&&!compact) ch.push('<span class="chip">added by you</span>');
   return `<div class="chips">${ch.join("")}</div>`;
 }
 function groupByCat(list){
@@ -1081,13 +1128,15 @@ function renderKit(){
   if(wish.length){const save=wish.reduce((s,i)=>{const r=item(i.replaces);return s+(r?r.g-i.g:0);},0), cost=wish.reduce((s,i)=>s+(+i.price||0),0);
     t+=`<br>Wishlist: ${wish.length} item${wish.length>1?"s":""}${cost?` · £${cost.toFixed(2)}`:""}${save>0?` · would save ${fmtW(save)}`:""}`;}
   $("#kitTotals").innerHTML=t;
-  $("#kitList").innerHTML=groupByCat(list).map(([c,l])=>`<div class="card"><h3 style="margin-top:0">${esc(c)} <span class="muted small">${kg(sum(l))}</span></h3>
-    ${l.map(i=>`<div class="item ${i.status&&i.status!=="active"?"dim":""}" data-edit="${i.id}" style="cursor:pointer">
-      <div class="nm"><b>${esc(i.name)}${i.qty>1?` ×${i.qty}`:""}</b><span class="small muted">${esc(i.notes||"")}</span>${chipsFor(i)}</div>
-      <div class="w">${fmtW(i.g)}${i.qty>1?` each<br>${fmtW(i.g*i.qty)}`:""}</div></div>`).join("")}</div>`).join("")||(S.inv.length?'<div class="card muted">Nothing matches.</div>':`<div class="card"><h2>Your kit is empty</h2><p class="small muted">Add items one at a time with <b>+ Add item</b>, or tap <b>🤖 Add with AI</b>. You get a ready-made prompt for ChatGPT, Claude or Gemini that looks up weights and ratings for you, then you paste its answer back here.</p><div class="row"><button class="pri" onclick="openAI()">🤖 Add with AI</button></div></div>`);
+  const forceOpen=!!q||f!=="active";
+  $("#kitList").innerHTML=groupByCat(list).map(([c,l])=>{const body=l.map(i=>`<div class="item ${i.status&&i.status!=="active"?"dim":""}" data-edit="${i.id}" style="cursor:pointer">
+      <div class="nm"><b>${esc(i.name)}${i.qty>1?` ×${i.qty}`:""}</b><span class="small muted clamp">${esc(i.notes||"")}</span>${chipsFor(i)}</div>
+      <div class="w">${fmtW(i.g)}${i.qty>1?` each<br>${fmtW(i.g*i.qty)}`:""}</div></div>`).join("");
+    return forceOpen?`<details class="card sec" open><summary><span class="st">${esc(c)}</span><span class="sm">${l.length} · ${kg(sum(l))}</span></summary>${body}</details>`
+      :sec("kitcat-"+c,esc(c),`${l.length} item${l.length>1?"s":""} · ${kg(sum(l))}`,body,false);}).join("")||(S.inv.length?'<div class="card muted">Nothing matches.</div>':`<div class="card"><h2>Your kit is empty</h2><p class="small muted">Add items one at a time with <b>+ Add item</b>, or tap <b>🤖 Add with AI</b>. You get a ready-made prompt for ChatGPT, Claude or Gemini that looks up weights and ratings for you, then you paste its answer back here.</p><div class="row"><button class="pri" onclick="openAI()">🤖 Add with AI</button></div></div>`);
 }
 function renderClassSel(){
-  const opts=S.classes.map(c=>`<option value="${c.id}" ${c.id===S.active?"selected":""}>${esc(c.name)}</option>`).join("");
+  const opts=S.classes.map(c=>`<option value="${c.id}" ${c.id===S.active?"selected":""}>${c.draft?"✨ ":""}${esc(c.name)}${c.draft?" (draft)":""}</option>`).join("");
   $("#classSel").innerHTML=opts; $("#hdrSel").innerHTML=opts;
 }
 function renderWeightsCard(el,c){
@@ -1107,10 +1156,13 @@ function renderWeightsCard(el,c){
       <table>${top.map(t=>`<tr><td>${esc(t.n)}</td><td class="n">${fmtW(t.g)}</td></tr>`).join("")}
       <tr><td>Water (${c.wx.water} L)</td><td class="n">${fmtW(w.water)}</td></tr>
       <tr><td>${c.meals&&c.meals.length?`Food (meal plan, ${c.meals.length} items)`:`Food (${c.wx.food} kg × ${c.wx.nights} day${c.wx.nights>1?"s":""})`}</td><td class="n">${fmtW(w.food)}</td></tr></table>
-      <div class="small muted">Change water, food and nights on the Weather tab.</div></details>`;
+      <div class="small muted">Change water, food and nights on the Plan tab.</div></details>`;
 }
+function draftBar(c){return c.draft?`<div class="draft">✨ <b>Suggested class — not saved yet.</b> Tweak it, then <button class="tog" data-savedraft>💾 Save</button> to keep it, or <button class="tog danger" data-discard>Discard</button>.</div>`:"";}
 function renderClasses(){
   const c=cls(), q=$("#clsSearch").value.toLowerCase(), only=$("#clsOnlySel").checked;
+  $("#draftBar").innerHTML=draftBar(c);
+  $("#savedNote").textContent=c.draft?"":c.savedAt?`Saved ${new Date(c.savedAt).toLocaleString("en-GB",{weekday:"short",hour:"2-digit",minute:"2-digit"})} · changes also save automatically`:"Changes save automatically on this device";
   $("#clsReasons").innerHTML=c.reasons&&c.reasons.length?`<div class="card"><div class="row"><h2 class="grow">✨ Why this kit</h2><button class="tog" id="hideReasons">Hide</button></div>
     ${c.wx.src?`<div class="small muted" style="margin-bottom:6px">${esc(c.wx.src)} — ${esc(c.wx.detail||"")}</div>`:""}
     <ul class="reasons">${c.reasons.map(r=>`<li>${esc(r)}</li>`).join("")}</ul></div>`:"";
@@ -1123,12 +1175,15 @@ function renderClasses(){
     if(i.status==="retired"&&!sel&&!q) return false;
     return !q||i.name.toLowerCase().includes(q);
   });
-  $("#clsList").innerHTML=groupByCat(list).map(([cat,l])=>`<div class="card"><h3 style="margin-top:0">${esc(cat)}</h3>
-   ${l.map(i=>{const n=c.items[i.id]||0;return `<div class="item ${n?"":"dim"}">
-     <div class="nm"><b>${esc(i.name)}</b><span class="small muted">${fmtW(itemW(i,c))} each · own ${i.qty}${n?` · <b style="color:var(--text)">${fmtW(itemW(i,c)*n)}</b>`:""}</span>${chipsFor(i)}</div>
+  $("#clsList").innerHTML=groupByCat(list).map(([cat,l])=>{
+   const nSel=l.filter(i=>c.items[i.id]).length, wSel=l.reduce((s,i)=>s+(c.items[i.id]?itemW(i,c)*c.items[i.id]:0),0);
+   const body=l.map(i=>{const n=c.items[i.id]||0;return `<div class="item ${n?"":"dim"}">
+     <div class="nm"><b>${esc(i.name)}</b><span class="small muted">${fmtW(itemW(i,c))} each · own ${i.qty}${n?` · <b style="color:var(--text)">${fmtW(itemW(i,c)*n)}</b>`:""}</span>${chipsFor(i,true)}</div>
      <button class="tog ${c.worn[i.id]?"on":""}" data-worn="${i.id}" ${n?"":"disabled"}>Worn</button>
      <div class="step"><button data-dec="${i.id}">−</button><span>${n}</span><button data-inc="${i.id}" ${n>=i.qty?"disabled":""}>+</button></div>
-   </div>`}).join("")}</div>`).join("")||'<div class="card muted">No items.</div>';
+   </div>`}).join("");
+   const s=`${nSel} of ${l.length} packed${wSel?" · "+fmtW(wSel):""}`;
+   return (q||only)?`<details class="card sec" open><summary><span class="st">${esc(cat)}</span><span class="sm">${s}</span></summary>${body}</details>`:sec("clscat-"+cat,esc(cat),s,body,false);}).join("")||'<div class="card muted">No items.</div>';
 }
 function renderPack(){
   const c=cls(), lines=classLines(c);
@@ -1150,11 +1205,14 @@ function renderPack(){
 const WXF={wxLow:"low",wxHigh:"high",wxRain:"rain",wxWind:"wind",wxWindAvg:"windAvg",wxHumid:"humid",wxBugs:"bugs",wxGround:"ground",wxNights:"nights",wxWater:"water",wxFood:"food",fpMeals:"meals",fpDrinks:"drinks",fpGasLeft:"gasLeft"};
 function renderWeather(){
   const c=cls(), wx=c.wx;
-  $("#wxClassName").textContent="for "+c.name;
+  $("#draftBarPlan").innerHTML=c.draft?`<div class="card" style="padding:6px 10px">${draftBar(c)}</div>`:"";
   Object.entries(WXF).forEach(([id,k])=>{const el=$("#"+id); if(document.activeElement!==el) el.value=wx[k];});
   $("#fpHwb").checked=!!wx.hwb;
   if(document.activeElement!==$("#fcLoc")&&!$("#fcLoc").value) $("#fcLoc").value=S.loc?.query||"";
   if(!$("#fcDate").value) $("#fcDate").value=wx.date&&wx.date>=todayISO()?wx.date:todayISO();
+  const rainT=["dry","showers","heavy rain"][+wx.rain]||"", windT=["calm","breezy","gusty"][+wx.wind]||"";
+  $("#sumWx").textContent=`${wx.low}°C low · ${rainT} · ${windT}${+wx.bugs?" · midges":""} · ${wx.nights} night${wx.nights>1?"s":""}`;
+  $("#sumRoute").textContent=c.route?`${c.route.name} · ${c.route.distKm.toFixed(1)} km`:"none loaded";
   $("#fcSrc").innerHTML=wx.src?`📡 <b>${esc(wx.src)}</b> — ${esc(wx.detail||"")}. Midges are a rough guess from season, temperature and wind.`:
     "Fills in the conditions below for the night you pick (up to 16 days ahead). Free data from Open-Meteo.";
   renderRoute(c);
@@ -1163,6 +1221,7 @@ function renderWeather(){
   $("#thermVerdict").innerHTML=`<div class="row"><span class="pill ${t.cls}">${t.verdict}</span>
     <span class="small muted">Sleep system ≈ <b style="color:var(--text)">${t.rating.toFixed(1)}°C</b> comfort${t.limitRating!=null?`, ${t.limitRating.toFixed(1)}°C limit`:""} vs ${t.low}°C ${wx.nightsData&&wx.nightsData.length>1?"coldest night":"forecast low"} (margin ${t.margin>=0?"+":""}${t.margin.toFixed(1)}°C)</span></div>`;
   $("#needle").style.left=`calc(${t.pos}% - 2px)`;
+  $("#sumHeat").innerHTML=`<span class="pill ${t.cls}">${t.rating.toFixed(0)}°C vs ${t.low}°C</span> ${t.margin<-2?"too cold":t.margin<0?"borderline":t.margin<=8?"good":"too warm"}`;
   $("#nightChart").innerHTML=nightChartSVG(c);
   const nd=wx.nightsData||[];
   $("#nightTable").innerHTML=nd.length>1?`<h3>Night by night</h3><table><tr><th>Night</th><th>Camp</th><th class="n">Low</th><th class="n">Gusts</th><th class="n">Rain</th><th class="n">Verdict</th></tr>
@@ -1178,9 +1237,14 @@ function renderWeather(){
   const row=(n,have,req)=>`<tr><td>${n}</td><td class="n">${have}/3</td><td class="n">${req}/3</td><td class="n"><span class="pill ${have>=req?"p-ok":"p-bad"}">${have>=req?"OK":"Short"}</span></td></tr>`;
   $("#protTable").innerHTML=`<tr><th>Threat</th><th class="n">You have</th><th class="n">Needed</th><th></th></tr>`+row("Rain",p.rain,NEED.rain(+wx.rain))+row("Wind",p.wind,NEED.wind(+wx.wind))+row("Midges",p.bug,NEED.bug(+wx.bugs));
   const ws=warnings(c), ic={bad:"⛔",warn:"⚠️",info:"💡"};
+  const nb=ws.filter(w=>w[0]==="bad").length,nw=ws.filter(w=>w[0]==="warn").length,shortP=p.rain<NEED.rain(+wx.rain)||p.wind<NEED.wind(+wx.wind)||p.bug<NEED.bug(+wx.bugs);
+  $("#sumProt").innerHTML=`<span class="pill ${shortP||nb?"p-bad":nw?"p-warn":"p-ok"}">${shortP?"gap":nb+nw?nb+nw+" warning"+(nb+nw>1?"s":""):"OK"}</span>`;
   $("#wxWarn").innerHTML=ws.length?ws.map(([k,m])=>`<li>${ic[k]} ${esc(m)}</li>`).join(""):"<li>✅ Nothing flagged for these conditions.</li>";
   const f=fuelPlan(c);
-  if(!classLines(c).some(l=>RX.stove.test(l.it.name)&&!isGas(l.it))){$("#fpOut").innerHTML=`<div class="small muted">No stove in this class — add one to plan fuel.</div>`;}
+  $("#fpInputs").querySelectorAll("#fpMeals,#fpDrinks").forEach(el=>el.closest("label").style.display=f.fromMeals?"none":"");
+  const hasStove=classLines(c).some(l=>RX.stove.test(l.it.name)&&!isGas(l.it));
+  $("#sumFuel").innerHTML=hasStove?`<span class="pill ${f.ok?"p-ok":"p-bad"}">${f.ok?"enough gas":"short"}</span> ~${Math.round(f.needR)} g needed`:"no stove";
+  if(!hasStove){$("#fpOut").innerHTML=`<div class="small muted">No stove in this class — add one to plan fuel.</div>`;}
   else $("#fpOut").innerHTML=`<table>
     <tr><td>Water to boil (${f.fromMeals?"from your meal plan":`${wx.nights} night${wx.nights>1?"s":""}`}${f.hwb?", incl. hot-water bottle":""})</td><td class="n">${f.litres.toFixed(1)} L</td></tr>
     <tr><td>Stove burn rate (${["calm","breezy","gusty"][+wx.wind]||"calm"}${+wx.low<5?", cold":""})</td><td class="n">~${f.gpl} g/L</td></tr>
@@ -1252,7 +1316,18 @@ $("#kitSearch").oninput=renderKit; $("#kitFilter").onchange=renderKit;
 $("#clsSearch").oninput=renderClasses; $("#clsOnlySel").onchange=renderClasses;
 $("#classSel").onchange=$("#hdrSel").onchange=e=>{S.active=e.target.value;save();$("#trLow").value="";render();};
 $("#newClass").onclick=async()=>{const n=await ask("Name for the new class:",{input:"My class",ok:"Create"});if(!n)return;const c=newClassObj(n);S.classes.push(c);S.active=c.id;save();render();};
-$("#dupClass").onclick=()=>{const c=clone(cls());c.id=newClassObj("").id;c.name+=" (copy)";c.packed={};S.classes.push(c);S.active=c.id;save();render();toast("Duplicated");};
+$("#dupClass").onclick=async()=>{const src=cls();const n=await ask("Save a copy as:",{input:src.name.replace(/^Suggested · /,"")+" (copy)",ok:"Save copy"});if(!n)return;
+  const c=clone(src);c.id=newClassObj("").id;c.name=n;c.packed={};c.packedMeals={};delete c.draft;delete c.reasons;c.savedAt=Date.now();S.classes.push(c);S.active=c.id;save();render();toast(`Saved “${n}”`);};
+async function saveCurrent(){const c=cls();
+  if(c.draft){const n=await ask("Name this class:",{input:c.name.replace(/^Suggested · /,""),ok:"Save"});if(!n)return;c.name=n;delete c.draft;}
+  c.savedAt=Date.now();save();render();toast(`Saved “${c.name}”`);}
+$("#saveClass").onclick=saveCurrent;
+$("#expClass2").onclick=()=>$("#expClass").click();
+document.addEventListener("click",e=>{
+  if(e.target.closest("[data-savedraft]")) saveCurrent();
+  if(e.target.closest("[data-discard]")){const c=cls(),i=S.classes.indexOf(c);if(S.classes.length<2)return toast("Keep at least one class");
+    S.classes.splice(i,1);S.active=S.classes[Math.max(0,i-1)].id;save();render();toast("Suggestion discarded",()=>{S.classes.splice(i,0,c);S.active=c.id;save();render();});}
+});
 $("#renClass").onclick=async()=>{const c=cls();const n=await ask("Rename class:",{input:c.name,ok:"Rename"});if(!n)return;c.name=n;save();render();};
 $("#delClass").onclick=()=>{if(S.classes.length<2)return toast("Keep at least one class");
   const c=cls(),i=S.classes.indexOf(c);S.classes.splice(i,1);S.active=S.classes[0].id;save();render();
@@ -1641,18 +1716,46 @@ function addWish(tpl){
   save();render();toast("Added to wishlist (Kit tab → Wishlist)");
 }
 let CHECK_TPLS=[];
-function renderKitCheck(el,c,compact){
+const ESS_INFO={
+ "Shelter":["A tent, bivvy bag, tarp or hammock — whatever keeps rain, wind and dew off you overnight.","For UK wild camping a 1–2 person tent with a 3000 mm+ flysheet copes with most weather."],
+ "Sleeping bag or quilt":["Your main insulation at night. The comfort rating is the temperature you'll sleep comfortably at; the limit is what you'd survive curled up.","Pick a comfort rating at or below the coldest night you expect (EN/ISO 23537 rated if possible)."],
+ "Sleeping mat":["Stops the ground sucking heat out of you — matters as much as the bag. Insulation is measured as R-value, and R-values add when you stack mats.","R2+ summer, R3–4 spring/autumn, R4–5+ winter."],
+ "Rucksack":["Carries everything, with the hip belt taking most of the weight off your shoulders.","50–65 L for overnight trips; make sure it fits your back length."],
+ "Head torch":["Hands-free light for pitching, cooking and toilet trips — UK winter nights last 15+ hours.","Rechargeable, 200+ lumens, with a red-light mode. Carry a backup light or power bank."],
+ "First aid kit":["Plasters, blister dressings, painkillers, antiseptic wipes, tape, tick remover and any personal medication.","A small pre-made hiking kit plus blister patches."],
+ "Water bottle":["Carries drinking water between refills and water for cooking.","1–2 L total; a soft bottle folds flat when empty."],
+ "Lighter or matches":["Lights a stove that has no push-button igniter. Built-in igniters also fail when wet or cold, so a backup is wise.","A mini lighter plus a few storm matches, kept dry."],
+ "Waterproof jacket or poncho":["Keeps you dry while walking, pitching and cooking in rain — getting soaked is how people get cold.","A breathable jacket with taped seams. A poncho works but flaps about in wind."],
+ "Warm hat":["You lose a lot of heat from your head; a hat is one of the lightest ways to sleep warmer.","Fleece or merino beanie, 40–80 g."],
+ "Map & compass":["Navigation that doesn't depend on battery or signal.","OS Explorer (1:25,000) map of the area and a baseplate compass — and knowing how to use them."],
+ "Water filter or tablets":["UK streams, rivers and canals can carry bacteria and parasites from livestock and run-off.","A squeeze filter (e.g. Sawyer, BeFree) or chlorine dioxide tablets. Pre-filter murky canal water through a cloth."],
+ "Dry spare socks":["A pair kept only for sleeping keeps your feet warm, and dry feet avoid blisters and trench foot on wet trips.","Merino or wool-blend hiking socks."],
+ "Knife or multi-tool":["Food prep, cutting cord, quick repairs.","A small folding knife or light multi-tool. In the UK a non-locking folding blade under 3 inches can be carried without a reason."],
+ "Sun cream":["Long days in the open burn, even under cloud.","A small SPF 30–50 tube."],
+ "Repair kit":["Fixes a punctured inflatable mat or a ripped tent before it ruins the night.","Mat patch kit, Tenacious Tape, and some duct tape wrapped round a pole."],
+ "Trowel / toilet kit":["To dig a 15 cm cat-hole at least 30 m from water, paths and camp.","A light trowel, toilet paper and a bag to pack it out."],
+ "Food plan":["Enough food and calories for every day of the trip.","Use the Food tab — an AI can plan meals around your kit and the forecast."]
+};
+function essRow(e,ic,action){
+  const info=ESS_INFO[e.label]||[e.why||"Needed for your meal plan.",""];
+  return `<details class="ess"><summary><span>${ic}</span><span class="lab"><b>${esc(e.label)}</b>${e.status==="owned"?`<br><span class="small muted">You own: ${esc(e.it.name)}</span>`:""}</span></summary>
+    <div class="body"><p>${esc(info[0])}</p>${e.why&&e.why!==info[0]?`<p class="muted">${esc(e.why)}</p>`:""}${info[1]?`<p><b>Look for:</b> ${esc(info[1])}</p>`:""}
+    ${e.tpl&&e.status!=="owned"?`<p class="muted">Typical weight ~${fmtW(e.tpl.g)}.</p>`:""}<div class="row">${action}</div></div></details>`;
+}
+function renderKitCheck(el,c){
   const {ess,upgrades:up}=kitCheck(c); CHECK_TPLS=[];
   const ic={bad:"⛔",warn:"⚠️",info:"💡"};
   const missing=ess.filter(e=>e.status==="missing"||e.status==="food"), unpacked=ess.filter(e=>e.status==="owned");
-  const tplBtn=t=>{CHECK_TPLS.push(t);return onWishlist(t.name)?`<span class="chip wish">on wishlist ✓</span>`:`<button class="tog" data-wish="${CHECK_TPLS.length-1}">+ Wishlist</button>`;};
-  const okCount=ess.filter(e=>e.status==="packed").length;
-  if(!missing.length&&!unpacked.length&&!up.length){el.innerHTML=`<div class="card"><h2>🧭 Kit check</h2><div class="small"><span class="pill p-ok">All essentials packed</span> <span class="muted">${okCount} checks passed for these conditions.</span></div></div>`;return;}
-  el.innerHTML=`<div class="card"><h2>🧭 Kit check</h2>
-    ${unpacked.length?`<h3>You own these but haven't packed them</h3>${unpacked.map(e=>`<div class="item"><div class="nm"><b>${ic[e.lvl]} ${esc(e.label)}</b><span class="small muted">${esc(e.it.name)} · ${fmtW(e.it.g)}${e.why?" — "+esc(e.why):""}</span></div><button class="tog" data-packit="${e.it.id}">+ Pack</button></div>`).join("")}`:""}
-    ${missing.length?`<h3>Missing from your kit</h3>${missing.map(e=>`<div class="item"><div class="nm"><b>${ic[e.lvl]} ${esc(e.label)}</b><span class="small muted">${e.tpl?`Typically ~${fmtW(e.tpl.g)}. `:""}${esc(e.why||"")}</span></div>${e.status==="food"?`<button class="tog" data-goview="food">Plan food</button>`:tplBtn(e.tpl)}</div>`).join("")}`:""}
-    ${up.length?`<h3>Your kit isn't up to these conditions — worth getting</h3>${up.map(u=>`<div class="item"><div class="nm"><b>🛒 ${esc(u.tpl.name)}${u.tpl.qty>1?` ×${u.tpl.qty}`:""}</b><span class="small muted">${esc(u.why)} ~${fmtW(u.tpl.g)}${u.tpl.qty>1?" each":""}.</span></div>${tplBtn(u.tpl)}</div>`).join("")}`:""}
-    <div class="small muted" style="margin-top:6px">${okCount} essential${okCount===1?"":"s"} already packed. Suggestions are based on the conditions on the Plan tab.</div></div>`;
+  const tplBtn=t=>{CHECK_TPLS.push(t);return onWishlist(t.name)?`<span class="chip wish">on wishlist ✓</span>`:`<button class="tog" data-wish="${CHECK_TPLS.length-1}">+ Add to wishlist</button>`;};
+  const okCount=ess.filter(e=>e.status==="packed").length, bad=ess.filter(e=>e.lvl==="bad"&&e.status!=="packed").length;
+  const sumTxt=!missing.length&&!unpacked.length&&!up.length?`<span class="pill p-ok">all essentials packed</span>`:
+    `${bad?`<span class="pill p-bad">${bad} essential${bad>1?"s":""}</span> `:""}${[unpacked.length&&`${unpacked.length} not packed`,missing.length&&`${missing.length} missing`,up.length&&`${up.length} to buy`].filter(Boolean).join(" · ")}`;
+  const body=(!missing.length&&!unpacked.length&&!up.length)?`<p class="small muted">${okCount} checks passed for these conditions.</p>`:
+    `${unpacked.length?`<h3>Own it, not packed</h3>${unpacked.map(e=>essRow(e,ic[e.lvl],`<button class="tog pri" data-packit="${e.it.id}">+ Pack ${esc(e.it.name.split(" ").slice(0,3).join(" "))}</button>`)).join("")}`:""}
+    ${missing.length?`<h3>Missing from your kit</h3>${missing.map(e=>essRow(e,ic[e.lvl],e.status==="food"?`<button class="tog" data-goview="food">Open Food tab</button>`:tplBtn(e.tpl))).join("")}`:""}
+    ${up.length?`<h3>Not up to these conditions — worth getting</h3>${up.map(u=>`<details class="ess"><summary><span>🛒</span><span class="lab"><b>${esc(u.tpl.name)}${u.tpl.qty>1?` ×${u.tpl.qty}`:""}</b></span></summary><div class="body"><p>${esc(u.why)}</p><p class="muted">Typical weight ~${fmtW(u.tpl.g)}${u.tpl.qty>1?" each":""}.</p><div class="row">${tplBtn(u.tpl)}</div></div></details>`).join("")}`:""}
+    <p class="small muted">Tap any item to see what it is and why. ${okCount} essential${okCount===1?"":"s"} already packed.</p>`;
+  el.innerHTML=sec("check-"+el.id,"🧭 Kit check",sumTxt,body,bad>0||el.id==="kitCheckPlan");
 }
 function essentialGaps(c){return kitCheck(c).ess.filter(e=>e.lvl==="bad"&&e.status!=="packed").length;}
 document.addEventListener("click",e=>{
@@ -1758,8 +1861,9 @@ function renderFood(){
     <div><div class="small muted">Water to boil</div><b>${(t.water/1000).toFixed(1)} L</b></div></div>
     <div class="small muted" style="margin-top:6px">${t.dens<300?"⚠️ Fairly heavy for the calories — swap in nuts, cheese, oils, chocolate or dehydrated meals. ":t.dens>=400?"✅ Good calorie density. ":""}Food weight and stove fuel on the Plan tab now come from this plan.${+c.wx.low<5&&avg<target?" Cold nights burn extra calories — aim above your target.":""}</div>`;
   const ut=utensilsNeeded(c);
-  $("#foodUtensils").innerHTML=ut.length?`<div class="card"><h2>🍳 Cooking kit for these meals</h2>${ut.map(u=>`<div class="item"><div class="nm"><b>${u.status==="packed"?"✅":u.status==="owned"?"🎒":u.status==="missing"?"⛔":"❔"} ${esc(u.label)}</b><span class="small muted">${u.status==="packed"?"Packed: "+esc(u.it.name):u.status==="owned"?"You own "+esc(u.it.name)+" — not packed":u.status==="missing"?"Not in your kit":"Check you have this"}</span></div>
-    ${u.status==="owned"?`<button class="tog" data-packit="${u.it.id}">+ Pack</button>`:u.status==="missing"?(onWishlist(u.tpl.name)||S.inv.some(i=>i.status==="wishlist"&&UTENSILS.find(x=>x.label===u.label)?.find.test(i.name))?`<span class="chip wish">on wishlist ✓</span>`:`<button class="tog" data-wishtpl='${esc(JSON.stringify(u.tpl))}'>+ Wishlist</button>`):""}</div>`).join("")}</div>`:"";
+  const utMiss=ut.filter(u=>u.status==="missing"||u.status==="owned").length;
+  $("#foodUtensils").innerHTML=ut.length?sec("foodUt","🍳 Cooking kit for these meals",utMiss?`<span class="pill p-warn">${utMiss} to sort</span>`:`<span class="pill p-ok">all packed</span>`,`${ut.map(u=>`<div class="item"><div class="nm"><b>${u.status==="packed"?"✅":u.status==="owned"?"🎒":u.status==="missing"?"⛔":"❔"} ${esc(u.label)}</b><span class="small muted">${u.status==="packed"?"Packed: "+esc(u.it.name):u.status==="owned"?"You own "+esc(u.it.name)+" — not packed":u.status==="missing"?"Not in your kit":"Check you have this"}</span></div>
+    ${u.status==="owned"?`<button class="tog" data-packit="${u.it.id}">+ Pack</button>`:u.status==="missing"?(onWishlist(u.tpl.name)||S.inv.some(i=>i.status==="wishlist"&&UTENSILS.find(x=>x.label===u.label)?.find.test(i.name))?`<span class="chip wish">on wishlist ✓</span>`:`<button class="tog" data-wishtpl='${esc(JSON.stringify(u.tpl))}'>+ Wishlist</button>`):""}</div>`).join("")}`,utMiss>0):"";
   const ic={breakfast:"🌅",lunch:"🥪",dinner:"🍲",snack:"🍫",drink:"☕"};
   $("#foodDays").innerHTML=days.map(d=>{const v=t.byDay[d],pct=Math.min(100,v.kcal/target*100),items=m.filter(x=>x.day===d).sort((a,b)=>MEAL_TYPES.indexOf(a.type)-MEAL_TYPES.indexOf(b.type));
     return `<div class="card"><div class="row"><h2 class="grow">Day ${d}${d>t.days?` <span class="small muted">(beyond your ${t.days}-day trip)</span>`:""}</h2><span class="small muted">${Math.round(v.kcal)} / ${target} kcal · ${fmtW(v.g)}</span></div>
@@ -1800,6 +1904,7 @@ $("#installBtn").onclick=async()=>{if(!deferredPrompt)return;deferredPrompt.prom
 if(window.matchMedia("(display-mode: standalone)").matches) $("#installHelp").textContent="✅ Running as an installed app. It works offline; the forecast needs signal.";
 if("serviceWorker" in navigator && location.protocol.startsWith("http")) navigator.serviceWorker.register("sw.js").catch(()=>{});
 
+document.querySelectorAll("details[data-sec]").forEach(d=>{const v=S.ui&&S.ui[d.dataset.sec];if(v!=null)d.open=v;});
 render();
 </script>
 </body>

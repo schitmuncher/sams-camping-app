@@ -10,7 +10,7 @@ A single-page camping kit planner: open `index.html` in any browser (phone or de
 - **Your own kit**: first-time visitors choose between exploring the example kit (Sam's) or starting empty. **Data → Start fresh** clears everything on that device. Auto-suggest, warnings and the fuel planner work from item types and names, so they work with anyone's gear.
 
 - **Kit**: every item you own, sorted into categories, with quantity, weight each, seasons, rain/wind/bug ratings, R-values and research notes. Tap an item to edit it. **+ Add item** has quick-fill templates (jacket, beanie, boots…). Each item can be marked *weighed*, *worn*, *needs repair*, or put on the **wishlist** (with price and which item it replaces, so you can see the weight you'd save).
-- **Classes**: build loadouts with how many of each item you take. Mark items as **Worn** so they don't count toward pack weight. It comes with three presets (Winter Tent, Stealth Bivvy, Summer Hammock).
+- **Classes**: **💾 Save** your loadout (suggested classes stay as drafts until you save or discard them), or use the ⋯ menu to save a copy, rename, export or delete. Build loadouts with how many of each item you take. Mark items as **Worn** so they don't count toward pack weight. It comes with three presets (Winter Tent, Stealth Bivvy, Summer Hammock).
 - **Pack**: a tick-off checklist for the active class, with a progress bar. You can print it or copy it as text.
 - **Plan**:
   - **Route (GPX)**: import a GPX from HiiKER (or Komoot, AllTrails…). Shows distance, climb, an elevation profile and walking time per day (Naismith, slowed for heavy packs). If the hike was split into days, each day's end becomes a camp; otherwise camps are spaced evenly and can be moved to any waypoint. After a forecast it also shows the latest start time to pitch before sunset.
@@ -22,6 +22,10 @@ A single-page camping kit planner: open `index.html` in any browser (phone or de
   - **Fuel & water planner**: litres to boil and grams of gas needed (adjusted for wind and cold), compared with the gas you're carrying.
 - **Trips**: log each night out with the actual low and how warm you slept. The app works out whether you sleep warmer or colder than its maths and applies that offset (you can turn it off).
 - **Data**: export the kit list, the current class or the trip log (CSV or JSON), make a full backup and import it, and install the app.
+
+## Layout
+
+Sections and categories fold away and remember whether you left them open. Each section header shows a one-line status (e.g. *Warmth: 2°C vs −1°C, too cold*), so you can see everything at a glance and open only what you need. In the kit check, tap any item to see what it is, why it matters and what to look for.
 
 ## Install as an app
 
