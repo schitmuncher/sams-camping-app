@@ -658,6 +658,29 @@ function applySamV3(inv){
 }
 applySamV3(DEFAULT_INV);
 
+/* Sam's follow-up details (Nov 2026) */
+const SAM_NEW_V4=[
+ {id:"insbottle",name:"1 L Insulated Bottle (Camo)",cat:"Kitchen & Hydration",qty:2,g:450,kind:"other",colour:"camo",vis:0,seasons:ALL4,
+  notes:"Insulated 1 L camo bottles for keeping drinks hot or cold on walks and camps.",research:"est."}
+];
+const SAM_UPDATES_V4=[
+ {name:"Wise Owl Wisefly Lite Tarp 11'×9'",g:535,research:"Sam: confirmed Lite version."},
+ {name:"Quiksilver Wool/Fleece-Lined Parka (Large)",rename:"Quiksilver Ferris Parka (XL)",rain:1,notes:"Quiksilver Ferris Parka (XL, Highline Thinsulate + sherpa fleece lining). Showerproof/water-resistant only, not fully waterproof.",research:"Sam"},
+ {name:"Coolzon 3–4 Season Sleeping Bag",g:1450,comfort:8,notes:"Amazon listing gives 1.45 kg (220×75 cm) and an 8–15°C rating; best for spring, summer and mild autumn with layers.",research:"Amazon listing: 1.45 kg, 8–15°C. Limit 3°C is still an estimate."},
+ {name:"AKSOUL 10 cm Inflatable Sleeping Mat",g:820,r:2.5,notes:"196×69×10 cm mat listed at 820 g with ~R2–3 insulation; pair with foam/foil mat on cold winter ground.",research:"Amazon listing (seller's R claim, not an ASTM test)."},
+ {name:"SIMOND MT500 Folding Foam Mattress",g:370,r:2.1,research:"Decathlon listing: 180 cm version."},
+ {name:"Pocket Rocket-style Gas Stove",qty:0,status:"retired",notes:"No longer owned.",research:"Sam"}
+];
+function applySamV4(inv,classes){
+  SAM_NEW_V4.forEach(n=>{if(!inv.some(i=>i.id===n.id||i.name===n.name)) inv.push(JSON.parse(JSON.stringify(n)));});
+  SAM_UPDATES_V4.forEach(u=>{const it=inv.find(i=>i.name===u.name||(u.rename&&i.name===u.rename));if(!it)return;
+    const {name,rename,...rest}=u; Object.assign(it,rest); if(rename) it.name=rename;});
+  // anything no longer owned comes out of every class
+  const gone=new Set(inv.filter(i=>i.status==="retired"&&!i.qty).map(i=>i.id));
+  (classes||[]).forEach(c=>gone.forEach(id=>{if(c.items) delete c.items[id]; if(c.worn) delete c.worn[id]; if(c.packed) delete c.packed[id];}));
+}
+applySamV4(DEFAULT_INV,DEFAULT_CLASSES);
+
 /* Quick-fill templates for common items not in the original notebook */
 const TEMPLATES = [
  {name:"Waterproof jacket",cat:"Clothing",g:400,kind:"other",seasons:ALL4,notes:"Shell layer for rain and wind."},
@@ -676,8 +699,8 @@ const KEY="sams-camp-planner-v1";
 const clone=o=>JSON.parse(JSON.stringify(o));
 const WX_DEFAULT={low:5,high:12,rain:0,wind:0,windAvg:5,humid:80,bugs:0,ground:"normal",nights:1,water:2,food:0.7,meals:2,drinks:3,hwb:true,gasLeft:230,kcal:2800,stealth:0};
 let S;
-function freshState(){return {seed:3,ver:2,inv:clone(DEFAULT_INV),classes:clone(DEFAULT_CLASSES),active:"cls_winter",trips:[],calibOn:true,loc:null,welcomed:true};}
-function emptyState(){const c=newClassObj("My first class");return {seed:3,ver:2,inv:[],classes:[c],active:c.id,trips:[],calibOn:true,loc:null,welcomed:true};}
+function freshState(){return {seed:4,ver:2,inv:clone(DEFAULT_INV),classes:clone(DEFAULT_CLASSES),active:"cls_winter",trips:[],calibOn:true,loc:null,welcomed:true};}
+function emptyState(){const c=newClassObj("My first class");return {seed:4,ver:2,inv:[],classes:[c],active:c.id,trips:[],calibOn:true,loc:null,welcomed:true};}
 function load(){
   let stored=false;
   try{const raw=localStorage.getItem(KEY); if(raw){S=JSON.parse(raw);stored=true;}}catch(e){S=null;}
@@ -687,6 +710,7 @@ function load(){
   // one-time: add items Sam added to the example kit later, if this is his kit and they're missing
   if((S.seed||1)<2){ if(S.inv.some(i=>i.id==="tent_eiger")) ["nfchat","parka","mwfleece","thermtrousers"].forEach(id=>{const d=DEFAULT_INV.find(x=>x.id===id); if(d&&!S.inv.some(i=>i.id===id||i.name===d.name)) S.inv.push(clone(d));}); S.seed=2; }
   if((S.seed||1)<3){ if(S.inv.some(i=>i.id==="tent_eiger")) applySamV3(S.inv); S.seed=3; }
+  if((S.seed||1)<4){ if(S.inv.some(i=>i.id==="tent_eiger")) applySamV4(S.inv,S.classes); S.seed=4; }
 }
 function save(){try{localStorage.setItem(KEY,JSON.stringify(S));}catch(e){}}
 load();
@@ -1608,6 +1632,7 @@ function applyUpdate(m,u){
   if(u.notes) m.notes=String(u.notes).slice(0,400);
   if(u.research) m.research=String(u.research).slice(0,400);
   if(u.colour||u.color) m.colour=String(u.colour||u.color).slice(0,60);
+  if(u.rename) m.name=String(u.rename).slice(0,120);
 }
 function describeUpdate(m,u){
   const L={g:"weight",qty:"qty",vis:"colour",profile:"profile",warmth:"warmth",r:"R",comfort:"comfort",limit:"limit",rain:"rain",wind:"wind",bug:"bugs",price:"£"};
@@ -1689,7 +1714,8 @@ $("#aiAdd").onclick=()=>{
     S.inv.push(Object.assign({id:"c_"+Date.now().toString(36)+Math.random().toString(36).slice(2,6),custom:true},it));added++;});
   document.querySelectorAll("#aiPreview [data-aiu]").forEach(cb=>{if(!cb.checked)return;const u=aiParsed.updates[+cb.dataset.aiu];
     const m=S.inv.find(x=>normName(x.name)===normName(u.name))||findDup(u.name)?.it;if(!m)return;
-    applyUpdate(m,u); updated++;});
+    applyUpdate(m,u); updated++;
+    S.classes.forEach(c=>{const lim=usable(m)?m.qty:0; if((c.items[m.id]||0)>lim){ if(lim) c.items[m.id]=lim; else {delete c.items[m.id];delete c.worn[m.id];delete c.packed[m.id];} }});});
   aiParsed=null;$("#aiReply").value="";$("#aiDlg").close();S.welcomed=true;save();showView("kit");
   toast(`${added} added${updated?`, ${updated} updated`:""}`,()=>{S.inv=before;save();render();});
 };
