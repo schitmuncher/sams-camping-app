@@ -1,0 +1,35 @@
+You're helping me write my camping survival game, "Pitch Dark". It's built into the Play tab of my camp kit planner app (Sam's Camp Kit Planner). Claude does the coding. I want YOUR writing and creative ideas. Please reply in plain prose and simple scene cards, NOT code or JSON.
+
+WHAT EXISTS SO FAR
+- A button-based text survival game played with my real kit. You pick a loadout ("class") from the planner, such as Winter Tent, Stealth Bivvy or Summer Hammock, and the game knows every item: whether I have a head torch, a flask, metal pegs, a midge net, how warm the sleeping bag is, how heavy the pack is.
+- One night, in phases: walk in → choose a pitch (woodland, hedge, canal bank or hilltop) → set up camp and eat → the night, hour by hour → dawn and Leave No Trace.
+- Five meters: 🔥 Warmth, ⚡ Energy, 💧 Dryness, 🙂 Morale and 👁 Suspicion (how likely I am to be spotted or moved on).
+- Choices I can't make because of missing kit show a lock and what's missing ("needs a head torch").
+- Endings: made it to dawn, walked home, bailed, moved on by someone, called it, exhausted. After each night there's a debrief with grades and "Night Notes" that send fixes back to my real packing list.
+- The voice so far is dry, British and understated, a bit funny and never melodramatic. Example: "The hatch closes harder than it opened."
+- Scenarios now: Off the Towpath (−1°C November, Hurleston canals near Nantwich), Storm Night (35 mph gusts and rain), Midsummer Midges (warm, still, buggy June night by water), Dartmoor Commons (legal wild camp, open moor, October), plus "your own plan conditions".
+- Recurring LOCALS who remember how I treated them between games: a bearded liveaboard boater, a farmer in a Land Rover, a dog walker with a spaniel, a dawn angler, and a Canal & River Trust ranger. Each has a mood from "remembers you badly" up to "friendly", and it carries over to the next game.
+- About 85 scenes exist already: frost, owls, roe deer, a falling branch, cold feet, a snoring boat, midge clouds, tick checks, bogs, ponies, stars from a tor, a pitch failing in the wind.
+
+COMING NEXT (so write with these in mind)
+1. HiiKER GPX ROUTES. The player imports a real route from the HiiKER app. Its distance, climbing and waypoint names ("Hurleston Locks", "Barbridge Inn", "Trig point") become the walk in, and the real forecast, sunset and sunrise for that place and date are used. So I need GENERIC scenes that read naturally with any place name dropped in, written with a marker like [PLACE] or [NEXT WAYPOINT]. Also scenes for: a long climb, a steep descent in the dark, passing a pub, a busy road crossing, a village, a trig point or summit, running out of daylight before the end of the route, and deciding to camp short of the planned spot.
+2. A MILD AUTUMN SCENARIO where the hammock is actually the best choice: about 8–10°C, dry, sheltered woodland, wet ground. Give it a name, an opening line, and 6–8 scenes that reward being off the ground and punish lying on soggy ground.
+3. MAKING MIDSUMMER HARDER. Right now it's too easy. Ideas I want written up: it never gets properly dark, so more people are around late (teenagers, late walkers, a nosy cyclist); real overheating; a thunderstorm risk; dehydration; midges at dusk and dawn; the 4am dawn chorus cutting sleep short.
+
+WHAT I'D LIKE FROM YOU
+A) LOCALS: for each of the five, a few more lines at each mood (bad, wary, neutral, warming, friendly). Write how they talk, one or two small quirks, and something they might remember about me ("the one who left the gate open"). Also ONE new local for Dartmoor and ONE for the GPX routes (e.g. a pub landlord near the end of the walk).
+B) SCENES: about 25 new scene cards, spread over the three topics above. Use this format for each one:
+
+   TITLE:
+   WHEN IT HAPPENS: (phase, scenario/route, time of night, any kit it needs, e.g. "needs a midge net")
+   TEXT: (1–3 short sentences)
+   CHOICE 1: what I do → what happens (and which meters go up or down, roughly: small/medium/big)
+   CHOICE 2: …
+   CHOICE 3 (optional): …
+
+   At least one choice in each scene should depend on real kit (e.g. "Pull on the head net (needs a midge net)").
+   Avoid choices that are obviously right. The best scenes are real dilemmas: warm OR quiet, sleep OR stay hidden.
+C) ENDINGS AND DEBRIEF: a short closing paragraph for each ending type in the new scenarios, and 10 short "Night Notes" tips in my voice that link a mistake to a kit lesson (e.g. "Your bag was rated too warm. A quilt or an open zip would have saved the sweat.").
+D) Any wild ideas you think would make the game better. Keep each one short.
+
+Facts to keep right: UK only. Wild camping is legal on parts of Dartmoor but not generally in England, so the stealth scenarios are "pitch late, leave early, no trace". No fires on the towpath. Be accurate about midges, ticks, condensation and wind chill. Never suggest anything genuinely dangerous as the "right" choice.
