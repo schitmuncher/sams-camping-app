@@ -1,6 +1,6 @@
 # Pitch Dark: game design
 
-*A button-based text survival game played with your real camping kit. Companion to Camp Kit Planner.*
+*A button-based text survival game played with your real camping kit, built into Camp Kit Planner as a **Play** mode.*
 
 Status: design draft v1 (Nov 2026). Nothing built yet.
 
@@ -167,7 +167,7 @@ Content is a list of **storylets**: small scenes with conditions, a short text, 
 - Grades A–E for **Warmth**, **Sleep hours**, **Stealth**, **Leave No Trace** and **Weight**
 - **The turning point:** the single choice or event that changed the night most (biggest meter swing)
 - **Real lessons**, generated from the run, e.g. *"Your warmth bottomed out at 3am. The cheapest fix in your kit is the Nantwich Town FC hat (+1°C, 90 g), and it was in your rucksack."*
-- **Buttons:** *Add fixes to wishlist* (planner) · *Replay this seed* · *Try another loadout* · *Share result*
+- **Buttons:** *+ Pack* / *+ Wishlist* on each lesson (straight into the planner) · *Replay this seed* · *Try another class* · *Share result*
 
 ---
 
@@ -214,8 +214,9 @@ Difficulty: **Walk in the park** (meters drain at 0.6×, hints show exact number
 
 ## 11. Tech plan
 
-- **Files:** `game.html` (UI) + `game/engine.js` + `game/storylets/*.json` in the same repo. Same origin as the planner, so it reads the planner's saved kit directly and works offline via the existing service worker.
-- **Reuse:** extract the planner's maths (`thermal`, `protection`, `stealth`, `weights`, kit matching) into a shared `camp-model.js` used by both, so the game and planner can never disagree.
+- **Built into the app:** a new **🎮 Play** tab in Camp Kit Planner. It uses the planner's own functions directly (`thermal`, `protection`, `stealth`, `weights`, kit matching), so the game and planner can never disagree, and it works offline and installed like the rest of the app.
+- **Content:** storylets kept as a JSON block (`STORYLETS`) in the app, with a separate data file if it grows large. The engine is a small self-contained module in the same page.
+- **Links back:** debrief buttons call the planner directly. *+ Pack* adds an owned item to the class, *+ Wishlist* adds a suggested item, and *Open class* jumps to the Classes tab.
 - **State:** `{seed, scenario, classSnapshot, time, phase, meters, flags, inventoryUses, log[]}`, autosaved to localStorage after every choice.
 - **No dependencies, no build step**, matching the planner.
 - **Balancing tool:** a headless "bot" that plays 1,000 nights per scenario with simple strategies (random, greedy-warmth, stealthy) and reports ending rates and average grades. Tune storylet weights until about 60–70% of runs with a sensible loadout reach dawn (Oregon Trail-style tuning).

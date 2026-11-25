@@ -1,11 +1,12 @@
-I'm making a small button-based text survival game called "Pitch Dark" (working title). You play one night wild camping in the UK with your real camping kit. I'd like your help as a writer. Please read all of this first, then work through the TASKS in order, one batch at a time, and wait for me to say "next" between batches.
+I'm adding a button-based text survival game, "Pitch Dark" (working title), as a new "Play" mode inside my existing Camp Kit Planner app (the one we've talked about). You play one night wild camping in the UK using one of your saved classes (loadouts) from the app, so the game uses your real kit, the app's warmth/stealth/weight ratings and, if you want, the real forecast and your GPX route. At the end, lessons link straight back into the app (one tap adds fixes to the wishlist or packs a forgotten item into the class). I'd like your help as a writer. Please read all of this first, then work through the TASKS in order, one batch at a time, and wait for me to say "next" between batches.
 
 THE GAME IN BRIEF
 - Each scene is 2–4 short lines of text and 2–4 tap buttons. It's played on a phone, one-handed.
 - Five meters (0–100): warmth, energy, dry, morale, suspicion (suspicion is danger: 100 means you get asked to leave).
 - Phases: walk (walking in, 30-min turns), pitch (choosing a spot and putting up the shelter before sunset), camp (evening), night (1-hour turns, roughly 17:00–07:00 in winter), dawn (packing up).
 - Nobody dies. Bad nights end with: "bailed" (too cold, walk home), "movedon" (spotted and asked to leave), "calledit" (morale gone), "exhausted" (energy gone on the walk).
-- The player's real kit decides what's possible. No lighter means the stove won't light. Wrong pegs won't go into frozen ground. A flask means a hot drink at 3am.
+- The player's real kit (from their chosen class in the app) decides what's possible. No lighter means the stove won't light. Wrong pegs won't go into frozen ground. A flask means a hot drink at 3am.
+- Starting meters come from the app: warmth drains each night hour using the app's warmth rating vs the hourly temperature, starting suspicion comes from the class's stealth score, and energy drain comes from pack weight.
 - First scenario: a November night by the Shropshire Union / Llangollen canals near Hurleston and Nantwich, Cheshire. Around −1°C, 85% humidity, dark by 16:30, sunrise about 08:00.
 
 TONE
@@ -60,7 +61,7 @@ TASKS (one batch at a time, wait for "next")
    - "endings": 5 short ending texts (made it to dawn, bailed, movedon, calledit, exhausted), 2–4 sentences each
    - "innerVoice": 12 one-line "voice in your head" remarks for when you pack (e.g. noticing spiral pegs when the ground's frozen, a yellow dry bag on a stealth trip, no lighter, leaving the hat behind)
    - "ambient": 6 short flavour lines per phase, shown between events (walk, pitch, night, dawn)
-   - "lessons": 12 debrief lesson templates linking back to real kit, e.g. "Your warmth bottomed out at {hour}. The {warmestLayer} was in your pack the whole time."
+   - "lessons": 12 debrief lesson templates linking back to real kit and the app, e.g. "Your warmth bottomed out at {hour}. The {warmestLayer} was in your pack the whole time." Each lesson can carry an "action": "pack" (add an owned item to the class), "wishlist" (add a suggested item), or "none", plus "itemTag" where relevant.
 
 OUTPUT
 For each batch, reply with ONE json code block only: an array of storylets for batches 1–4, and one object for batch 5. Plain numbers only, valid JSON (no comments, no trailing commas). Start with batch 1.
