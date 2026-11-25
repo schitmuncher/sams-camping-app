@@ -112,6 +112,8 @@ details.sub>summary{font-size:13px;color:var(--accent);font-weight:600}
 .ess{border-bottom:1px solid var(--line)}
 .ess .body{padding:0 2px 10px 26px;font-size:13px}
 .ess .body p{margin:4px 0}
+#installSteps ol{padding-left:20px;margin:8px 0}#installSteps li{margin:6px 0}
+.kbd{display:inline-block;padding:0 6px;border:1px solid var(--line);border-radius:6px;background:var(--panel2)}
 @media (max-width:480px){.sumbar .sb-sub{display:none}.sumbar .big{font-size:18px}}
 .chart text{font-size:10px;fill:var(--muted)}
 @media print{
@@ -125,7 +127,7 @@ details.sub>summary{font-size:13px;color:var(--accent);font-weight:600}
 </head>
 <body>
 <header>
-  <div class="row"><h1 class="grow">🏕️ Camp Kit Planner</h1><select id="hdrSel" title="Active class" style="max-width:55vw"></select></div>
+  <div class="row"><h1 class="grow">🏕️ Camp Kit Planner</h1><button id="hdrInstall" class="tog pri" hidden>📲 Install</button><select id="hdrSel" title="Active class" style="max-width:48vw"></select></div>
   <nav id="tabs">
     <button data-v="kit" class="on"><span class="ic">🎒</span>Kit</button>
     <button data-v="classes"><span class="ic">🧩</span>Classes</button>
@@ -354,8 +356,8 @@ details.sub>summary{font-size:13px;color:var(--accent);font-weight:600}
 <section class="view" id="v-data">
   <details class="card sec" data-sec="install">
     <summary><span class="st">📲 Install on your phone</span><span class="sm">works offline</span></summary>
-    <div class="row" style="margin-top:8px"><button class="pri" id="installBtn" hidden>Install app</button></div>
-    <p class="small muted" id="installHelp">Open the GitHub Pages link in your phone browser. On Android Chrome, tap ⋮ → <b>Add to Home screen</b> (or the Install button here when it appears). On iPhone Safari, tap Share → <b>Add to Home Screen</b>. After that it works offline; the forecast needs signal.</p>
+    <div class="row" style="margin-top:8px"><button class="pri" id="installBtn">📲 Install app</button></div>
+    <p class="small muted" id="installHelp">Installs to your home screen like a normal app: full screen, works offline (the forecast needs signal), and your kit stays on the phone.</p>
   </details>
   <details class="card sec" data-sec="export" open>
     <summary><span class="st">⬇️ Back up &amp; export</span></summary>
@@ -390,6 +392,12 @@ details.sub>summary{font-size:13px;color:var(--accent);font-weight:600}
 
 <div class="sumbar"><div class="in" id="sumbar"></div></div>
 <div class="toast" id="toast"><span id="toastMsg"></span><button id="toastBtn" hidden>Undo</button></div>
+
+<dialog id="installDlg">
+  <h2>📲 Install Camp Kit Planner</h2>
+  <div id="installSteps"></div>
+  <div class="row" style="margin-top:12px;justify-content:flex-end"><button id="installClose" class="pri">Got it</button></div>
+</dialog>
 
 <dialog id="askDlg">
   <form method="dialog">
@@ -2125,10 +2133,41 @@ $("#mealCsv").onclick=()=>{const c=cls();download(`meals-${slug(c.name)}.csv`,to
 $("#wxKcal").addEventListener("input",e=>{cls().wx.kcal=+e.target.value||0;save();renderFood();});
 
 /* ---- install as app (PWA) ---- */
+const APP_URL="https://schitmuncher.github.io/sams-camping-app/";
 let deferredPrompt=null;
-window.addEventListener("beforeinstallprompt",e=>{e.preventDefault();deferredPrompt=e;$("#installBtn").hidden=false;});
-$("#installBtn").onclick=async()=>{if(!deferredPrompt)return;deferredPrompt.prompt();await deferredPrompt.userChoice;deferredPrompt=null;$("#installBtn").hidden=true;};
-if(window.matchMedia("(display-mode: standalone)").matches) $("#installHelp").textContent="✅ Running as an installed app. It works offline; the forecast needs signal.";
+const isStandalone=()=>window.matchMedia("(display-mode: standalone)").matches||window.navigator.standalone===true;
+function installSteps(){
+  const ua=navigator.userAgent, ios=/iphone|ipad|ipod/i.test(ua)||(/macintosh/i.test(ua)&&navigator.maxTouchPoints>1);
+  const android=/android/i.test(ua), samsung=/samsungbrowser/i.test(ua), firefox=/firefox|fxios/i.test(ua), edge=/edg\//i.test(ua);
+  const iosOther=ios&&/crios|fxios|edgios/i.test(ua), mac=/macintosh/i.test(ua)&&!ios, safari=/safari/i.test(ua)&&!/chrome|crios|chromium|edg/i.test(ua);
+  if(!location.protocol.startsWith("http")) return `<p>Apps can only be installed from a web address, not a file you opened.</p><p>Open <a href="${APP_URL}" target="_blank" rel="noopener">${APP_URL}</a> on your phone and tap <b>📲 Install</b> there.</p>`;
+  if(ios) return `<p>On iPhone and iPad:</p><ol>${iosOther?"<li>Your browser can add to the Home Screen too, but Safari is most reliable. Either way:</li>":""}
+    <li>Tap the <b>Share</b> button <span class="kbd">⬆︎</span> (bottom of the screen in Safari, or top-right).</li>
+    <li>Scroll down and tap <b>Add to Home Screen</b>.</li><li>Tap <b>Add</b>. The 🏕️ icon appears on your Home Screen.</li></ol>`;
+  if(samsung) return `<ol><li>Tap the menu <span class="kbd">≡</span> at the bottom.</li><li>Tap <b>Add page to</b> → <b>Home screen</b> (or <b>Install</b> if shown).</li></ol>`;
+  if(android&&firefox) return `<ol><li>Tap the menu <span class="kbd">⋮</span>.</li><li>Tap <b>Install</b> (or <b>Add to Home screen</b>).</li></ol>`;
+  if(android) return `<ol><li>Tap the menu <span class="kbd">⋮</span> at the top-right.</li><li>Tap <b>Install app</b> or <b>Add to Home screen</b>.</li><li>Confirm with <b>Install</b>.</li></ol><p class="small muted">If you don't see it, reload the page once and try again — Chrome sometimes needs a second visit.</p>`;
+  if(mac&&safari) return `<ol><li>In Safari's menu bar choose <b>File → Add to Dock…</b></li><li>Click <b>Add</b>.</li></ol>`;
+  if(firefox) return `<p>Desktop Firefox can't install web apps. Open this page in Chrome or Edge, or on your phone.</p>`;
+  return `<ol><li>Look for the install icon <span class="kbd">⊕</span> at the right of the address bar and click it, or</li><li>open the menu <span class="kbd">⋮</span> → <b>${edge?"Apps → Install this site as an app":"Cast, save and share → Install page as app"}</b>.</li></ol>`;
+}
+async function doInstall(){
+  if(isStandalone()) return toast("Already installed — you're using the app");
+  if(deferredPrompt){deferredPrompt.prompt();const r=await deferredPrompt.userChoice;deferredPrompt=null;if(r&&r.outcome==="accepted") toast("Installing…");return;}
+  $("#installSteps").innerHTML=installSteps(); $("#installDlg").showModal();
+}
+function refreshInstallUI(){
+  const inst=isStandalone();
+  $("#hdrInstall").hidden=inst;
+  $("#installBtn").hidden=inst;
+  if(inst) $("#installHelp").textContent="✅ Installed — you're using the app. It works offline; the forecast needs signal.";
+}
+window.addEventListener("beforeinstallprompt",e=>{e.preventDefault();deferredPrompt=e;refreshInstallUI();});
+window.addEventListener("appinstalled",()=>{deferredPrompt=null;toast("Installed — find 🏕️ Camp Kit on your home screen");refreshInstallUI();});
+$("#hdrInstall").onclick=doInstall; $("#installBtn").onclick=doInstall; $("#installClose").onclick=()=>$("#installDlg").close();
+refreshInstallUI();
+/* open a tab from the URL (?tab=pack) — used by home-screen shortcuts */
+try{const t=new URLSearchParams(location.search).get("tab"); if(t&&document.getElementById("v-"+t)) setTimeout(()=>showView(t),0);}catch(e){}
 if("serviceWorker" in navigator && location.protocol.startsWith("http")) navigator.serviceWorker.register("sw.js").catch(()=>{});
 
 document.querySelectorAll("details[data-sec]").forEach(d=>{const v=S.ui&&S.ui[d.dataset.sec];if(v!=null)d.open=v;});

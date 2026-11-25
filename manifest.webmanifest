@@ -1,15 +1,22 @@
 {
+  "id": "./",
   "name": "Sam's Camp Kit Planner",
   "short_name": "Camp Kit",
-  "description": "Camping kit list, loadout builder, packing checklist and weather/warmth planner.",
+  "description": "Camping kit list, loadout builder, packing checklist and weather, warmth and stealth planner.",
   "start_url": "./",
   "scope": "./",
   "display": "standalone",
   "background_color": "#141c17",
   "theme_color": "#1d2b22",
+  "categories": ["travel", "sports", "utilities"],
   "icons": [
     {"src": "icon-192.png", "sizes": "192x192", "type": "image/png"},
     {"src": "icon-512.png", "sizes": "512x512", "type": "image/png"},
     {"src": "icon-512.png", "sizes": "512x512", "type": "image/png", "purpose": "maskable"}
+  ],
+  "shortcuts": [
+    {"name": "Packing checklist", "short_name": "Pack", "url": "./?tab=pack", "icons": [{"src": "icon-192.png", "sizes": "192x192"}]},
+    {"name": "Plan a trip", "short_name": "Plan", "url": "./?tab=weather", "icons": [{"src": "icon-192.png", "sizes": "192x192"}]},
+    {"name": "My kit", "short_name": "Kit", "url": "./?tab=kit", "icons": [{"src": "icon-192.png", "sizes": "192x192"}]}
   ]
 }

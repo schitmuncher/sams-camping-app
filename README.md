@@ -30,7 +30,7 @@ Sections and categories fold away and remember whether you left them open. Each 
 
 ## Install as an app
 
-When it's opened from GitHub Pages, the planner can be installed to your home screen (Android Chrome: ⋮ → Add to Home screen; iPhone Safari: Share → Add to Home Screen). It then works offline; only the forecast needs signal.
+Open **https://schitmuncher.github.io/sams-camping-app/** and tap **📲 Install** (top-right). On Android, Chrome and Edge this opens the browser's own install prompt. On iPhone, Samsung Internet and others it shows the exact taps for that browser. Once installed it runs full-screen, works offline (only the forecast needs signal), and the home-screen icon has shortcuts straight to the checklist, trip planning and your kit (long-press the icon).
 
 ## Hosting on GitHub Pages
 
