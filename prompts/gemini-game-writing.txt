@@ -1,0 +1,66 @@
+I'm making a small button-based text survival game called "Pitch Dark" (working title). You play one night wild camping in the UK with your real camping kit. I'd like your help as a writer. Please read all of this first, then work through the TASKS in order, one batch at a time, and wait for me to say "next" between batches.
+
+THE GAME IN BRIEF
+- Each scene is 2–4 short lines of text and 2–4 tap buttons. It's played on a phone, one-handed.
+- Five meters (0–100): warmth, energy, dry, morale, suspicion (suspicion is danger: 100 means you get asked to leave).
+- Phases: walk (walking in, 30-min turns), pitch (choosing a spot and putting up the shelter before sunset), camp (evening), night (1-hour turns, roughly 17:00–07:00 in winter), dawn (packing up).
+- Nobody dies. Bad nights end with: "bailed" (too cold, walk home), "movedon" (spotted and asked to leave), "calledit" (morale gone), "exhausted" (energy gone on the walk).
+- The player's real kit decides what's possible. No lighter means the stove won't light. Wrong pegs won't go into frozen ground. A flask means a hot drink at 3am.
+- First scenario: a November night by the Shropshire Union / Llangollen canals near Hurleston and Nantwich, Cheshire. Around −1°C, 85% humidity, dark by 16:30, sunrise about 08:00.
+
+TONE
+Mostly straight, quietly tense and atmospheric, with occasional dry British humour in small doses ("The cows are judging you."). Second person, present tense ("You wake shivering."). Plain words, no purple prose. Be accurate about real wild camping (condensation, cold ground, frost, pegs, Leave No Trace, being considerate to landowners). Don't encourage trespass or ignoring "no camping" requests. Stealth means not disturbing anyone. Only use real local places you're confident exist. If unsure, keep it generic ("the lock", "the farm lane").
+
+TEXT PLACEHOLDERS YOU CAN USE (the game fills them with the player's real kit)
+{bag} sleeping bag · {shelter} shelter · {pack} rucksack · {mat} sleeping mat · {warmestLayer} warmest layer not yet worn · {torch} head torch · {hour} e.g. 03:00 · {temp} e.g. −2°C · {place} current place · {pitch} chosen pitch type
+
+STORYLET FORMAT (output JSON exactly like this)
+{
+  "id": "night_cold_wake",            // unique, snake_case, starts with the phase
+  "phase": "night",                   // walk | pitch | camp | night | dawn
+  "when": { "warmthBelow": 45, "hourBetween": [1, 5] },
+  "weight": 3,                        // 1 rare … 5 common
+  "once": true,                       // can it happen more than once a night?
+  "text": "You wake shivering. It's {hour}. The {bag} is damp at the hood and your feet are numb.",
+  "choices": [
+    { "label": "Pull on the {warmestLayer}", "requires": { "hasItem": ["layer"] },
+      "effects": { "warmth": 10, "morale": 5 }, "result": "Better. Slowly." },
+    { "label": "Curl up and wait for dawn",
+      "effects": { "warmth": -6, "morale": -8, "time": 60 }, "result": "The minutes crawl." }
+  ]
+}
+
+ALLOWED "when" CONDITIONS (use any combination, or leave "when" empty)
+hourBetween [from,to] (24h; [22,4] wraps past midnight) · warmthBelow / warmthAbove · energyBelow · dryBelow · moraleBelow · suspicionAbove
+rainAtLeast 0–2 (0 dry, 1 showers, 2 heavy) · windAtLeast 0–2 (2 = gusts 25+ mph) · bugsAtLeast 0–2 · lowBelow (°C) · ground: "frozen"|"soft"|"hard"|"normal"
+months [11,12,1] · shelter: "tent"|"bivvy"|"tarp"|"hammock" · pitch: "woodland"|"hedge"|"canal"|"hilltop"
+hasItem [tags] · missingItem [tags] · flag "name" · notFlag "name" · stealthMatters true
+
+ITEM TAGS (for hasItem / missingItem / requires / effects.use)
+headtorch, redlight, lantern, ypeg, spiralpeg, poncho, tarp, flask, stove, gas, lighter, foam, foil, repairkit, trowel, powerbank, socks, hivis, monocular, filter, firstaid, map, hat, layer, parka, towel, snack, groundsheet
+
+ALLOWED "effects" (numbers between −30 and +30; keep most changes 3–12)
+warmth, energy, dry, morale, suspicion, time (minutes passed), use (item tag, consumes one use, e.g. a flask drink or a snack), setFlag "name", clearFlag "name", sleep true (you sleep through this hour), ending "bailed"|"movedon"|"calledit"|"exhausted" (use sparingly)
+
+RULES FOR GOOD STORYLETS
+- text: 1–3 sentences, under 220 characters. label: under 40 characters. result: 1–2 sentences, under 160 characters.
+- Every storylet needs at least one choice with no "requires", so the player is never stuck.
+- Kit should matter: give a better option when the right kit is present (requires hasItem), and sometimes a worse one when it's missing.
+- Choices should be real trade-offs (e.g. warmer but noisier, faster but riskier, drier but costs energy).
+- Mix bad, neutral and good moments. Owls, stars and sunrise are rewards.
+
+TASKS (one batch at a time, wait for "next")
+1. WALK IN: 10 storylets (mud, stiles with a heavy pack, a sudden shower, a friendly dog walker, cows, a closed swing bridge, a pub at dusk as a temptation, failing light, refilling water, a blister).
+2. FINDING A PITCH & PITCHING: 10 storylets (choosing woodland/hedge/canal bank/hilltop with trade-offs, scouting with a monocular, wrong pegs on frozen ground, rigging a poncho or tarp awning, last light, dropping a peg in the dark, a puddle where your head goes, "is this private land?").
+3. NIGHT: 16 storylets (cold wake-ups, condensation dripping, a fox, an owl, a torch sweeping the field, headlights on the lane, a gust pulling a peg, rain setting in, the mat going flat, needing a wee at 3am, stars, the phone dying in the cold, frost on the bivvy, the long dark hours, hunger, a hot flask drink).
+4. DAWN: 5 storylets (frost everywhere, an early dog walker, packing up wet kit, the Leave No Trace check, sunrise).
+5. EXTRAS (plain JSON object):
+   - "titles": 5 title ideas, each with a one-line tagline
+   - "intro": the opening scene text for the Hurleston November scenario (A Dark Room style: very short, one button)
+   - "endings": 5 short ending texts (made it to dawn, bailed, movedon, calledit, exhausted), 2–4 sentences each
+   - "innerVoice": 12 one-line "voice in your head" remarks for when you pack (e.g. noticing spiral pegs when the ground's frozen, a yellow dry bag on a stealth trip, no lighter, leaving the hat behind)
+   - "ambient": 6 short flavour lines per phase, shown between events (walk, pitch, night, dawn)
+   - "lessons": 12 debrief lesson templates linking back to real kit, e.g. "Your warmth bottomed out at {hour}. The {warmestLayer} was in your pack the whole time."
+
+OUTPUT
+For each batch, reply with ONE json code block only: an array of storylets for batches 1–4, and one object for batch 5. Plain numbers only, valid JSON (no comments, no trailing commas). Start with batch 1.
