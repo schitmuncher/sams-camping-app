@@ -277,6 +277,15 @@ details.sub>summary{font-size:13px;color:var(--accent);font-weight:600}
     </details>
   </details>
 
+  <details class="card sec" data-sec="stealth">
+    <summary><span class="st">🥷 Stealth</span><span class="sm" id="sumStealth"></span></summary>
+    <label style="margin-top:8px">How hidden do you need to be?<select id="wxStealth">
+      <option value="0">Not important (campsite / permission)</option>
+      <option value="1">Some (keep a low profile)</option>
+      <option value="2">High (stay unseen)</option></select></label>
+    <div id="stealthOut"></div>
+  </details>
+
   <div id="kitCheckPlan"></div>
 
   <details class="card sec" data-sec="prot">
@@ -475,6 +484,9 @@ details.sub>summary{font-size:13px;color:var(--accent);font-weight:600}
       <label>R-value (mats)<input type="number" name="r" min="0" step="0.1"></label>
       <label>Bag comfort temp (°C)<input type="number" name="comfort" step="1"></label>
       <label>Bag limit temp (°C)<input type="number" name="limit" step="1"></label>
+      <label>Colour (stealth)<select name="vis"><option value="">Unknown / guess from name</option><option value="0">Camo</option><option value="1">Muted (green, olive, brown, black, grey)</option><option value="2">Noticeable (blue, silver, white)</option><option value="3">Bright (orange, red, yellow)</option></select></label>
+      <label>Profile (shelters)<select name="profile"><option value="">Auto from type</option><option value="0">Flat (bivvy)</option><option value="1">Low (tarp/awning)</option><option value="2">Tent height</option><option value="3">Raised (hammock)</option></select></label>
+      <label class="inl" style="align-self:end"><input type="checkbox" name="redlight"> Has red light mode</label>
       <label style="grid-column:1/-1">Seasons (comma separated)<input name="seasons" placeholder="Spring, Summer, Autumn, Winter"></label>
       <label style="grid-column:1/-1">Weather &amp; terrain notes<textarea name="notes" rows="3"></textarea></label>
     </div>
@@ -552,6 +564,14 @@ const DEFAULT_INV = [
   notes:"Fleece, touchscreen tips — winter pitching and sleeping.",research:"Checked: 200 g/m² fleece, ~60 g per pair, Decathlon recommends around 5°C."},
  {id:"gaiter",name:"Warm Thermal Neck Gaiter",cat:"Clothing",qty:2,g:50,kind:"layer",warmth:1,seasons:["Autumn","Winter"],
   notes:"Fleece-lined windproof neck/face warmth for ridges and winter nights. (Warmth counted once, however many you take.)",research:"Weight est."},
+ {id:"nfchat",name:"Wool-Lined Nantwich Town FC Hat",cat:"Clothing",qty:1,g:90,kind:"layer",warmth:1,vis:2,seasons:["Autumn","Winter"],
+  notes:"Adds light head warmth in chilly UK conditions; great for camp or around town rather than deep stealth due to club colours.",research:"est."},
+ {id:"parka",name:"Quiksilver Wool/Fleece-Lined Parka (Large)",cat:"Clothing",qty:1,g:1150,kind:"layer",rain:1,wind:2,warmth:3,seasons:["Autumn","Winter"],
+  notes:"Heavy warm outer layer suited to cold UK autumn/winter evenings and light showers, though bulky to pack in a rucksack.",research:"est."},
+ {id:"mwfleece",name:"Mountain Warehouse Zipped Fleece Jumper",cat:"Clothing",qty:1,g:380,kind:"layer",warmth:2,seasons:["Spring","Autumn","Winter"],
+  notes:"Versatile mid-layer for cool UK walks and chilly nights; breathes well and layers easily under a shell or parka.",research:"est."},
+ {id:"thermtrousers",name:"Thermalite Insulated Trousers",cat:"Clothing",qty:1,g:500,kind:"layer",warmth:2,seasons:["Autumn","Winter"],
+  notes:"Warm lower-body insulation for cold, damp UK camp evenings and static breaks; keep dry if walking through wet undergrowth.",research:"est."},
  {id:"buckethat",name:"Bucket Hat with Clip-on Mesh Shield",cat:"Clothing",qty:1,g:100,kind:"other",bug:2,seasons:["Spring","Summer"],
   notes:"Sun protection, camo, and full face/neck midge defence.",research:"Weight est."},
 
@@ -624,16 +644,18 @@ const TEMPLATES = [
    ============================================================ */
 const KEY="sams-camp-planner-v1";
 const clone=o=>JSON.parse(JSON.stringify(o));
-const WX_DEFAULT={low:5,high:12,rain:0,wind:0,windAvg:5,humid:80,bugs:0,ground:"normal",nights:1,water:2,food:0.7,meals:2,drinks:3,hwb:true,gasLeft:230,kcal:2800};
+const WX_DEFAULT={low:5,high:12,rain:0,wind:0,windAvg:5,humid:80,bugs:0,ground:"normal",nights:1,water:2,food:0.7,meals:2,drinks:3,hwb:true,gasLeft:230,kcal:2800,stealth:0};
 let S;
-function freshState(){return {ver:2,inv:clone(DEFAULT_INV),classes:clone(DEFAULT_CLASSES),active:"cls_winter",trips:[],calibOn:true,loc:null,welcomed:true};}
-function emptyState(){const c=newClassObj("My first class");return {ver:2,inv:[],classes:[c],active:c.id,trips:[],calibOn:true,loc:null,welcomed:true};}
+function freshState(){return {seed:2,ver:2,inv:clone(DEFAULT_INV),classes:clone(DEFAULT_CLASSES),active:"cls_winter",trips:[],calibOn:true,loc:null,welcomed:true};}
+function emptyState(){const c=newClassObj("My first class");return {seed:2,ver:2,inv:[],classes:[c],active:c.id,trips:[],calibOn:true,loc:null,welcomed:true};}
 function load(){
   let stored=false;
   try{const raw=localStorage.getItem(KEY); if(raw){S=JSON.parse(raw);stored=true;}}catch(e){S=null;}
   if(!S||!S.inv||!S.classes){S=freshState();S.welcomed=false;stored=false;}
   if(stored&&S.welcomed===undefined) S.welcomed=true;
   S.trips=S.trips||[]; if(S.calibOn===undefined) S.calibOn=true; S.ver=2;
+  // one-time: add items Sam added to the example kit later, if this is his kit and they're missing
+  if((S.seed||1)<2){ if(S.inv.some(i=>i.id==="tent_eiger")) ["nfchat","parka","mwfleece","thermtrousers"].forEach(id=>{const d=DEFAULT_INV.find(x=>x.id===id); if(d&&!S.inv.some(i=>i.id===id||i.name===d.name)) S.inv.push(clone(d));}); S.seed=2; }
 }
 function save(){try{localStorage.setItem(KEY,JSON.stringify(S));}catch(e){}}
 load();
@@ -696,9 +718,9 @@ function weights(c){
 function needR(low){return low>=10?1:low>=5?2:low>=0?3:low>=-5?4:5;}
 function protection(c){
   const lines=classLines(c);
-  const mx=k=>lines.reduce((m,l)=>Math.max(m,+l.it[k]||0),0);
-  const has=s=>lines.some(l=>l.it.shelter===s);
-  let rain=mx("rain"),wind=mx("wind"),bug=mx("bug");
+  const mx=(k,f)=>lines.filter(l=>!f||f(l.it)).reduce((m,l)=>Math.max(m,+l.it[k]||0),0);
+  const has=s=>lines.some(l=>l.it.shelter===s), isSh=it=>it.kind==="shelter";
+  let rain=mx("rain",isSh),wind=mx("wind",isSh),bug=mx("bug");
   if(has("tarp")&&(has("bivvy")||has("hammock"))) rain=Math.max(rain,3);
   return {rain,wind,bug};
 }
@@ -817,6 +839,7 @@ function warnings(c){
     if(bad.length) w.push(["warn",`Cold nights on this trip: ${bad.map(x=>`night ${x.i+1} (${x.n.name}, ${x.n.low}°C)`).join(", ")}.`]);}
   if(c.route){const legs=routeLegs(c);legs.filter(l=>l.night&&l.latest&&l.latest<"08:00")
     .forEach(l=>w.push(["warn",`Day ${l.day}: ~${fmtH(l.time)} of walking — you'd need to leave by ${l.latest} to pitch before sunset.`]));}
+  if(+wx.stealth){const s=stealth(c);if(!s.ok) w.push(["warn",`Stealth ${s.score}/100 is below your target of ${s.need}. ${(s.rows.filter(r=>r.fix).sort((a,b)=>a.v-b.v)[0]||{}).fix||""}`]);}
   const wt=weights(c);
   if(wt.pack>15000) w.push(["warn",`Pack weight ${kg(wt.pack)} is over 15 kg — heavy for most people on multi-day walks.`]);
   return w;
@@ -834,9 +857,12 @@ function suggestClass(){
   const R=[]; const low=+wx.low,wind=+wx.wind,rain=+wx.rain,bugs=+wx.bugs,high=+wx.high;
   const add=(it,q=1)=>{if(!usable(it)) return false; c.items[it.id]=Math.min(Math.max(1,q),it.qty); return true;};
   const first=(key,f)=>findAll(key,f)[0];
-  const shelters=t=>S.inv.filter(it=>usable(it)&&it.kind==="shelter"&&it.shelter===t).sort((a,b)=>((+b.rain||0)+(+b.wind||0))-((+a.rain||0)+(+a.wind||0))||a.g-b.g);
+  const stv=it=>+wx.stealth>=1?(visOf(it)??1.5):0;
+  const shelters=t=>S.inv.filter(it=>usable(it)&&it.kind==="shelter"&&it.shelter===t).sort((a,b)=>stv(a)-stv(b)||((+b.rain||0)+(+b.wind||0))-((+a.rain||0)+(+a.wind||0))||a.g-b.g);
   const T=shelters("tent")[0],B=shelters("bivvy")[0],H=shelters("hammock")[0],TP=shelters("tarp")[0],PO=shelters("poncho")[0];
+  const st=+wx.stealth||0;
   let mode=(wind===2||low<4||rain===2)?"tent":(low>=10&&bugs>=1&&wind===0)?"hammock":"bivvy";
+  if(st>=2&&B&&low>=0&&bugs<2){ if(mode!=="bivvy") R.push("🥷 High stealth: bivvy chosen over a "+mode+" for the lowest profile (it's rated "+(B.rain||0)+"/3 rain, "+(B.wind||0)+"/3 wind)."); mode="bivvy"; }
   const avail={tent:!!T,hammock:!!H,bivvy:!!B};
   if(!avail[mode]) mode=["tent","bivvy","hammock"].find(m=>avail[m])||(TP?"tarp":"none");
   const why={tent:wind===2?"gusts of 25+ mph":rain===2?"heavy rain":low<4?"a cold night":"the conditions",hammock:"a mild, still, buggy night",bivvy:"a mild night — low profile"};
@@ -897,7 +923,8 @@ function suggestClass(){
   // lights, bugs, recon, hygiene
   const hl=first("headlamp"); if(hl) add(hl); const tc=first("torch",notHead); if(tc) add(tc);
   const pb=first("power"); if(pb) add(pb);
-  if(mode!=="bivvy"){const ln=first("lantern");if(ln)add(ln);}
+  if(mode!=="bivvy"&&!(+wx.stealth>=1)){const ln=first("lantern");if(ln)add(ln);}
+  if(+wx.stealth>=1){const s=stealth(c);R.push(`🥷 Stealth ${s.score}/100 (${s.label})${s.ok?"":" — below your target; see the Stealth section for fixes"}. No lantern.`);}
   if(bugs>=1){const hn=first("headnet");if(hn){add(hn,1);R.push("🦟 Head net — midges likely.");}}
   if(bugs>=1||high>=18){const ht=first("hat",it=>(+it.bug||0)>=1)||null;if(ht&&add(ht))c.worn[ht.id]=1;}
   if(mode==="bivvy"){const op=first("optic");if(op)add(op);}
@@ -1095,6 +1122,8 @@ function chipsFor(it,compact){
   if(it.condition==="worn") ch.push('<span class="chip rep" style="background:#5a4c18;color:#ffe9a3">worn</span>');
   if(it.measured) ch.push('<span class="chip ok">weighed ✓</span>');
   if(!compact&&it.seasons&&it.seasons.length) ch.push(`<span class="chip">${seasonLabel(it.seasons)}</span>`);
+  if(it.kind==="shelter"||it.cat==="Packs & Storage"||it.cat==="Clothing"){const v=visOf(it); if(v!=null&&(!compact||v!==1)) ch.push(`<span class="chip">🥷 ${VIS_LABEL[v]}</span>`);}
+  if(isLight(it)&&redOf(it)&&!compact) ch.push(`<span class="chip">red light</span>`);
   if(+it.rain) ch.push(`<span class="chip rain">rain ${it.rain}/3</span>`);
   if(+it.wind) ch.push(`<span class="chip wind">wind ${it.wind}/3</span>`);
   if(+it.bug) ch.push(`<span class="chip bug">bugs ${it.bug}/3</span>`);
@@ -1217,6 +1246,7 @@ function renderWeather(){
     "Fills in the conditions below for the night you pick (up to 16 days ahead). Free data from Open-Meteo.";
   renderRoute(c);
   renderKitCheck($("#kitCheckPlan"),c);
+  renderStealth(c);
   const t=thermal(c);
   $("#thermVerdict").innerHTML=`<div class="row"><span class="pill ${t.cls}">${t.verdict}</span>
     <span class="small muted">Sleep system ≈ <b style="color:var(--text)">${t.rating.toFixed(1)}°C</b> comfort${t.limitRating!=null?`, ${t.limitRating.toFixed(1)}°C limit`:""} vs ${t.low}°C ${wx.nightsData&&wx.nightsData.length>1?"coldest night":"forecast low"} (margin ${t.margin>=0?"+":""}${t.margin.toFixed(1)}°C)</span></div>`;
@@ -1294,6 +1324,7 @@ function renderSumbar(){
    <span class="muted">base ${kg(w.base)} · worn ${kg(w.worn)}</span>
    <span class="pill ${t.cls}">${t.rating.toFixed(0)}°C vs ${wx.low}°C</span>
    <span class="pill ${short?"p-bad":"p-ok"}">${short?"Weather gap":"Weather OK"}</span>
+   ${+wx.stealth?(()=>{const s=stealth(c);return `<span class="pill ${s.ok?"p-ok":"p-warn"}">🥷 ${s.score}</span>`;})():""}
    ${(()=>{const g=packCount()?essentialGaps(c):0;return g?`<span class="pill p-bad">${g} essential${g>1?"s":""} missing</span>`:"";})()}`;
 }
 let currentView="kit";
@@ -1352,6 +1383,7 @@ Object.entries(WXF).forEach(([id,k])=>{
     if(["low","high","windAvg","humid","rain","wind","bugs"].includes(k)&&c.wx.nightsData){c.wx.nightsData=null;c.wx.src="";}
     save(); renderWeather(); renderSumbar();});
 });
+$("#wxStealth").onchange=e=>{cls().wx.stealth=+e.target.value;save();render();};
 $("#fpHwb").onchange=e=>{cls().wx.hwb=e.target.checked;save();renderWeather();};
 $("#fcGo").onclick=getForecast;
 $("#gpxFile").onchange=async e=>{const f=e.target.files[0];if(!f)return;
@@ -1394,6 +1426,7 @@ function fillForm(it){
   f.replaces.innerHTML=`<option value="">—</option>`+S.inv.filter(x=>x.status!=="wishlist"&&(!editing||x.id!==editing.id)).map(x=>`<option value="${x.id}">${esc(x.name)}</option>`).join("");
   f.replaces.value=it.replaces||"";
   f.shelter.value=it.shelter||"";f.rain.value=it.rain??"";f.wind.value=it.wind??"";f.bug.value=it.bug??"";f.warmth.value=it.warmth??"";
+  f.vis.value=it.vis??"";f.profile.value=it.profile??"";f.redlight.checked=!!it.redlight;
   f.r.value=it.r??"";f.comfort.value=it.comfort??"";f.limit.value=it.limit??"";f.seasons.value=(it.seasons||[]).join(", ");f.notes.value=it.notes||"";
 }
 function openItem(id){
@@ -1414,7 +1447,7 @@ dlg.addEventListener("close",async()=>{
   const data={name:f.name.value.trim(),cat:f.cat.value,qty:Math.max(0,Math.round(+f.qty.value||0)),g:Math.max(0,+f.g.value||0),status:f.status.value,kind:f.kind.value,
     condition:f.condition.value,measured:f.measured.checked,price:num(f.price.value),replaces:f.replaces.value||undefined,
     shelter:f.shelter.value||undefined,rain:num(f.rain.value),wind:num(f.wind.value),bug:num(f.bug.value),warmth:num(f.warmth.value),r:num(f.r.value),
-    comfort:num(f.comfort.value),limit:num(f.limit.value),seasons:f.seasons.value.split(",").map(s=>s.trim()).filter(Boolean),notes:f.notes.value.trim()};
+    comfort:num(f.comfort.value),limit:num(f.limit.value),vis:num(f.vis.value),profile:num(f.profile.value),redlight:f.redlight.checked||undefined,seasons:f.seasons.value.split(",").map(s=>s.trim()).filter(Boolean),notes:f.notes.value.trim()};
   if(!data.name) return;
   if(data.kind==="bag"&&data.comfort===undefined) data.comfort=10;
   if(editing){Object.assign(editing,data);
@@ -1520,6 +1553,8 @@ includeKit&&kit.length?"- Do NOT add anything that is already in MY EXISTING KIT
 "- status: \"active\" (default), \"retired\" (spare/broken) or \"wishlist\" (don't own yet)",
 "- condition: \"good\" (default), \"worn\" or \"repair\"",
 "- measured: true only if I tell you I weighed it myself",
+"- vis: colour for stealth camping — 0 camo, 1 muted (green/olive/brown/black/grey), 2 noticeable (blue/silver/white), 3 bright (orange/red/yellow). Include for shelters, rucksacks and outer clothing; ask me the colour if you don't know it.",
+"- redlight: true for head torches/torches with a red light mode",
 "Leave out any field that doesn't apply. Use plain numbers (no units) for qty, g, r, comfort, limit, warmth, rain, wind, bug."
   ];
   if(includeKit&&kit.length){
@@ -1545,6 +1580,7 @@ function cleanItem(o){
     kind:KINDS.includes(o.kind)?o.kind:"other",shelter:SHELTERS.includes(o.shelter)?o.shelter:undefined,
     rain:cl(n(o.rain),0,3),wind:cl(n(o.wind),0,3),bug:cl(n(o.bug),0,3),warmth:cl(n(o.warmth),-5,10),r:cl(n(o.r),0,15),comfort:cl(n(o.comfort),-40,30),limit:cl(n(o.limit),-50,30),
     seasons:Array.isArray(o.seasons)?o.seasons.filter(s=>ALL4.includes(s)):[],notes:String(o.notes||"").slice(0,400),research:String(o.research||"").slice(0,400),
+    vis:cl(n(o.vis),0,3),profile:cl(n(o.profile),0,3),redlight:o.redlight===true?true:undefined,
     status:["active","retired","wishlist"].includes(o.status)?o.status:"active",condition:["good","worn","repair"].includes(o.condition)?o.condition:"good",measured:o.measured===true};
   if(it.kind==="shelter"&&!it.shelter) it.kind="other";
   if(it.kind==="bag"&&it.comfort===undefined) it.comfort=10;
@@ -1635,7 +1671,7 @@ const ESSENTIALS=[
  {label:"Water bottle",lvl:"bad",test:it=>RX.bottle.test(it.name),tpl:{name:"1 L water bottle",cat:"Kitchen & Hydration",g:30}},
  {label:"Lighter or matches",lvl:"bad",when:c=>stoveNeedsLighter(c),test:it=>/lighter|match(es)?\b|fire ?steel|ferro/i.test(it.name),tpl:{name:"Lighter + storm matches",cat:"Kitchen & Hydration",g:30},why:"Your stove has no built-in igniter."},
  {label:"Waterproof jacket or poncho",lvl:c=>+c.wx.rain>=1?"bad":"warn",test:it=>/waterproof (jacket|coat|shell)|rain ?(jacket|coat|shell)|poncho|hard ?shell|(jacket|coat|shell).{0,20}gore|gore.{0,20}(jacket|coat)/i.test(it.name),tpl:{name:"Waterproof jacket",cat:"Clothing",g:400},why:"UK weather turns fast — worth having even on a dry forecast."},
- {label:"Warm hat",lvl:"warn",when:c=>+c.wx.low<8,test:it=>/beanie|warm hat|wool hat|bobble hat|balaclava|fleece hat/i.test(it.name),tpl:{name:"Beanie",cat:"Clothing",g:60,kind:"layer",warmth:1},why:"Cheap, light warmth for cold nights."},
+ {label:"Warm hat",lvl:"warn",when:c=>+c.wx.low<8,test:it=>/beanie|balaclava|bobble/i.test(it.name)||(/\bhat\b/i.test(it.name)&&it.kind==="layer"),tpl:{name:"Beanie",cat:"Clothing",g:60,kind:"layer",warmth:1},why:"Cheap, light warmth for cold nights."},
  {label:"Map & compass",lvl:"warn",test:it=>/\bmap\b|compass|\bgps\b|garmin|os explorer|harvey/i.test(it.name),tpl:{name:"OS map + compass",cat:"Bugs & Recon",g:120},why:"Phones die in the cold and lose signal — carry a backup."},
  {label:"Water filter or tablets",lvl:"warn",test:it=>/filter|purif|sawyer|lifestraw|katadyn|befree|steripen|chlorine|water tablet/i.test(it.name),tpl:{name:"Squeeze water filter",cat:"Kitchen & Hydration",g:85},why:"Canal, river and stream water must be treated before drinking."},
  {label:"Dry spare socks",lvl:"info",when:c=>+c.wx.rain>=1||+c.wx.nights>=2,test:it=>/sock/i.test(it.name),tpl:{name:"Spare socks",cat:"Clothing",g:80}},
@@ -1692,13 +1728,15 @@ function upgrades(c){
     if(!best||(best.comfort??15)>low+2) out.push({why:`Even with every warm layer you own, you'd be ~${Math.abs(tb.margin).toFixed(0)}°C short. ${best?`Your warmest bag is rated ${best.comfort}°C comfort`:"You have no sleeping bag"} — for ${low}°C nights look for comfort ${Math.round(low)}°C or lower.`,
       tpl:{name:`Sleeping bag, comfort ${Math.round(low)}°C or lower`,cat:"Sleep & Thermal",g:low<0?1400:1100,kind:"bag",comfort:Math.round(low),limit:Math.round(low)-6}});
     if(tb.R<tb.need) out.push({why:`Your mats only reach R${tb.R.toFixed(1)}; ${low}°C ground needs about R${tb.need}. An insulated mat fixes the cold-from-below problem.`,tpl:{name:`Insulated sleeping mat (R${Math.max(3,tb.need)}+)`,cat:"Sleep & Thermal",g:500,kind:"pad",r:Math.max(3,tb.need)}});
-    if(!owned.some(i=>/puffy|down jacket|insulated jacket|synthetic jacket|primaloft|microlight/i.test(i.name))) out.push({why:"A puffy jacket is the most versatile warmth you can carry — camp evenings and inside the bag.",tpl:{name:"Insulated (puffy) jacket",cat:"Clothing",g:450,kind:"layer",warmth:3}});
+    if(!owned.some(i=>i.kind==="layer"&&(+i.warmth||0)>=3)) out.push({why:"A puffy jacket is the most versatile warmth you can carry — camp evenings and inside the bag.",tpl:{name:"Insulated (puffy) jacket",cat:"Clothing",g:450,kind:"layer",warmth:3}});
   }
   const sh=owned.filter(i=>i.kind==="shelter"), mx=k=>sh.reduce((m,i)=>Math.max(m,+i[k]||0),0);
   let rainBest=mx("rain"); if(sh.some(i=>i.shelter==="tarp")&&sh.some(i=>["bivvy","hammock"].includes(i.shelter))) rainBest=Math.max(rainBest,3);
   if(sh.length&&rainBest<NEED.rain(+wx.rain)) out.push({why:"None of your shelters is rated for this much rain.",tpl:{name:"Tent with 3000 mm+ flysheet",cat:"Shelter & Rigging",g:1800,kind:"shelter",shelter:"tent",rain:3,wind:2,bug:3,warmth:3}});
   if(sh.length&&mx("wind")<NEED.wind(+wx.wind)) out.push({why:"None of your shelters is rated for gale-force gusts.",tpl:{name:"Low tunnel / geodesic tent (wind-rated)",cat:"Shelter & Rigging",g:2000,kind:"shelter",shelter:"tent",rain:3,wind:3,bug:3,warmth:3}});
   if(+wx.bugs>=1&&!owned.some(i=>(+i.bug||0)>=2)) out.push({why:"Midges expected and you own no bug protection.",tpl:{name:"Midge head net",cat:"Bugs & Recon",g:30,bug:2}});
+  if(+wx.stealth>=2&&sh.length&&!sh.some(i=>visOf(i)!=null&&visOf(i)<=1)) out.push({why:"High stealth wanted, but none of your shelters is a muted or camo colour.",tpl:{name:"Olive / green tarp or bivvy (muted colour)",cat:"Shelter & Rigging",g:500,kind:"shelter",shelter:"tarp",rain:2,wind:1,warmth:1,vis:1}});
+  if(+wx.stealth>=1&&owned.some(isLight)&&!owned.some(i=>isLight(i)&&redOf(i))) out.push({why:"A red light mode is much less visible at night and keeps your night vision.",tpl:{name:"Head torch with red light mode",cat:"Lighting & Power",g:80,redlight:true}});
   const pitched=classLines(c).some(l=>["tent","tarp","poncho"].includes(l.it.shelter));
   if(pitched&&(wx.ground==="frozen"||wx.ground==="hard")&&!owned.some(i=>RX.ypeg.test(i.name))) out.push({why:"Hard or frozen ground needs rigid metal pegs.",tpl:{name:"Aluminium Y-pegs",cat:"Shelter & Rigging",g:15,qty:8}});
   if(pitched&&wx.ground==="soft"&&!owned.some(i=>RX.spiral.test(i.name))) out.push({why:"Soft peat and mud need long spiral/peat pegs to hold.",tpl:{name:"Spiral / peat pegs",cat:"Shelter & Rigging",g:15,qty:8}});
@@ -1764,6 +1802,74 @@ document.addEventListener("click",e=>{
   const g=e.target.closest("[data-goview]"); if(g){showView(g.dataset.goview);}
 });
 
+/* ============================================================
+   STEALTH — how visible is this setup?
+   ============================================================ */
+const VIS_LABEL=["camo","muted","noticeable","bright"];
+function visOf(it){
+  if(it.vis!=null&&it.vis!=="") return +it.vis;
+  const t=(it.name+" "+(it.notes||"")).toLowerCase();
+  if(/camo|\bmtp\b|\bdpm\b|multicam|woodland pattern/.test(t)) return 0;
+  if(/orange|\bred\b|yellow|hi-?vis|neon|lime|pink/.test(t)) return 3;
+  if(/\bblue\b|silver|white|light grey/.test(t)) return 2;
+  if(/olive|green|khaki|army|military|brown|black|sage|forest|coyote|\btan\b/.test(t)) return 1;
+  return null;
+}
+const profileOf=it=>it.profile!=null&&it.profile!==""?+it.profile:({bivvy:0,poncho:1,tarp:1,tent:2,hammock:3}[it.shelter]??1);
+const redOf=it=>it.redlight!=null?!!it.redlight:/red ?light|red mode|\bred\b/i.test(it.name);
+const isLight=it=>RX.headlamp.test(it.name)||RX.torch.test(it.name);
+const STEALTH_NEED=[0,55,75];
+function stealth(c){
+  const lines=classLines(c), rows=[], unknown=[]; let score=100;
+  const pen=(n,v,fix)=>{if(v){rows.push({n,v:-v,fix});score-=v;}};
+  const sh=lines.filter(l=>l.it.kind==="shelter").map(l=>l.it);
+  if(sh.length){
+    const hammock=sh.some(s=>s.shelter==="hammock");
+    const p=hammock?3:Math.max(...sh.map(profileOf));
+    pen(["Flat profile (bivvy)","Low profile (bivvy + low awning / tarp)","Tent — a solid shape that stands out","Raised hammock + tarp — visible from further away"][p],[5,10,20,30][p],
+      p>=2?"A bivvy with a low poncho or tarp awning is the lowest-profile setup.":"");
+    const vs=sh.map(s=>({s,v:visOf(s)}));
+    vs.filter(x=>x.v==null).forEach(x=>unknown.push(x.s));
+    const worst=vs.reduce((m,x)=>Math.max(m,x.v==null?1.5:x.v),0);
+    const wi=vs.find(x=>(x.v==null?1.5:x.v)===worst);
+    pen(`Shelter colour: ${wi.v==null?"unknown (counted as muted/noticeable)":VIS_LABEL[worst]} — ${wi.s.name}`,Math.round(worst*8),worst>=2?"A green, olive or camo shelter blends in far better.":"");
+  }
+  const pack=lines.find(l=>RX.pack.test(l.it.name)&&l.it.cat==="Packs & Storage"&&!RX.drybag.test(l.it.name)&&!RX.rubble.test(l.it.name));
+  if(pack){const v=visOf(pack.it); if(v==null) unknown.push(pack.it); pen(`Rucksack colour: ${v==null?"unknown":VIS_LABEL[v]}`,Math.round((v==null?1.5:v)*3),v>=2?"Tuck a bright pack inside the shelter or under a dark cover.":"");}
+  const loud=lines.filter(l=>(c.worn[l.it.id]||l.it.cat==="Clothing")&&visOf(l.it)>=2);
+  if(loud.length) pen(`Bright clothing: ${loud.map(l=>l.it.name).join(", ")}`,Math.min(8,loud.length*3),"Wear dark or muted layers around camp.");
+  if(lines.some(l=>RX.lantern.test(l.it.name))) pen("Lantern — its glow shows through tent walls for a long way",8,"Leave the lantern; use a head torch on red.");
+  const lights=lines.filter(l=>isLight(l.it));
+  if(lights.length&&!lights.some(l=>redOf(l.it))) pen("Head torch with white light only",5,"A red-light mode keeps your night vision and is far less noticeable.");
+  if(lines.some(l=>/reflective (guy|trim|detail|strip|line|webbing|print)/i.test(l.it.name+" "+(l.it.notes||"")))) pen("Reflective trim or guylines catch torchlight",4,"Swap reflective guylines for dark paracord.");
+  if(lines.some(l=>COOK_RX.test(l.it.name)&&!isGas(l.it))) pen("Stove noise and cooking smells carry at night",2,"Cook before you reach your pitch, or keep it brief.");
+  score=Math.max(0,Math.min(100,Math.round(score)));
+  const label=score>=80?"Ghost":score>=60?"Low profile":score>=40?"Noticeable":"Obvious";
+  const target=+c.wx.stealth||0, need=STEALTH_NEED[target];
+  return {score,label,rows,unknown:[...new Set(unknown)],target,need,ok:score>=need};
+}
+function renderStealth(c){
+  const s=stealth(c), el=$("#stealthOut");
+  if(document.activeElement!==$("#wxStealth")) $("#wxStealth").value=s.target;
+  const cl=s.score>=80?"p-ok":s.score>=60?"p-ok":s.score>=40?"p-warn":"p-bad";
+  $("#sumStealth").innerHTML=`<span class="pill ${s.target&&!s.ok?"p-bad":cl}">${s.score} · ${s.label}</span>${s.target?(s.ok?" meets your target":` needs ${s.need}+`):""}`;
+  if(!classLines(c).length){el.innerHTML=`<p class="small muted">Add kit to this class to see its stealth score.</p>`;return;}
+  const fixes=s.rows.filter(r=>r.fix).sort((a,b)=>a.v-b.v);
+  el.innerHTML=`<div class="prog" style="margin-top:10px"><div style="width:${s.score}%;background:${s.score>=60?"var(--ok)":s.score>=40?"var(--warn)":"var(--bad)"}"></div></div>
+    <div class="small muted" style="margin-top:4px">${s.score}/100 — ${s.label}${s.target?` · target ${s.need}+ (${["","some","high"][s.target]} stealth)`:""}</div>
+    ${s.unknown.length?`<div class="draft" style="margin-top:8px">🎨 Colour not set for: ${s.unknown.map(it=>`<button class="tog" data-edititem="${it.id}">${esc(it.name.split(" ").slice(0,4).join(" "))}</button>`).join(" ")} — tap to set it for a more accurate score.</div>`:""}
+    ${fixes.length?`<h3>Biggest improvements</h3><ul class="warnings">${fixes.slice(0,4).map(r=>`<li>${esc(r.fix)} <span class="muted">(+${-r.v})</span></li>`).join("")}</ul>`:""}
+    <details class="sub" data-sec="stealthRows"><summary>Score breakdown</summary><table style="margin-top:6px">${s.rows.map(r=>`<tr><td>${esc(r.n)}</td><td class="n">${r.v}</td></tr>`).join("")}<tr><th>Score</th><th class="n">${s.score}</th></tr></table></details>
+    <details class="sub" data-sec="stealthTips"><summary>Fieldcraft tips</summary><ul class="warnings small">
+      <li>Arrive late, leave early: pitch around dusk and be packed by about 8am.</li>
+      <li>Stay out of sight lines: away from paths, houses, roads and skylines; use hedges, woodland edges and dips.</li>
+      <li>Keep light low: head torch on red, no lantern, no fire.</li>
+      <li>Keep noise and cooking brief; small groups only (1–2 tents).</li>
+      <li>Leave no trace: pack out everything, cat-holes 30 m from water, move on if asked.</li>
+      <li>The law: in England and Wales wild camping generally needs the landowner's permission. Dartmoor Commons are the exception (camping allowed under the byelaws). Scotland has access rights with local restrictions. Stealth is about not disturbing anyone, not about ignoring "no camping" requests.</li>
+    </ul></details>`;
+}
+document.addEventListener("click",e=>{const b=e.target.closest("[data-edititem]");if(b) openItem(b.dataset.edititem);});
 /* ============================================================
    FOOD — meal plans (from an AI or by hand)
    ============================================================ */
