@@ -34,10 +34,12 @@ with sync_playwright() as p:
     pg=b.new_page(); pg.on("pageerror",lambda e:errs.append(str(e)))
     pg.goto("http://localhost:8765/"); pg.evaluate("localStorage.clear()"); pg.reload(); pg.click("#wKeep")
     pg.evaluate("S.ui=S.ui||{}; save=()=>{}")  # don't hammer localStorage during bot runs
-    for cid in ["cls_winter","cls_bivvy","cls_hammock"]:
-        for strat in ["smart","greedy","random"]:
-            r=pg.evaluate(BOT,[cid,"towpath","normal",strat,150])
+    for scen in ["towpath","storm","midsummer","dartmoor"]:
+      print("==",scen)
+      for cid in ["cls_winter","cls_bivvy","cls_hammock"]:
+        for strat in ["smart","random"]:
+            r=pg.evaluate(BOT,[cid,scen,"normal",strat,120])
             print(cid,strat,json.dumps(r["res"]),"turns",r["avgTurns"],"stuck",r["stuck"],"scenes",r["scenesSeen"])
-            if strat=="smart": print("   grades",json.dumps(r["grades"]))
+            pass
     b.close()
 print("ERRORS",errs[:5])

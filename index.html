@@ -120,6 +120,7 @@ details.sub>summary{font-size:13px;color:var(--accent);font-weight:600}
 .gscene .gtext{font-size:17px;line-height:1.55;margin:4px 0 12px}.gres{font-size:14px;color:var(--muted);font-style:italic;border-left:2px solid var(--line);padding-left:8px;margin:0 0 10px}
 .gchoices{display:flex;flex-direction:column;gap:8px}.gch{display:flex;justify-content:space-between;align-items:center;gap:8px;text-align:left;padding:12px;font-size:15px;border-radius:12px;background:var(--panel2)}
 .gch.locked{opacity:.55}.ghs{white-space:nowrap;font-size:12px}.gh{margin-left:4px}.gh.up{color:var(--ok)}.gh.dn{color:var(--bad)}
+.gdelta{white-space:nowrap;font-style:normal}.gach{display:grid;grid-template-columns:repeat(auto-fill,minmax(150px,1fr));gap:8px;margin-top:10px}.gach>div{background:var(--panel2);border-radius:10px;padding:8px;font-size:13px}
 .ggrades{display:grid;grid-template-columns:repeat(5,1fr);gap:6px;margin:12px 0}.gg{background:var(--panel2);border-radius:10px;padding:6px 2px;text-align:center;display:flex;flex-direction:column}.gg b{font-size:22px}.gg span{font-size:10px;color:var(--muted)}
 .gA b,.gB b{color:var(--ok)}.gC b{color:var(--warn)}.gD b,.gE b{color:var(--bad)}
 body.nightmode{--bg:#120707;--panel:#1d0c0c;--panel2:#2a1212;--line:#4a2020;--text:#f0c8c8;--muted:#b08080;--accent:#e57373;--accent2:#ef9a9a;--ok:#e8a0a0;--cold:#c48b8b}
@@ -2497,15 +2498,147 @@ const GAME_ENDINGS={
  exhausted:{title:"😵 Exhausted",text:"Your legs gave out before you even found a pitch. Too much weight, too far, not enough food. You catch the bus home with your pack on your knees."}
 };
 
+/* ---------- v2 content: locals, storm, summer, moor, woodland, more nights ---------- */
+GAME_STORYLETS.push(
+ // LOCALS (disposition persists across runs: S.gameLocals)
+ {id:"local_boater_evening",phase:"camp",when:{route:"canal",localAbove:{boater:-1}},weight:3,once:true,
+  text:"A hatch slides open on a moored narrowboat. A grey beard and a mug of something. 'You're not going to be banging about all night, are you?'",
+  choices:[{label:"'Quiet as a mouse, promise'",effects:{suspicion:-4,local:{boater:1}},result:"A grunt that might be approval. The hatch closes."},
+           {label:"Ask if he knows a drier spot",effects:{morale:4,local:{boater:1},dry:3},result:"'Behind the hedge past the lock. Mud's not as bad.' He's right."},
+           {label:"Shrug and carry on",effects:{suspicion:8,local:{boater:-1}},result:"The hatch closes harder than it opened."}]},
+ {id:"local_boater_friend",phase:"camp",when:{route:"canal",localAbove:{boater:1}},weight:4,once:true,
+  text:"The narrowboat hatch opens. It's the bearded boater from last time. 'Oh, it's you again. Kettle's on, if you want your flask filling.'",
+  choices:[{label:"'You're a lifesaver'",effects:{morale:10,warmth:4,refill:"flask",local:{boater:1}},result:"Hot water, a bit of chat about the lock gates, and a nod goodnight."}]},
+ {id:"local_boater_grudge",phase:"night",when:{route:"canal",localBelow:{boater:-1},hourBetween:[21,23]},weight:5,once:true,
+  text:"A torch from the narrowboat. The same boater. 'Thought so. Not again, pal.'",
+  choices:[{label:"Apologise and promise silence",effects:{suspicion:10,morale:-6},result:"He watches you for a long moment, then goes back in."},
+           {label:"Pack up and move along the cut",effects:{energy:-10,warmth:-6,suspicion:-15,time:60},result:"Fair enough. You find somewhere a few hundred yards on."}]},
+ {id:"local_farmer_lane",phase:"walk",when:{localAbove:{farmer:-1}},weight:2,once:true,
+  text:"A Land Rover idles at a field gate. The farmer leans out. 'Off somewhere?' His eyes go to your pack.",
+  choices:[{label:"Be honest: one night, no trace",effects:{morale:4,local:{farmer:1}},result:"'Top field's fine. Shut the gate. Gone by eight.' That's permission."},
+           {label:"'Just walking'",effects:{suspicion:4},result:"'Right.' He doesn't believe you, and drives off."}]},
+ {id:"local_farmer_dawn",phase:"dawn",when:{localAbove:{farmer:0}},weight:4,once:true,
+  text:"The farmer's quad bike bumps along the hedge at first light. He slows, sees your neat pack and the empty patch of grass.",
+  choices:[{label:"Wave and say thanks",effects:{morale:8,local:{farmer:1}},result:"A thumb up. You're welcome back, apparently."}]},
+ {id:"local_farmer_angry",phase:"night",when:{localBelow:{farmer:0},hourBetween:[20,23],stealthMatters:true},weight:4,once:true,
+  text:"Headlights swing into the field and stop. A door slams. Boots in the frost, coming straight for you.",
+  choices:[{label:"Stand up, apologise, offer to go",effects:{suspicion:30,morale:-8,local:{farmer:1}},result:"'Go on then. And shut the gate.' You pack in the cold dark."},
+           {label:"Stay put and hope",effects:{suspicion:45},result:"A torch in your face. 'Out. Now.'"}]},
+ {id:"local_dogwalker_regular",phase:"dawn",when:{route:"canal",localAbove:{dogwalker:0}},weight:4,once:true,
+  text:"The spaniel arrives first, then its owner. 'You again! Survived another one, then?'",
+  choices:[{label:"'Just about!'",effects:{morale:8,local:{dogwalker:1}},result:"The spaniel gets a biscuit. You don't."}]},
+ {id:"local_angler_tip",phase:"night",when:{route:"canal",hourBetween:[4,6],localAbove:{angler:0}},weight:4,once:true,
+  text:"The dawn angler again, in the same heavy coat. He lifts his flask in salute. 'Frost'll lift by nine. Always does.'",
+  choices:[{label:"Swap a quiet chat",effects:{morale:9,local:{angler:1}},result:"Ten minutes about carp and cold feet. It helps more than it should."}]},
+ {id:"local_ranger",phase:"dawn",when:{route:"canal",suspicionAbove:35},weight:3,once:true,
+  text:"A Canal & River Trust van crawls along the towpath. The driver looks at you, then at your pitch.",
+  choices:[{label:"Show it's spotless and you're off",effects:{suspicion:-10,local:{ranger:1}},result:"A nod. Not your problem today, mate."},
+           {label:"Look busy",effects:{suspicion:5},result:"The van stops. Then, mercifully, moves on."}]},
+
+ // STORM
+ {id:"storm_squall",phase:"walk",when:{windAtLeast:2},weight:5,once:true,
+  text:"A squall rips across the open ground. Rain goes sideways. Your hood fills like a sail.",
+  choices:[{label:"Hunker behind a hedge till it passes",effects:{warmth:-4,time:30,morale:-2},result:"Ten minutes crouched in a ditch. It passes, mostly."},
+           {label:"Push on, head down",effects:{dry:-12,energy:-6},result:"Soaked down one side. You're getting there."},
+           {label:"Poncho on over everything",requires:{hasItem:["poncho"]},effects:{dry:-3,energy:-3,morale:-2},result:"It tries to take off with you, but you stay drier."}]},
+ {id:"storm_pitch_battle",phase:"pitch",when:{windAtLeast:2},weight:5,once:true,
+  text:"Pitching in a gale is a wrestling match you can lose. The {shelter} flogs and snaps as you try to hold it.",
+  choices:[{label:"Peg the windward end first, low",effects:{energy:-6,morale:4},result:"Tail to the wind, low and tight. Textbook."},
+           {label:"Extra guylines from paracord",requires:{hasItem:["paracord"]},effects:{energy:-4,morale:6,clearFlag:"loosePitch"},result:"Every line doubled. It hums, but it holds."},
+           {label:"Get it up any old how",effects:{setFlag:"loosePitch",energy:-2},result:"It's up. For now."}]},
+ {id:"night_pitch_fails",phase:"night",when:{windAtLeast:1,flag:"loosePitch",hourBetween:[22,5]},weight:6,once:true,
+  text:"{hour}. A gust hits, there's a ping of a peg letting go, and the {shelter} folds down onto your face, cold and wet.",
+  choices:[{label:"Get out and re-pitch it in the dark",effects:{warmth:-14,energy:-8,dry:-8,clearFlag:"loosePitch",time:60},result:"Brutal, but it's up and tight now."},
+           {label:"Lie under it like a bivvy",effects:{dry:-12,morale:-10,setFlag:"noSleepHour"},result:"Wet fabric on your face till dawn."},
+           {label:"Call it and walk home",effects:{ending:"walkedhome"},result:""}]},
+ {id:"night_heavy_rain_pool",phase:"night",when:{rainAtLeast:2},weight:4,once:true,
+  text:"{hour}. The rain hasn't let up for hours. Water is pooling under the groundsheet. You can feel it through the {mat}.",
+  choices:[{label:"Dig a quick channel with the trowel",requires:{hasItem:["trowel"]},effects:{warmth:-4,dry:5,energy:-3},result:"A little moat. Very satisfying."},
+           {label:"Move everything to the high side",effects:{dry:-4,energy:-2},result:"Cramped and lopsided, but drier."},
+           {label:"Ignore it",effects:{dry:-15,morale:-5},result:"By 3am you're lying in a puddle."}]},
+
+ // SUMMER / MIDGES
+ {id:"summer_midge_cloud",phase:"camp",when:{bugsAtLeast:1},weight:5,once:true,
+  text:"The air goes still and the midges arrive in a fine, whining cloud. Within a minute they're in your ears, your eyes, your tea.",
+  choices:[{label:"Head net on",requires:{hasItem:["headnet"]},effects:{morale:4},result:"Ha. Not today."},
+           {label:"Into the shelter and zip up",effects:{morale:-4,warmth:2},result:"Safe, sweaty and bored at nine o'clock."},
+           {label:"Walk about waving your arms",effects:{morale:-10,energy:-3},result:"They love this. You do not."}]},
+ {id:"summer_short_night",phase:"night",when:{months:[5,6,7,8],hourBetween:[23,2]},weight:3,once:true,
+  text:"It never gets properly dark. A pale glow sits on the northern horizon all night, and the birds start at half three.",
+  choices:[{label:"Enjoy the half-light",effects:{morale:8},result:"Midsummer magic."},{label:"Pull the hood over your eyes",effects:{sleep:true},result:"An hour more, at least."}]},
+ {id:"summer_too_warm",phase:"night",when:{months:[5,6,7,8],warmthAbove:80},weight:6,once:true,
+  text:"{hour}. You're too hot. The {bag} is a sauna and you're sticking to the {mat}.",
+  choices:[{label:"Unzip it and use it as a quilt",effects:{warmth:-6,morale:5,sleep:true,setFlag:"quiltMode"},result:"Bliss. Why didn't you do that earlier?"},
+           {label:"Lie there and sweat",effects:{dry:-6,morale:-4},result:"Damp from the inside out."}]},
+ {id:"summer_dawn_chorus",phase:"dawn",when:{months:[4,5,6,7]},weight:5,once:true,
+  text:"03:45 and the dawn chorus erupts: blackbirds, wrens, a chiffchaff, a cuckoo somewhere. It's deafening and wonderful.",
+  choices:[{label:"Lie and listen",effects:{morale:12},result:"Better than any alarm."}]},
+ {id:"summer_tick_check",phase:"dawn",when:{months:[4,5,6,7,8,9],bugsAtLeast:1},weight:3,once:true,
+  text:"Long grass, warm night. Time for a tick check before you pack up.",
+  choices:[{label:"Check properly, remove any with the tick tool",requires:{hasItem:["firstaid"]},effects:{morale:2},result:"One tiny one, out cleanly. Good job you looked."},
+           {label:"Have a quick look",effects:{},result:"Nothing obvious. Check again at home."}]},
+
+ // MOOR (Dartmoor)
+ {id:"moor_navigation",phase:"walk",when:{route:"moor"},weight:5,once:true,
+  text:"The path dissolves into tussocks and peat hags. Cloud is coming down off the tor. Which way was it?",
+  choices:[{label:"Map and compass: take a bearing",requires:{hasItem:["map"]},effects:{morale:5,energy:-2},result:"Bearing set, pace counted. You walk straight to it."},
+           {label:"Follow your phone map",requires:{hasItem:["powerbank"]},effects:{morale:2},result:"The blue dot does its job. For now."},
+           {label:"Guess and go",effects:{energy:-10,morale:-6,time:60},result:"Forty minutes later you're back where you started."}]},
+ {id:"moor_bog",phase:"walk",when:{route:"moor"},weight:4,once:true,
+  text:"Bright green moss, flat and inviting. Every Dartmoor walker learns about bright green moss exactly once.",
+  choices:[{label:"Go round it",effects:{energy:-5},result:"The long way. The dry way."},{label:"Hop across the tussocks",effects:{dry:-15,morale:-4},result:"Shin-deep. Every Dartmoor walker learns."}]},
+ {id:"moor_ponies",phase:"camp",when:{route:"moor"},weight:3,once:true,
+  text:"Three Dartmoor ponies wander up, shaggy and unbothered, and start investigating your {pack}.",
+  choices:[{label:"Shoo them gently, pack zipped",effects:{morale:5},result:"They wander off, mildly disappointed."},{label:"Let them sniff",effects:{morale:3,energy:-3},result:"One eats a bit of your lunch. Fair."}]},
+ {id:"moor_tor_stars",phase:"night",when:{route:"moor",hourBetween:[21,3],notFlag:"raining"},weight:3,once:true,
+  text:"No towns, no lanes, no light. The Milky Way spills across the sky over the tor. You've never seen this many stars.",
+  choices:[{label:"Lie back and look",effects:{morale:14,warmth:-3},result:"Worth the walk, worth the cold."}]},
+
+ // WOODLAND
+ {id:"wood_deer",phase:"dawn",when:{pitch:"woodland"},weight:4,once:true,
+  text:"A roe deer steps out between the trees, ten metres away. It looks straight at you. Neither of you moves.",
+  choices:[{label:"Stay perfectly still",effects:{morale:12},result:"It drifts away into the mist. You'll remember that."}]},
+ {id:"wood_branch",phase:"night",when:{pitch:"woodland",windAtLeast:1},weight:3,once:true,
+  text:"{hour}. A crack overhead, then a heavy thump nearby. A dead branch, down in the wind. Close.",
+  choices:[{label:"Move away from that tree",effects:{warmth:-6,energy:-4},result:"Never pitch under deadwood. Lesson learned."},{label:"Stay put",effects:{morale:-8},result:"You don't sleep much after that."}]},
+ {id:"wood_tawny",phase:"camp",when:{pitch:"woodland"},weight:3,once:true,
+  text:"The woods are full of small noises: leaves, scurrying, a tawny owl starting up right above you.",
+  choices:[{label:"Enjoy it",effects:{morale:6},result:"Spooky for a minute, then comforting."}]},
+
+ // GENERAL extras
+ {id:"night_cold_feet",phase:"night",when:{warmthBelow:55,hourBetween:[22,5]},weight:3,once:true,
+  text:"Your feet are blocks of ice. The rest of you is just about OK.",
+  choices:[{label:"Dry socks on",requires:{hasItem:["socks"]},effects:{warmth:6,dry:4},result:"Dry wool. Instant relief."},
+           {label:"Hot flask in a sock at your feet",requires:{hasItem:["flask"],uses:{flask:1}},effects:{use:"flask",warmth:10,morale:6},result:"A makeshift hot-water bottle. Genius."},
+           {label:"Pull your knees up and rub them",effects:{warmth:2,energy:-2},result:"It sort of works."}]},
+ {id:"night_snore_boat",phase:"night",when:{route:"canal",pitch:"canal",hourBetween:[23,3]},weight:2,once:true,
+  text:"From the nearest narrowboat, through the steel hull: snoring. Industrial-grade snoring.",
+  choices:[{label:"Laugh quietly into your bag",effects:{morale:5},result:"At least someone's sleeping."}]},
+ {id:"night_wake_dry_mouth",phase:"night",when:{hourBetween:[1,5]},weight:2,once:true,
+  text:"{hour}. Throat dry, lips cracked. You're thirsty, and the water bottle is outside the bag. Probably frozen.",
+  choices:[{label:"Bottle was inside the bag",requires:{hasItem:["flask"]},effects:{morale:3,energy:2},result:"Liquid water. Small wins."},
+           {label:"Reach out for it",effects:{warmth:-3,energy:2},result:"Slushy, but drinkable."},{label:"Go without",effects:{energy:-3},result:"Morning can't come soon enough."}]},
+ {id:"dawn_frost_everything",phase:"dawn",when:{lowBelow:1},weight:4,once:true,
+  text:"Every blade of grass is white. Your boots are frozen stiff. The {shelter} crackles when you touch it.",
+  choices:[{label:"Boots in the bag overnight next time",effects:{morale:-2},result:"Noted. Feet into frozen leather, for now."},
+           {label:"Warm the boots with your hands first",effects:{warmth:-3,morale:2},result:"Slowly, painfully, they soften."}]}
+);
+
 /* ============================================================
    PITCH DARK — engine (Play tab)
    ============================================================ */
 const GAME_SCEN={
  towpath:{name:"Off the Towpath",sub:"Hurleston canals, a November night",place:["the Shropshire Union towpath","Hurleston Locks","the Llangollen Canal","the farm lane","Barbridge"],route:"canal",month:11,
   wx:{low:-1,high:7,humid:85,windAvg:4,rain:0,wind:1,bugs:0,ground:"frozen"},sunset:16,sunrise:8,stealthMatters:true},
+ storm:{name:"Storm Night",sub:"Gusts of 35 mph and rain all night, mild but wild",intro:"Mid-afternoon, and the trees are already roaring. The forecast says gusts of 35 mph and rain all night. {pack} on your back. Brave, or daft?",place:["the field edge","the lane","the hedge line","the open ground"],route:"field",month:10,
+  wx:{low:6,high:10,humid:95,windAvg:18,rain:2,wind:2,bugs:0,ground:"soft"},sunset:17.5,sunrise:7.3,stealthMatters:true},
+ midsummer:{name:"Midsummer Midges",sub:"Warm, still, buggy June night by the water",intro:"Half eight on a June evening, warm and still. Perfect, except for the faint whine already starting by your ear.",place:["the riverbank","the woodland path","the meadow","the water's edge"],route:"canal",month:6,
+  wx:{low:11,high:22,humid:80,windAvg:2,rain:0,wind:0,bugs:2,ground:"hard"},sunset:21.7,sunrise:4.8,stealthMatters:true},
+ dartmoor:{name:"Dartmoor Commons",sub:"Legal wild camp on the open moor, October",intro:"The car park is behind you and the moor opens up ahead: tors, heather and a sky that goes on forever. Wild camping is legal here. The weather is another matter.",place:["the open moor","the tor","the stream crossing","the heather"],route:"moor",month:10,
+  wx:{low:3,high:9,humid:88,windAvg:14,rain:1,wind:2,bugs:0,ground:"soft"},sunset:18.2,sunrise:7.4,stealthMatters:false},
  plan:{name:"Your Plan conditions",sub:"Uses this class's forecast / conditions from the Plan tab",place:["the path","the lane","the field edge","the hedge line"],route:"canal",month:null,wx:null,sunset:null,sunrise:null,stealthMatters:null}
 };
-const G_TAGNAMES={headtorch:"a head torch",redlight:"a red-light torch",lantern:"a lantern",ypeg:"metal pegs",spiralpeg:"spiral pegs",poncho:"a poncho",tarp:"a tarp",flask:"a flask",stove:"a stove",gas:"gas",lighter:"a lighter",foam:"a foam mat",foil:"a foil mat",repairkit:"a repair kit",trowel:"a trowel",powerbank:"a power bank",socks:"spare socks",hivis:"hi-vis",monocular:"a monocular",filter:"a water filter",firstaid:"a first aid kit",map:"a map",hat:"a warm hat",layer:"a spare layer",parka:"a warm jacket",towel:"a towel",snack:"food",groundsheet:"a groundsheet",paracord:"paracord",drybag:"a dry bag",inflatable:"an inflatable mat"};
+const G_TAGNAMES={headnet:"a midge net",headtorch:"a head torch",redlight:"a red-light torch",lantern:"a lantern",ypeg:"metal pegs",spiralpeg:"spiral pegs",poncho:"a poncho",tarp:"a tarp",flask:"a flask",stove:"a stove",gas:"gas",lighter:"a lighter",foam:"a foam mat",foil:"a foil mat",repairkit:"a repair kit",trowel:"a trowel",powerbank:"a power bank",socks:"spare socks",hivis:"hi-vis",monocular:"a monocular",filter:"a water filter",firstaid:"a first aid kit",map:"a map",hat:"a warm hat",layer:"a spare layer",parka:"a warm jacket",towel:"a towel",snack:"food",groundsheet:"a groundsheet",paracord:"paracord",drybag:"a dry bag",inflatable:"an inflatable mat"};
 let G=null;
 
 /* ---------- helpers ---------- */
@@ -2532,7 +2665,8 @@ function gHas(tag){
     case"hat":return any(it=>it.kind==="layer"&&/hat|beanie|balaclava/i.test(it.name)); case"layer":return !!gWarmestUnworn();
     case"parka":return any(it=>it.kind==="layer"&&(+it.warmth||0)>=3); case"towel":return any(it=>RX.towel.test(it.name));
     case"snack":return (G.uses.snack||0)>0; case"groundsheet":return any(it=>RX.footprint.test(it.name)||it.shelter==="bivvy");
-    case"paracord":return any(it=>RX.cord.test(it.name)); case"drybag":return any(it=>RX.drybag.test(it.name));
+    case"paracord":return any(it=>RX.cord.test(it.name));
+    case"headnet":return any(it=>it.kind!=="shelter"&&(+it.bug||0)>=2); case"drybag":return any(it=>RX.drybag.test(it.name));
   }
   return false;
 }
@@ -2542,8 +2676,8 @@ function gMainShelter(){ const s=gShelters(); return s.find(x=>x.shelter==="tent
 function gTemp(min){
   const h=(min/60), w=G.wx, hrs=G.hours;
   if(hrs&&hrs.length){ const hh=gHourOf(min); const m=hrs.find(x=>+x[0]===hh); if(m) return m[1]+G.pitchTemp; }
-  const t=Math.max(0,Math.min(15,h-15)); // 15:00 → 06:00 cooling, warms after sunrise
-  let T=w.low+(w.high-1-w.low)*Math.pow(1-t/15,1.4);
+  const s0=G.startH||15, span=Math.max(6,24+G.sunrise-s0), f=Math.max(0,Math.min(1,(h-s0)/span));
+  let T=(w.high-1)-((w.high-1)-w.low)*Math.pow(f,0.8);
   if(h>=24+G.sunrise) T=w.low+(h-24-G.sunrise)*1.5;
   return Math.round((T+G.pitchTemp)*10)/10;
 }
@@ -2580,6 +2714,9 @@ function gWhenOK(w){
   if(w.hasItem&&!w.hasItem.every(gHas)) return false; if(w.missingItem&&w.missingItem.some(gHas)) return false;
   if(w.flag&&!G.flags[w.flag]) return false; if(w.notFlag&&G.flags[w.notFlag]) return false;
   if(w.stealthMatters&&!G.stealthMatters) return false;
+  const LC=S.gameLocals||{};
+  if(w.localAbove) for(const [k,v] of Object.entries(w.localAbove)) if(!((LC[k]||0)+(G.localDelta[k]||0)>v)) return false;
+  if(w.localBelow) for(const [k,v] of Object.entries(w.localBelow)) if(!((LC[k]||0)+(G.localDelta[k]||0)<v)) return false;
   return true;
 }
 function gChoiceState(ch){
@@ -2610,17 +2747,17 @@ function gStart(classId,scenKey,difficulty,seed){
   G={v:1,seed:seed??Math.floor(Math.random()*1e9),rs:0,scenKey,scen,difficulty:difficulty||"normal",classId:c.id,className:c.name,
     items:Object.assign({},c.items),wornLayers:{},wx,hours:scen.wx?null:(nd&&nd.hours||null),month:scen.month||+(c.wx.date||todayISO()).slice(5,7),
     sunset,sunrise,stealthMatters:scen.stealthMatters??(+c.wx.stealth>0),
-    packKg:w.pack/1000,time:15*60,phase:"walk",walkLeft:Math.max(3,Math.min(6,Math.round(2+w.pack/7000))),pitch:null,pitchTemp:0,pitchWind:1,
+    packKg:w.pack/1000,time:Math.max(13*60,Math.round((sunset-1.5)*2)*30),phase:"walk",localDelta:{},flaskMax:flasks*2,startH:Math.max(13,Math.round((sunset-1.5)*2)/2),walkLeft:Math.max(3,Math.min(6,Math.round(2+w.pack/7000))),pitch:null,pitchTemp:0,pitchWind:1,
     meters:{warmth:80,energy:Math.min(95,72+(meals.length?8:0)),dry:100,morale:65,suspicion:Math.round(Math.max(3,Math.min(45,(100-st.score)*0.5)))},
     uses:{snack,flask:flasks*2,hotmeal:meals.filter(m=>m.hot).length},flags:{},seen:{},log:[],swings:[],queue:["intro"],
     min:{warmth:80,energy:80,dry:100,morale:65},maxS:0,slept:0,nightHours:0,lnt:2,scene:null,ended:null,coldHour:null};
-  G.rs=G.seed; G.min.energy=G.meters.energy; G.maxS=G.meters.suspicion;
+  G.rs=G.seed; if(!G.stealthMatters) G.meters.suspicion=Math.round(G.meters.suspicion*0.4); G.min.energy=G.meters.energy; G.maxS=G.meters.suspicion;
   // layers already worn in the class count as worn from the start
   Object.keys(c.worn||{}).forEach(id=>{const it=item(id); if(it&&it.kind==="layer") G.wornLayers[id]=1;});
   gNext(); gSave();
 }
 function gSave(){ S.game=G; save(); }
-function gLoad(){ if(S.game&&S.game.v===1){ G=S.game; G.scen=GAME_SCEN[G.scenKey]||GAME_SCEN.towpath; if(G.scenKey==="plan") G.scen=Object.assign({},GAME_SCEN.plan); return true;} return false; }
+function gLoad(){ if(S.game&&S.game.v===1){ G=S.game; G.localDelta=G.localDelta||{}; G.scen=GAME_SCEN[G.scenKey]||GAME_SCEN.towpath; if(G.scenKey==="plan") G.scen=Object.assign({},GAME_SCEN.plan); return true;} return false; }
 
 /* ---------- physics per turn ---------- */
 const gMult=()=>({easy:0.6,normal:1,hard:1.3}[G.difficulty]||1);
@@ -2645,7 +2782,13 @@ function gPassive(minutes){
     const p=protection(mc); if((G.flags.raining||G.wx.rain)&&p.rain<NEED.rain(G.flags.raining?1:G.wx.rain)) m.dry-=6*steps;
     if(G.flags.slowLeak) m.warmth-=1.5*k*steps;
   }
-  if(G.pitch==="canal"&&(gHourOf(G.time)<22||gHourOf(G.time)>=6)) m.suspicion+=1*steps;
+  if(G.wx.bugs>=1&&(G.phase==="camp"||G.phase==="night")){ const shelterNet=Math.max(0,...gShelters().map(s=>+s.bug||0)), net=gHas("headnet");
+    if(shelterNet<2){ m.morale-=(net?1:3.5)*G.wx.bugs*k*steps; if(G.phase==="night"&&G.wx.bugs>=2&&(!net||gRand()<0.4)) G.flags.noSleepHour=true; } }
+  if(inBag&&margin>8&&!G.flags.quiltMode){ m.dry-=3*steps; m.morale-=2*k*steps; if(gRand()<0.5) G.flags.noSleepHour=true; } // overheating: sweaty, restless
+  if(inBag&&G.wx.wind>=2){ const sw=Math.max(0,...gShelters().map(s=>+s.wind||0))+(G.pitchWind<1?1:0)-(G.pitchWind>1.2?1:0);
+    if(sw<3){ m.morale-=(3-sw)*1.5*k*steps; if(sw<2) G.flags.noSleepHour=true;
+      if(gShelters().some(s=>["tent","tarp","poncho"].includes(s.shelter))&&gRand()<(sw<2?0.25:0.1)) G.flags.loosePitch=true; } }
+  if(G.pitch==="canal"&&(gHourOf(G.time)<22||gHourOf(G.time)>=6)) m.suspicion+=(G.stealthMatters?1:0.3)*steps;
   if(gHas("lantern")&&G.phase==="camp"&&G.stealthMatters) m.suspicion+=2*steps;
   if(G.coldHour==null&&m.warmth<35) G.coldHour=gFmtTime(G.time);
 }
@@ -2662,6 +2805,8 @@ function gApply(eff,label){
     if(eff.setFlag) G.flags[eff.setFlag]=true; if(eff.clearFlag) delete G.flags[eff.clearFlag];
     if(eff.sleep) G.flags.sleepThis=true; if(eff.lnt) G.lnt+=eff.lnt;
     if(eff.pitch) gSetPitch(eff.pitch);
+    if(eff.local) Object.entries(eff.local).forEach(([k2,v])=>G.localDelta[k2]=(G.localDelta[k2]||0)+v);
+    if(eff.refill==="flask") G.uses.flask=Math.max(G.uses.flask||0,G.flaskMax||0);
   }
   Object.keys(m).forEach(k2=>m[k2]=gClamp(m[k2]));
   const swing=Object.keys(m).reduce((s,k2)=>s+Math.abs(m[k2]-before[k2]),0);
@@ -2681,7 +2826,7 @@ function gCheckEnd(){
 /* ---------- dynamic (code-built) scenes ---------- */
 function gDynamic(id){
   const c=gClass();
-  if(id==="intro") return {id,text:G.scenKey==="towpath"?"Half three on a November afternoon. The light is already thinking about leaving. {pack} on your back, the towpath ahead, and a night out in front of you.":"Afternoon. {pack} on your back, and a night out ahead of you.",
+  if(id==="intro") return {id,text:G.scen.intro||(G.scenKey==="towpath"?"Half three on a November afternoon. The light is already thinking about leaving. {pack} on your back, the towpath ahead, and a night out in front of you.":"Late afternoon. {pack} on your back, and a night out ahead of you."),
     sub:gIntroVoice(),choices:[{label:"Set off",effects:{morale:3}}]};
   if(id==="pitch_choose") return {id,text:"Time to find somewhere to sleep. Four options in the failing light:",choices:[
     {label:"Woodland edge: sheltered, hidden, rooty",effects:{pitch:"woodland",morale:-2},result:"Dark under the trees, out of the wind and out of sight. Roots everywhere."},
@@ -2793,6 +2938,7 @@ function gNext(){
 function gChoose(i){
   const sc=G.scene, ch=sc&&sc.choices[i]; if(!ch) return;
   const st=gChoiceState(ch); if(!st.ok) return;
+  const before=Object.assign({},G.meters);
   const eff=ch.effects||{};
   G.log.push({t:gFmtTime(G.time),text:sc.text,choice:ch.label,result:ch.result||""});
   gApply(eff,ch.label);
@@ -2814,13 +2960,42 @@ function gChoose(i){
   Object.keys(G.meters).forEach(k=>G.meters[k]=gClamp(G.meters[k]));
   gTrack();
   G.lastResult=ch.result||"";
+  const dl=Object.keys(G_ICON).map(k=>[k,Math.round(G.meters[k]-before[k])]).filter(([,v])=>v);
+  G.lastDelta=dl.map(([k,v])=>`<span class="gh ${(k==="suspicion"?v<0:v>0)?"up":"dn"}">${G_ICON[k]}${v>0?"+":""}${v}</span>`).join(" ");
+  const gain=dl.reduce((s,[k,v])=>s+(k==="suspicion"?-v:v),0); if(!G.best||gain>G.best.gain) G.best={gain,label:ch.label,time:gFmtTime(G.time-mins)};
   const e=gCheckEnd(); if(e){ gSave(); return gEnd(e); }
   gNext(); gSave();
 }
+const G_ACH=[
+ {id:"first",name:"First night out",desc:"Finish any night",test:()=>true},
+ {id:"dawn",name:"Made it",desc:"Reach dawn",test:()=>G.ended.kind==="dawn"},
+ {id:"ghost",name:"Ghost",desc:"Reach dawn without suspicion going above 15",test:()=>G.ended.kind==="dawn"&&G.maxS<=15},
+ {id:"iron",name:"Iron night",desc:"Reach dawn on Hardcore",test:()=>G.ended.kind==="dawn"&&G.difficulty==="hard"},
+ {id:"sensible",name:"Knowing when to go",desc:"Walk home before the cold wins",test:()=>G.ended.kind==="walkedhome"&&G.flags.sensibleBail},
+ {id:"lnt",name:"Leave No Trace",desc:"Get an A for Leave No Trace",test:()=>G.result&&G.result.grades["Leave No Trace"]==="A"},
+ {id:"storm",name:"Weathered it",desc:"Reach dawn on Storm Night",test:()=>G.ended.kind==="dawn"&&G.scenKey==="storm"},
+ {id:"midge",name:"Midge-proof",desc:"Reach dawn on Midsummer Midges",test:()=>G.ended.kind==="dawn"&&G.scenKey==="midsummer"},
+ {id:"moor",name:"Tor and back",desc:"Reach dawn on Dartmoor",test:()=>G.ended.kind==="dawn"&&G.scenKey==="dartmoor"},
+ {id:"flask",name:"3am promotion",desc:"Have two hot drinks in one night",test:()=>(G.flaskMax||0)-(G.uses.flask||0)>=2},
+ {id:"sleeper",name:"Slept like a log",desc:"Sleep 80% of the night",test:()=>G.ended.kind==="dawn"&&G.slept/Math.max(1,G.nightHours)>=0.8},
+ {id:"edge",name:"Ragged edge",desc:"Reach dawn with warmth below 15 at some point",test:()=>G.ended.kind==="dawn"&&G.min.warmth<15},
+ {id:"owl",name:"Night owl",desc:"Hear the tawny owls",test:()=>G.log.some(x=>/owl/i.test(x.text))},
+ {id:"deer",name:"Still as a tree",desc:"Watch the roe deer at dawn",test:()=>G.seen.wood_deer},
+ {id:"regular",name:"A regular",desc:"Get on good terms with a local",test:()=>Object.values(S.gameLocals||{}).some(v=>v>=2)},
+ {id:"all4",name:"All weathers",desc:"Reach dawn in all four scenarios",test:()=>["towpath","storm","midsummer","dartmoor"].every(k=>(S.gameStats&&S.gameStats.dawnBy&&S.gameStats.dawnBy[k]))}
+];
 function gEnd(kind){
   if(kind==="walkedhome"&&G.meters.warmth<40) G.flags.sensibleBail=true;
   G.ended={kind,time:gFmtTime(G.time)};
-  G.result=gDebrief(); gSave(); renderPlay();
+  S.gameLocals=S.gameLocals||{}; Object.entries(G.localDelta||{}).forEach(([k,v])=>S.gameLocals[k]=Math.max(-3,Math.min(5,(S.gameLocals[k]||0)+v))); G.localDelta={};
+  G.result=gDebrief();
+  const st=S.gameStats=S.gameStats||{runs:0,dawns:0,dawnBy:{},endings:{},ach:{},best:{}};
+  st.runs++; st.endings[kind]=(st.endings[kind]||0)+1; if(kind==="dawn"){st.dawns++; st.dawnBy[G.scenKey]=(st.dawnBy[G.scenKey]||0)+1;}
+  const key=G.classId+"|"+G.scenKey, gpa=Object.values(G.result.grades).filter(v=>v!=="–").reduce((s,v)=>s+"EDCBA".indexOf(v),0);
+  if(!st.best[key]||gpa>st.best[key].gpa) st.best[key]={gpa,grades:G.result.grades,kind,date:todayISO()};
+  G.result.newAch=G_ACH.filter(a=>!st.ach[a.id]&&a.test()).map(a=>{st.ach[a.id]=todayISO();return a;});
+  G.result.best=G.best||null;
+  gSave(); renderPlay();
 }
 
 /* ---------- debrief ---------- */
@@ -2893,7 +3068,7 @@ function renderPlay(){
       <div class="row small muted" style="margin-top:6px"><span>🕒 ${gFmtTime(G.time)}</span><span>🌡️ ${gTemp(G.time).toFixed(0)}°C</span><span>${{walk:"Walking in",pitch:"Pitching",camp:"Evening",night:"Night",dawn:"Dawn"}[G.phase]}</span><span class="grow"></span><span>${esc(G.scen.name)}</span></div>
     </div>
     <div class="card gscene">
-      ${G.lastResult?`<p class="gres">${esc(G.lastResult)}</p>`:""}
+      ${G.lastResult||G.lastDelta?`<p class="gres">${esc(G.lastResult||"")}${G.lastDelta?` <span class="gdelta">${G.lastDelta}</span>`:""}</p>`:""}
       <p class="gtext">${esc(sc.text)}</p>${sc.sub?`<p class="small muted">${sc.sub}</p>`:""}
       <div class="gchoices">${sc.choices.map((ch,i)=>{const st=gChoiceState(ch);
         return `<button class="gch ${st.ok?"":"locked"}" data-gch="${i}" ${st.ok?"":"disabled"}><span>${esc(ch.label)}</span>${st.ok?`<span class="ghs">${gHints(ch.effects)}</span>`:`<span class="small">🔒 ${esc(st.why)}</span>`}</button>`;}).join("")}</div>
@@ -2912,19 +3087,31 @@ function gStartScreen(){
     <p class="small">Play one night wild camping with a real loadout from your planner. Your warmth stack, mats, shelter, stealth score, pack weight and food decide what happens. No one dies. Bad nights end with walking home.</p>
     <div class="grid2">
       <label>Loadout (class)<select id="gClass">${opts}</select></label>
-      <label>Scenario<select id="gScen"><option value="towpath">Off the Towpath: Hurleston, November (−1°C)</option><option value="plan">This class's Plan conditions${c.wx.src?" ("+esc(c.wx.src.split(" · ")[0])+")":""}</option></select></label>
+      <label>Scenario<select id="gScen"><option value="towpath">Off the Towpath: Hurleston, November (−1°C)</option><option value="storm">Storm Night: 35 mph gusts, rain all night (6°C)</option><option value="midsummer">Midsummer Midges: warm, still, buggy (11°C)</option><option value="dartmoor">Dartmoor Commons: legal camp, open moor (3°C)</option><option value="plan">This class's Plan conditions${c.wx.src?" ("+esc(c.wx.src.split(" · ")[0])+")":""}</option></select></label>
       <label>Difficulty<select id="gDiff"><option value="easy">Walk in the park (exact numbers)</option><option value="normal" selected>Wild camper</option><option value="hard">Hardcore (no hints)</option></select></label>
     </div>
     <div class="small muted" style="margin-top:8px">Selected class: ${kg(weights(c).pack)} pack · stealth ${st.score} · sleep system ~${t.rating.toFixed(0)}°C at −1°C.</div>
     <div class="row" style="margin-top:12px"><button class="pri" id="gGo">▶ Start the night</button>${S.game&&S.game.ended?`<button id="gLast">Last result</button>`:""}</div></div>
+    ${gStatsCard()}
     <div class="card small muted"><b>How to play:</b> tap a choice. Icons hint at what it does: 🔥 warmth · ⚡ energy · 💧 dry · 🙂 morale · 👁️ suspicion (keep it low). Choices marked 🔒 need kit you didn't bring. Your kit, the cold and the dark do the rest.</div>`;
+}
+function gStatsCard(){
+  const st=S.gameStats; if(!st||!st.runs) return "";
+  const got=G_ACH.filter(a=>st.ach[a.id]);
+  const L=S.gameLocals||{}, mood=v=>v>=2?"friendly":v>=1?"warming to you":v<=-2?"remembers you badly":v<=-1?"wary":"neutral";
+  return `<details class="card sec" data-sec="gStats" ${isOpen("gStats",false)?"open":""}><summary><span class="st">🏅 Record</span><span class="sm">${st.dawns}/${st.runs} nights to dawn · ${got.length}/${G_ACH.length} achievements</span></summary>
+    <div class="gach" style="margin-top:8px">${G_ACH.map(a=>`<div class="${st.ach[a.id]?"":"dim"}">${st.ach[a.id]?"🏅":"🔒"} <b>${esc(a.name)}</b><br><span class="small muted">${esc(a.desc)}</span></div>`).join("")}</div>
+    ${Object.keys(L).length?`<h3>Locals</h3><div class="small">${Object.entries(L).map(([k,v])=>`${{boater:"Liveaboard boater",farmer:"Farmer",dogwalker:"Dog walker",angler:"Dawn angler",ranger:"Canal ranger"}[k]||k}: ${mood(v)}`).join(" · ")}</div>`:""}
+  </details>`;
 }
 function gEndScreen(){
   const R=G.result, E=GAME_ENDINGS[G.ended.kind];
   return `<div class="card"><h2 style="font-size:20px">${E.title}</h2><p>${esc(E.text)}</p>
      <div class="small muted">${esc(G.scen.name)} · ${esc(G.className)} · ended ${G.ended.time} · slept ${R.sleepH} of ${R.nightH} night hours</div>
      <div class="ggrades">${Object.entries(R.grades).map(([k,v])=>`<div class="gg g${v}"><b>${v}</b><span>${k}</span></div>`).join("")}</div>
-     ${R.turn?`<p class="small"><b>Turning point:</b> ${R.turn.time}, “${esc(R.turn.label)}”.</p>`:""}</div>
+     ${R.turn?`<p class="small"><b>Turning point:</b> ${R.turn.time}, “${esc(R.turn.label)}”.</p>`:""}
+     ${R.best&&R.best.gain>0?`<p class="small"><b>Best move:</b> ${R.best.time}, “${esc(R.best.label)}”.</p>`:""}
+     ${(R.newAch||[]).length?`<div class="gach">${R.newAch.map(a=>`<div>🏅 <b>${esc(a.name)}</b><br><span class="small muted">${esc(a.desc)}</span></div>`).join("")}</div>`:""}</div>
    <div class="card"><h2>📝 Night Notes</h2>${R.lessons.map((l,i)=>`<div class="item"><div class="nm"><span>${esc(l.text)}</span></div>${l.action?(l.action.done?`<span class="chip ok">done ✓</span>`:`<button class="tog pri" data-gact="${i}">${esc(l.action.label)}</button>`):""}</div>`).join("")}
      <div class="row" style="margin-top:10px">${R.logged?`<span class="chip ok">Logged ✓</span>`:`<button class="tog" data-glogtrip>📓 Log as practice night</button>`}</div>
      <p class="small muted">Practice nights appear on the Trips tab but never change your warmth calibration.</p></div>

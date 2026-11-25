@@ -27,14 +27,15 @@ A single-page camping kit planner: open `index.html` in any browser (phone or de
 
 ## 🌑 Pitch Dark (Play tab)
 
-A button-based text survival game played with a real loadout from the planner. Pick a class, a scenario (*Off the Towpath*: a −1°C November night by the Hurleston canals, or this class's own Plan conditions) and a difficulty. Then walk in, choose a pitch, race the sunset, and get through the night hour by hour.
+A button-based text survival game played with a real loadout from the planner. Pick a class, a scenario and a difficulty. Scenarios: *Off the Towpath* (−1°C November night by the Hurleston canals), *Storm Night* (35 mph gusts and rain, so loose pitches can fail), *Midsummer Midges* (warm, still and buggy, where you need a midge net and can overheat), *Dartmoor Commons* (legal wild camp on the open moor) or this class's own Plan conditions. Then walk in, choose a pitch, race the sunset, and get through the night hour by hour.
 
 - **Five meters:** 🔥 warmth, ⚡ energy, 💧 dry, 🙂 morale, 👁️ suspicion. Warmth drains each hour using the planner's own warmth maths (layers you've actually put on, mats, shelter, wind, damp) against the overnight temperature. Starting suspicion comes from the class's stealth score, and energy drain from pack weight.
 - **Kit matters:** choices you can't make show 🔒 and what's missing (head torch, flask, metal pegs, lighter…). Wrong pegs on frozen ground, a flask at 3am, the parka laid over the bag rather than worn inside it: it all plays out.
 - **No death:** nights end with dawn, walking home (always available at night), bailing out, being moved on, calling it, or exhaustion.
 - **Debrief:** grades (warmth, sleep, stealth, Leave No Trace, weight), the turning point of the night, and **Night Notes** with one-tap fixes back in the planner (+ Pack, + Wishlist). You can log the run as a practice night (shown on Trips, never used for calibration), replay the same night, or copy the story.
 - Red night theme during night scenes. Progress autosaves.
-- `tests/game_bot.py` plays hundreds of nights per loadout to check balance: the Winter Tent reaches dawn ~94% with sensible play, the Stealth Bivvy ~75%, the Summer Hammock never at −1°C (by design).
+- **Feedback and record:** every choice shows its meter changes (🔥−6 ⚡+3). The debrief shows your best move. A 🏅 Record panel tracks 16 achievements, nights to dawn, and how the recurring locals (boater, farmer, dog walker, angler, ranger) feel about you. They remember you between nights.
+- `tests/game_bot.py` plays hundreds of nights per loadout to check balance: on the towpath the Winter Tent always reaches dawn with sensible play, the Stealth Bivvy ~85% and the Summer Hammock never (by design). Storm and midsummer are survivable with any class played well; Dartmoor beats the hammock.
 
 ## Layout
 
