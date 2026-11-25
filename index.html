@@ -88,6 +88,8 @@ details summary{cursor:pointer;color:var(--muted);font-size:13px}
 .tpl button{font-size:12px;padding:4px 8px}
 .reasons{margin:0;padding-left:18px;font-size:13px}
 .src{font-size:12px;color:var(--muted);margin-top:6px}
+.chart{width:100%;height:auto;display:block;margin-top:10px}
+.chart text{font-size:10px;fill:var(--muted)}
 @media print{
   header,.sumbar,nav,.noprint{display:none!important}
   body{background:#fff;color:#000}
@@ -104,7 +106,7 @@ details summary{cursor:pointer;color:var(--muted);font-size:13px}
     <button data-v="kit" class="on"><span class="ic">🎒</span>Kit</button>
     <button data-v="classes"><span class="ic">🧩</span>Classes</button>
     <button data-v="pack"><span class="ic">✅</span>Pack</button>
-    <button data-v="weather"><span class="ic">🌦️</span>Weather</button>
+    <button data-v="weather"><span class="ic">🗺️</span>Plan</button>
     <button data-v="trips"><span class="ic">📓</span>Trips</button>
     <button data-v="data"><span class="ic">💾</span>Data</button>
   </nav>
@@ -170,10 +172,19 @@ details summary{cursor:pointer;color:var(--muted);font-size:13px}
 <!-- WEATHER -->
 <section class="view" id="v-weather">
   <div class="card">
+    <h2>🥾 Route (GPX)</h2>
+    <div class="row">
+      <input type="file" id="gpxFile" accept=".gpx,application/gpx+xml,application/octet-stream" class="grow">
+      <button id="gpxClear" hidden>Remove route</button>
+    </div>
+    <div class="src" id="gpxHelp">Import a GPX from HiiKER (hike page → Download/More → Export GPX). If you split the hike into days, each day's end becomes a camp. Otherwise camps are spaced evenly, and you can move them to any waypoint.</div>
+    <div id="routeOut"></div>
+  </div>
+  <div class="card">
     <h2>🌍 Live forecast</h2>
     <div class="row">
       <input id="fcLoc" class="grow" placeholder="Town, village or postcode area">
-      <input type="date" id="fcDate">
+      <label class="inl" style="color:var(--muted)">First night <input type="date" id="fcDate"></label>
       <button class="pri" id="fcGo">Get forecast</button>
     </div>
     <div class="src" id="fcSrc">Fills in the conditions below for the night you pick (up to 16 days ahead). Free data from Open-Meteo.</div>
@@ -203,10 +214,14 @@ details summary{cursor:pointer;color:var(--muted);font-size:13px}
     <div id="thermVerdict"></div>
     <div class="gauge"><div class="needle" id="needle"></div></div>
     <div class="gl"><span>Too cold</span><span>Just right</span><span>Too warm</span></div>
+    <div id="nightChart"></div>
+    <div id="nightTable"></div>
     <h3>How your layers stack up</h3>
     <table id="thermTable"></table>
     <h3>Ground insulation (R-value)</h3>
     <div id="rBox"></div>
+    <h3>Cheapest warmth to add</h3>
+    <div id="warmAdd"></div>
   </div>
   <div class="card">
     <h2>Weather protection</h2>
@@ -231,6 +246,8 @@ details summary{cursor:pointer;color:var(--muted);font-size:13px}
       <p><b>Wind chill</b>: the average night wind is reduced by your best shelter's wind rating (3/3 blocks it all). What gets through costs about 1°C per 4 mph, up to 5°C.</p>
       <p><b>Damp</b>: humidity of 90%+ or rain costs 1°C (synthetic fill loses a little loft). Rain your shelter can't handle costs another 2°C.</p>
       <p><b>Your calibration</b>: once you log trips on the Trips tab, the app learns whether you sleep warmer or colder than the maths says and adjusts.</p>
+      <p><b>Limit</b>: below the bag's comfort rating but above its limit, you'll get through the night curled up but sleep badly. Below the limit is dangerous.</p>
+      <p><b>Camp height</b>: when a route is loaded, each camp's forecast uses its elevation from the GPX. Air cools about 0.65°C per 100 m, so a hilltop camp can be noticeably colder than the valley.</p>
       <p><b>Verdict</b>: rating above the low = cold. More than 8°C below the low = you're carrying more warmth (and weight) than needed.</p>
     </div>
   </details>
@@ -556,8 +573,10 @@ function thermal(c,opts={}){
   const lines=classLines(c), wx=c.wx, low=+wx.low;
   const rows=[]; let rating;
   const bags=lines.filter(l=>l.it.kind==="bag");
+  let spread=null;
   if(bags.length){
     const b=bags.slice().sort((a,b)=>(a.it.comfort??15)-(b.it.comfort??15))[0];
+    if(b.it.limit!=null&&b.it.comfort!=null) spread=b.it.comfort-b.it.limit;
     rating=(b.it.comfort??15); rows.push({n:b.it.name+" (comfort)",v:rating,abs:true});
     bags.filter(x=>x!==b).forEach(x=>{rows.push({n:x.it.name+" (as extra quilt)",v:-5});rating-=5;});
   } else { rating=20; rows.push({n:"No sleeping bag selected",v:20,abs:true}); }
@@ -578,12 +597,14 @@ function thermal(c,opts={}){
   if(+wx.rain>=1&&p.rain<NEED.rain(+wx.rain)){rows.push({n:"Shelter can't keep this rain out — getting wet",v:2}); rating+=2;}
   if(!opts.noCalib&&S.calibOn){const cb=calibration(); if(cb.n&&cb.offset){rows.push({n:`Your personal offset (from ${cb.n} logged trip${cb.n>1?"s":""})`,v:cb.offset}); rating+=cb.offset;}}
   const margin=low-rating;
+  const limitRating=spread!=null?rating-spread:null;
   let verdict,cls_;
-  if(margin< -2){verdict="Too cold — add insulation";cls_="p-cold";}
+  if(limitRating!=null&&low<limitRating){verdict="Below your bag's limit — risky, add insulation";cls_="p-bad";}
+  else if(margin< -2){verdict=limitRating!=null?"Cold — below comfort but above the limit (survivable, poor sleep)":"Too cold — add insulation";cls_="p-cold";}
   else if(margin<0){verdict="Borderline — expect a chilly night";cls_="p-warn";}
   else if(margin<=8){verdict="Good — warm enough without excess";cls_="p-ok";}
   else {verdict="Too warm — you could leave warmth (and weight) at home";cls_="p-hot";}
-  return {rows,rating,margin,verdict,cls:cls_,pos:Math.max(0,Math.min(100,50+margin*4)),R,need,pads,hammock,onGround,low};
+  return {rows,rating,margin,limitRating,verdict,cls:cls_,pos:Math.max(0,Math.min(100,50+margin*4)),R,need,pads,hammock,onGround,low};
 }
 function fuelPlan(c){
   const wx=c.wx,n=Math.max(1,+wx.nights||1),low=+wx.low;
@@ -593,7 +614,7 @@ function fuelPlan(c){
   const need=litres*gpl, needR=need*1.15;
   const cans=(c.items.gas||0), left=Math.max(0,Math.min(230,+wx.gasLeft||0));
   const have=cans*left;
-  return {litres,gpl,need,needR,have,cans,hwb,ok:have>=needR,cansNeeded:Math.max(1,Math.ceil((needR-(cans>0?0:0))/230))};
+  return {litres,gpl,need,needR,have,cans,hwb,ok:have>=needR};
 }
 function warnings(c){
   const w=[],wx=c.wx,lines=classLines(c),ids=new Set(lines.map(l=>l.it.id));
@@ -626,9 +647,15 @@ function warnings(c){
   if(!ids.has("headlamp")) w.push(["warn","No headlamp packed."]);
   if(!ids.has("firstaid")) w.push(["warn","No first aid kit packed."]);
   const t=thermal(c);
-  if(t.margin<-2) w.push(["bad",`Sleep system rated ~${t.rating.toFixed(0)}°C vs a ${low}°C low. Add thermals, the foam/foil mats, or wear the gaiter and gloves.`]);
+  if(t.limitRating!=null&&low<t.limitRating) w.push(["bad",`${low}°C is below your sleep system's limit (~${t.limitRating.toFixed(1)}°C). Don't go with this setup — add serious insulation or pick a milder night.`]);
+  else if(t.margin<-2) w.push(["bad",`Sleep system rated ~${t.rating.toFixed(0)}°C vs a ${low}°C low. Add thermals, the foam/foil mats, or wear the gaiter and gloves.`]);
   if(t.margin>8) w.push(["info","Lots of spare warmth — leave the thermals or foil mat behind, or use the bag unzipped as a quilt."]);
   if(t.hammock&&!t.onGround&&t.R<2) w.push(["bad","Hammock with little underneath: put the foam mat in the hammock (or use an underquilt)."]);
+  const nd=wx.nightsData||[];
+  if(nd.length>1){const bad=nd.map((n,i)=>({n,i,t:thermal(withNight(c,n))})).filter(x=>x.t.margin<-2);
+    if(bad.length) w.push(["warn",`Cold nights on this trip: ${bad.map(x=>`night ${x.i+1} (${x.n.name}, ${x.n.low}°C)`).join(", ")}.`]);}
+  if(c.route){const legs=routeLegs(c);const long=legs.filter(l=>l.night&&l.latest&&l.latest<"08:00");
+    long.forEach(l=>w.push(["warn",`Day ${l.day}: ~${fmtH(l.time)} of walking — you'd need to leave by ${l.latest} to pitch before sunset.`]));}
   const wt=weights(c);
   if(wt.pack>15000) w.push(["warn",`Pack weight ${kg(wt.pack)} is above the ~15 kg comfortable limit for the Orkney.`]);
   return w;
@@ -639,7 +666,7 @@ function warnings(c){
    ============================================================ */
 function suggestClass(){
   const src=cls(), wx=clone(src.wx);
-  const label=wx.src?wx.src.split(" · ")[0]+" "+(wx.date||""):`${wx.low}°C`;
+  const label=wx.src?wx.src.split(" · ")[0]:`${wx.low}°C`;
   const c=newClassObj(`Suggested · ${label}`.trim()); c.wx=wx;
   const R=[]; const low=+wx.low,wind=+wx.wind,rain=+wx.rain,bugs=+wx.bugs,high=+wx.high;
   const add=(id,q=1)=>{const it=item(id); if(!usable(it)) return false; c.items[id]=Math.min(q,it.qty); return true;};
@@ -695,50 +722,180 @@ function suggestClass(){
 }
 
 /* ============================================================
+   GPX ROUTE
+   ============================================================ */
+function hav(a,b){const r=Math.PI/180,dLat=(b[0]-a[0])*r,dLon=(b[1]-a[1])*r;
+  const s=Math.sin(dLat/2)**2+Math.cos(a[0]*r)*Math.cos(b[0]*r)*Math.sin(dLon/2)**2;return 12742*Math.asin(Math.sqrt(s));}
+function parseGPX(text,fileName){
+  const x=new DOMParser().parseFromString(text,"application/xml");
+  if(x.getElementsByTagName("parsererror").length) throw new Error("That isn't a valid GPX file");
+  const tag=(el,n)=>[...el.getElementsByTagName(n)];
+  const val=(el,n)=>{const e=el.getElementsByTagName(n)[0];return e?e.textContent.trim():null;};
+  const ptsOf=list=>list.map(p=>{const e=val(p,"ele");return [+p.getAttribute("lat"),+p.getAttribute("lon"),e!=null&&e!==""?+e:null];}).filter(p=>isFinite(p[0])&&isFinite(p[1]));
+  let segs=tag(x,"trkseg").map(s=>ptsOf(tag(s,"trkpt"))).filter(s=>s.length>1);
+  if(!segs.length) segs=tag(x,"rte").map(r=>ptsOf(tag(r,"rtept"))).filter(s=>s.length>1);
+  if(!segs.length) throw new Error("No track or route found in that file");
+  const wpts=tag(x,"wpt").map(w=>{const e=val(w,"ele");return {name:val(w,"name")||"Waypoint",lat:+w.getAttribute("lat"),lon:+w.getAttribute("lon"),ele:e?+e:null};}).filter(w=>isFinite(w.lat));
+  const md=x.getElementsByTagName("metadata")[0], trk=x.getElementsByTagName("trk")[0]||x.getElementsByTagName("rte")[0];
+  const name=(md&&val(md,"name"))||(trk&&val(trk,"name"))||fileName.replace(/\.gpx$/i,"");
+  let pts=[],segEnds=[],km=0,prev=null;
+  segs.forEach(s=>{s.forEach(p=>{if(prev){const d=hav(prev,p); if(d<5) km+=d;} pts.push([+p[0].toFixed(5),+p[1].toFixed(5),p[2]==null?null:Math.round(p[2]),+km.toFixed(3)]);prev=p;});segEnds.push(+km.toFixed(3));});
+  if(pts.length>1500){const step=Math.ceil(pts.length/1500);pts=pts.filter((p,i)=>i%step===0||i===pts.length-1);}
+  const {up,down}=climb(pts);
+  const eles=pts.map(p=>p[2]).filter(e=>e!=null);
+  return {name,file:fileName,pts,segEnds,wpts,distKm:km,up,down,minE:eles.length?Math.min(...eles):null,maxE:eles.length?Math.max(...eles):null,hasEle:eles.length>0,campSel:[]};
+}
+function climb(pts,a=0,b=Infinity){let up=0,down=0,ref=null;
+  for(const p of pts){if(p[3]<a||p[3]>b||p[2]==null)continue;if(ref==null){ref=p[2];continue;}
+    const d=p[2]-ref;if(d>=5){up+=d;ref=p[2];}else if(d<=-5){down-=d;ref=p[2];}}
+  return {up:Math.round(up),down:Math.round(down)};}
+function pointAt(pts,km){for(let i=1;i<pts.length;i++){if(pts[i][3]>=km){const a=pts[i-1],b=pts[i],f=(km-a[3])/((b[3]-a[3])||1);
+  return [a[0]+(b[0]-a[0])*f,a[1]+(b[1]-a[1])*f,a[2]!=null&&b[2]!=null?Math.round(a[2]+(b[2]-a[2])*f):(a[2]??b[2]),km];}}return pts[pts.length-1];}
+function nearestKm(pts,w){let best=Infinity,km=0;for(const p of pts){const d=hav([w.lat,w.lon],p);if(d<best){best=d;km=p[3];}}return km;}
+function routeCamps(c){
+  const r=c.route;if(!r) return [];
+  const n=Math.max(1,+c.wx.nights||1), daySplit=r.segEnds.length>1;
+  const out=[];
+  for(let k=1;k<=n;k++){
+    const sel=(r.campSel||[])[k-1];
+    if(sel!=null&&sel!==""&&r.wpts[+sel]){const w=r.wpts[+sel],km=nearestKm(r.pts,w);
+      out.push({name:w.name,lat:w.lat,lon:w.lon,ele:w.ele??pointAt(r.pts,km)[2],km,how:"waypoint"});continue;}
+    const useSeg=daySplit&&k<r.segEnds.length;
+    const km=useSeg?r.segEnds[k-1]:r.distKm*k/(n+1), p=pointAt(r.pts,km);
+    out.push({name:`Camp ${k}`,lat:p[0],lon:p[1],ele:p[2],km,how:useSeg?"end of day "+k:"even split"});
+  }
+  return out.sort((x,y)=>x.km-y.km);
+}
+const walkHours=(km,up,packKg)=>(km/4.5+up/600)*(packKg>12?1+(packKg-12)*0.02:1);
+const fmtH=h=>`${Math.floor(h)}h${String(Math.round((h%1)*60)).padStart(2,"0")}`;
+function routeLegs(c){
+  const r=c.route;if(!r) return [];
+  const camps=routeCamps(c), packKg=weights(c).pack/1000;
+  const b=[0,...camps.map(x=>x.km),r.distKm], nd=c.wx.nightsData||[];
+  return b.slice(1).map((end,i)=>{const start=b[i],km=Math.max(0,end-start),cl=climb(r.pts,start,end),time=walkHours(km,cl.up,packKg);
+    const hot=(+c.wx.high||12)>=18, drink=Math.round(time*(hot?0.6:0.4)*10)/10;
+    const night=nd[i], sunset=night&&night.sunset?night.sunset.slice(11,16):null;
+    let latest=null; if(sunset){const [hh,mm]=sunset.split(":").map(Number);const mins=hh*60+mm-Math.round(time*1.15*60)-30;latest=mins<0?"00:00":`${String(Math.floor(mins/60)).padStart(2,"0")}:${String(mins%60).padStart(2,"0")}`;}
+    return {day:i+1,km,up:cl.up,down:cl.down,time,drink,night:i<camps.length,sunset,latest};});
+}
+function profileSVG(c){
+  const r=c.route;if(!r||!r.hasEle) return "";
+  const W=600,H=130,P=26,pts=r.pts.filter(p=>p[2]!=null),mn=r.minE,mx=Math.max(r.maxE,r.minE+20);
+  const X=km=>P+(km/(r.distKm||1))*(W-P-6), Y=e=>H-18-((e-mn)/(mx-mn))*(H-34);
+  const line=pts.map(p=>`${X(p[3]).toFixed(1)},${Y(p[2]).toFixed(1)}`).join(" ");
+  const camps=routeCamps(c);
+  return `<svg class="chart" viewBox="0 0 ${W} ${H}" role="img" aria-label="Elevation profile">
+    <polygon points="${X(0)},${H-18} ${line} ${X(r.distKm)},${H-18}" fill="#9ccc6533"/>
+    <polyline points="${line}" fill="none" stroke="#9ccc65" stroke-width="2"/>
+    <text x="2" y="${Y(mx)+4}">${mx}m</text><text x="2" y="${H-20}">${mn}m</text>
+    <text x="${P}" y="${H-4}">0 km</text><text x="${W-6}" y="${H-4}" text-anchor="end">${r.distKm.toFixed(1)} km</text>
+    ${camps.map((cp,i)=>`<line x1="${X(cp.km)}" x2="${X(cp.km)}" y1="10" y2="${H-18}" stroke="#ffb74d" stroke-dasharray="3 3"/><text x="${X(cp.km)}" y="9" text-anchor="middle" style="fill:#ffb74d">⛺${i+1}</text>`).join("")}
+  </svg>`;
+}
+
+/* ============================================================
    FORECAST (Open-Meteo, free, no key)
    ============================================================ */
+const addDays=(iso,n)=>{const d=new Date(iso+"T12:00:00Z");d.setUTCDate(d.getUTCDate()+n);return d.toISOString().slice(0,10);};
+const dayLabel=iso=>new Date(iso+"T12:00:00Z").toLocaleDateString("en-GB",{weekday:"short",day:"numeric",month:"short"});
+function classify(n){
+  const m=+n.date.slice(5,7);
+  return {rain:(n.rsum<0.5)?0:(n.rsum<6&&n.rmax<2)?1:2, wind:n.gmax<15?0:n.gmax<25?1:2,
+    bugs:(m>=5&&m<=9&&n.low>=8&&n.windAvg<=7)?((n.windAvg<=4&&n.humid>=80)?2:1):0};
+}
+function withNight(c,n){const k=classify(n);
+  return Object.assign({},c,{wx:Object.assign({},c.wx,{low:n.low,high:n.high,windAvg:n.windAvg,humid:n.humid,rain:k.rain,wind:k.wind,bugs:k.bugs,ground:n.low<=0?"frozen":(c.wx.ground==="frozen"?"normal":c.wx.ground)})});}
+async function fetchNight(lat,lon,ele,date,cache){
+  const key=`${lat.toFixed(3)},${lon.toFixed(3)},${ele??""}`;
+  if(!cache[key]) cache[key]=fetch(`https://api.open-meteo.com/v1/forecast?latitude=${lat}&longitude=${lon}${ele!=null?`&elevation=${ele}`:""}`+
+    `&hourly=temperature_2m,relative_humidity_2m,precipitation,wind_speed_10m,wind_gusts_10m&daily=temperature_2m_max,sunrise,sunset`+
+    `&wind_speed_unit=mph&timezone=Europe%2FLondon&forecast_days=16`).then(r=>{if(!r.ok) throw new Error("Forecast service error");return r.json();});
+  const f=await cache[key];
+  if(!f.hourly) throw new Error("No forecast returned");
+  const next=addDays(date,1), H=f.hourly, idx=[], day=[];
+  H.time.forEach((t,i)=>{if(t>=date+"T18:00"&&t<=next+"T08:00") idx.push(i); if(t>=date+"T09:00"&&t<date+"T18:00") day.push(i);});
+  if(!idx.length) throw new Error(`${dayLabel(date)} is outside the 16-day forecast`);
+  const pick=(arr,k)=>arr.map(i=>H[k][i]).filter(v=>v!=null);
+  const temps=pick(idx,"temperature_2m"),hum=pick(idx,"relative_humidity_2m"),wsp=pick(idx,"wind_speed_10m");
+  const gusts=pick([...day,...idx],"wind_gusts_10m"),rainAll=pick([...day,...idx],"precipitation");
+  const di=(f.daily?.time||[]).indexOf(date);
+  return {date,low:Math.round(Math.min(...temps)),
+    high:Math.round(di>=0?f.daily.temperature_2m_max[di]:Math.max(...pick(day,"temperature_2m"))),
+    windAvg:Math.round(wsp.reduce((a,b)=>a+b,0)/wsp.length),humid:Math.round(hum.reduce((a,b)=>a+b,0)/hum.length/5)*5,
+    gmax:Math.round(Math.max(...gusts)),rsum:+rainAll.reduce((a,b)=>a+b,0).toFixed(1),rmax:Math.max(...rainAll),
+    sunset:di>=0?f.daily.sunset?.[di]:null,sunrise:f.daily?.sunrise?.[(f.daily.time||[]).indexOf(next)]||null,
+    hours:idx.map(i=>[H.time[i].slice(11,13),H.temperature_2m[i]])};
+}
 async function getForecast(){
-  const q=$("#fcLoc").value.trim(), date=$("#fcDate").value||todayISO();
-  if(!q) return toast("Type a location first");
+  const c=cls(), wx=c.wx, date=$("#fcDate").value||todayISO(), q=$("#fcLoc").value.trim();
+  if(!c.route&&!q) return toast("Type a location or load a GPX route");
   const btn=$("#fcGo"); btn.disabled=true; btn.textContent="Loading…";
   try{
-    let loc=S.loc&&S.loc.query===q?S.loc:null;
-    if(!loc){
-      const g=await fetch(`https://geocoding-api.open-meteo.com/v1/search?name=${encodeURIComponent(q)}&count=5&language=en&format=json`).then(r=>r.json());
-      const res=(g.results||[]); const pick=res.find(r=>r.country_code==="GB")||res[0];
-      if(!pick) throw new Error("Couldn't find that place");
-      loc={query:q,name:pick.name+(pick.admin2?", "+pick.admin2:pick.admin1?", "+pick.admin1:""),lat:pick.latitude,lon:pick.longitude};
-      S.loc=loc;
+    const n=Math.max(1,+wx.nights||1); let places, where;
+    if(c.route){
+      places=routeCamps(c).map((cp,k)=>({name:cp.name,lat:cp.lat,lon:cp.lon,ele:cp.ele,date:addDays(date,k)}));
+      where=c.route.name;
+    } else {
+      let loc=S.loc&&S.loc.query===q?S.loc:null;
+      if(!loc){
+        const g=await fetch(`https://geocoding-api.open-meteo.com/v1/search?name=${encodeURIComponent(q)}&count=5&language=en&format=json`).then(r=>r.json());
+        const res=(g.results||[]),pk=res.find(r=>r.country_code==="GB")||res[0];
+        if(!pk) throw new Error("Couldn't find that place");
+        loc={query:q,name:pk.name+(pk.admin2?", "+pk.admin2:pk.admin1?", "+pk.admin1:""),lat:pk.latitude,lon:pk.longitude,ele:pk.elevation};
+        S.loc=loc;
+      }
+      places=Array.from({length:n},(_,k)=>({name:loc.name,lat:loc.lat,lon:loc.lon,ele:null,date:addDays(date,k)}));
+      where=loc.name;
     }
-    const url=`https://api.open-meteo.com/v1/forecast?latitude=${loc.lat}&longitude=${loc.lon}`+
-      `&hourly=temperature_2m,relative_humidity_2m,precipitation,wind_speed_10m,wind_gusts_10m&daily=temperature_2m_max`+
-      `&wind_speed_unit=mph&timezone=Europe%2FLondon&forecast_days=16`;
-    const f=await fetch(url).then(r=>r.json());
-    if(!f.hourly) throw new Error("No forecast returned");
-    const d1=new Date(date+"T12:00:00Z"); d1.setUTCDate(d1.getUTCDate()+1); const next=d1.toISOString().slice(0,10);
-    const H=f.hourly, idx=[], day=[];
-    H.time.forEach((t,i)=>{ if(t>=date+"T18:00"&&t<=next+"T08:00") idx.push(i); if(t>=date+"T09:00"&&t<date+"T18:00") day.push(i); });
-    if(!idx.length) throw new Error("That date is outside the 16-day forecast");
-    const pick=(arr,k)=>arr.map(i=>H[k][i]).filter(v=>v!=null);
-    const temps=pick(idx,"temperature_2m"), hum=pick(idx,"relative_humidity_2m"), wsp=pick(idx,"wind_speed_10m");
-    const gusts=pick([...day,...idx],"wind_gusts_10m"), rainAll=pick([...day,...idx],"precipitation");
-    const low=Math.round(Math.min(...temps));
-    const di=(f.daily?.time||[]).indexOf(date); const high=Math.round(di>=0?f.daily.temperature_2m_max[di]:Math.max(...pick(day,"temperature_2m")));
-    const windAvg=Math.round(wsp.reduce((a,b)=>a+b,0)/wsp.length), humid=Math.round(hum.reduce((a,b)=>a+b,0)/hum.length/5)*5;
-    const gmax=Math.max(...gusts), rsum=rainAll.reduce((a,b)=>a+b,0), rmax=Math.max(...rainAll);
-    const c=cls(), wx=c.wx;
-    wx.low=low; wx.high=high; wx.windAvg=windAvg; wx.humid=humid;
-    wx.rain=(rsum<0.5)?0:(rsum<6&&rmax<2)?1:2;
-    wx.wind=gmax<15?0:gmax<25?1:2;
-    const m=+date.slice(5,7);
-    wx.bugs=(m>=5&&m<=9&&low>=8&&windAvg<=7)?((windAvg<=4&&humid>=80)?2:1):0;
-    if(low<=0) wx.ground="frozen"; else if(wx.ground==="frozen") wx.ground="normal";
-    wx.src=`${loc.name} · night of ${new Date(date+"T12:00:00Z").toLocaleDateString("en-GB",{weekday:"short",day:"numeric",month:"short"})}`;
-    wx.date=date; wx.detail=`low ${low}°C, high ${high}°C, gusts up to ${Math.round(gmax)} mph, ${rsum.toFixed(1)} mm rain, ${humid}% humidity`;
+    const cache={};
+    const nights=await Promise.all(places.map(p=>fetchNight(p.lat,p.lon,p.ele,p.date,cache).then(r=>Object.assign(r,{name:p.name,ele:p.ele}))));
+    // design for the worst night
+    const ks=nights.map(classify);
+    wx.low=Math.min(...nights.map(x=>x.low)); wx.high=Math.max(...nights.map(x=>x.high));
+    wx.windAvg=Math.max(...nights.map(x=>x.windAvg)); wx.humid=Math.max(...nights.map(x=>x.humid));
+    wx.rain=Math.max(...ks.map(k=>k.rain)); wx.wind=Math.max(...ks.map(k=>k.wind)); wx.bugs=Math.max(...ks.map(k=>k.bugs));
+    if(wx.low<=0) wx.ground="frozen"; else if(wx.ground==="frozen") wx.ground="normal";
+    wx.nightsData=nights; wx.date=date;
+    wx.src=`${where} · ${n>1?`${n} nights from `:"night of "}${dayLabel(date)}`;
+    const gm=Math.max(...nights.map(x=>x.gmax)), rs=nights.reduce((s,x)=>s+x.rsum,0);
+    wx.detail=`${n>1?"worst case: ":""}low ${wx.low}°C, high ${wx.high}°C, gusts up to ${gm} mph, ${rs.toFixed(1)} mm rain, ${wx.humid}% humidity`;
     save(); render(); toast("Forecast loaded");
   }catch(e){
     toast(navigator.onLine===false?"No signal — enter conditions by hand":(e.message||"Forecast failed"));
   }finally{btn.disabled=false;btn.textContent="Get forecast";}
+}
+function nightChartSVG(c){
+  const nd=c.wx.nightsData; if(!nd||!nd.length) return "";
+  const n=nd.slice().sort((a,b)=>a.low-b.low)[0], hrs=n.hours||[]; if(hrs.length<2) return "";
+  const t=thermal(withNight(c,n));
+  const temps=hrs.map(h=>h[1]), lines=[t.rating,t.limitRating].filter(v=>v!=null);
+  const mn=Math.floor(Math.min(...temps,...lines)-1), mx=Math.ceil(Math.max(...temps,...lines)+1);
+  const W=600,H=150,P=28, X=i=>P+i*(W-P-8)/(hrs.length-1), Y=v=>10+(mx-v)/(mx-mn||1)*(H-34);
+  const path=hrs.map((h,i)=>`${X(i).toFixed(1)},${Y(h[1]).toFixed(1)}`).join(" ");
+  const below=hrs.filter(h=>h[1]<t.rating).length;
+  return `<h3>${nd.length>1?"Coldest night — ":"Overnight temperature — "}${esc(n.name)}, ${dayLabel(n.date)}</h3>
+  <svg class="chart" viewBox="0 0 ${W} ${H}" role="img" aria-label="Overnight temperature">
+    <rect x="${P}" y="${Y(t.rating)}" width="${W-P-8}" height="${Math.max(0,H-24-Y(t.rating))}" fill="#64b5f622"/>
+    <line x1="${P}" x2="${W-8}" y1="${Y(t.rating)}" y2="${Y(t.rating)}" stroke="#81c784" stroke-dasharray="5 4"/>
+    <text x="${W-8}" y="${Y(t.rating)-4}" text-anchor="end" style="fill:#81c784">your comfort ${t.rating.toFixed(1)}°C</text>
+    ${t.limitRating!=null?`<line x1="${P}" x2="${W-8}" y1="${Y(t.limitRating)}" y2="${Y(t.limitRating)}" stroke="#e57373" stroke-dasharray="2 4"/>
+    <text x="${W-8}" y="${Y(t.limitRating)+12}" text-anchor="end" style="fill:#e57373">limit ${t.limitRating.toFixed(1)}°C</text>`:""}
+    <polyline points="${path}" fill="none" stroke="#ffb74d" stroke-width="2.5"/>
+    ${hrs.map((h,i)=>i%2===0?`<text x="${X(i)}" y="${H-6}" text-anchor="middle">${h[0]}:00</text>`:"").join("")}
+    <text x="2" y="${Y(mx)+8}">${mx}°</text><text x="2" y="${Y(mn)}">${mn}°</text>
+  </svg>
+  <div class="small muted">${below?`About <b style="color:var(--text)">${below} hour${below>1?"s":""}</b> of the night below your comfort line (shaded blue).`:"Above your comfort line all night."}
+  ${n.sunset?` Sunset ${n.sunset.slice(11,16)}${n.sunrise?`, sunrise ${n.sunrise.slice(11,16)} — ${((new Date(n.sunrise)-new Date(n.sunset))/36e5).toFixed(1)} h of darkness`:""}.`:""}</div>`;
+}
+function warmthOptions(c){
+  const base=thermal(c).rating,out=[];
+  S.inv.forEach(it=>{
+    if(!usable(it)||!["layer","pad","bag"].includes(it.kind)||(c.items[it.id]||0)>0) return;
+    const c2=Object.assign({},c,{items:Object.assign({},c.items,{[it.id]:1})});
+    const d=base-thermal(c2).rating;
+    if(d>0.05) out.push({it,d,per:d/Math.max(1,it.g)*100});
+  });
+  return out.sort((a,b)=>b.per-a.per).slice(0,5);
 }
 
 /* ============================================================
@@ -856,14 +1013,22 @@ function renderWeather(){
   if(!$("#fcDate").value) $("#fcDate").value=wx.date&&wx.date>=todayISO()?wx.date:todayISO();
   $("#fcSrc").innerHTML=wx.src?`📡 <b>${esc(wx.src)}</b> — ${esc(wx.detail||"")}. Midges are a rough guess from season, temperature and wind.`:
     "Fills in the conditions below for the night you pick (up to 16 days ahead). Free data from Open-Meteo.";
+  renderRoute(c);
   const t=thermal(c);
   $("#thermVerdict").innerHTML=`<div class="row"><span class="pill ${t.cls}">${t.verdict}</span>
-    <span class="small muted">Sleep system ≈ <b style="color:var(--text)">${t.rating.toFixed(1)}°C</b> comfort vs ${t.low}°C forecast low (margin ${t.margin>=0?"+":""}${t.margin.toFixed(1)}°C)</span></div>`;
+    <span class="small muted">Sleep system ≈ <b style="color:var(--text)">${t.rating.toFixed(1)}°C</b> comfort${t.limitRating!=null?`, ${t.limitRating.toFixed(1)}°C limit`:""} vs ${t.low}°C ${wx.nightsData&&wx.nightsData.length>1?"coldest night":"forecast low"} (margin ${t.margin>=0?"+":""}${t.margin.toFixed(1)}°C)</span></div>`;
   $("#needle").style.left=`calc(${t.pos}% - 2px)`;
+  $("#nightChart").innerHTML=nightChartSVG(c);
+  const nd=wx.nightsData||[];
+  $("#nightTable").innerHTML=nd.length>1?`<h3>Night by night</h3><table><tr><th>Night</th><th>Camp</th><th class="n">Low</th><th class="n">Gusts</th><th class="n">Rain</th><th class="n">Verdict</th></tr>
+    ${nd.map((n,i)=>{const tn=thermal(withNight(c,n));return `<tr><td>${i+1} · ${dayLabel(n.date)}</td><td>${esc(n.name)}${n.ele!=null?` <span class="muted">${n.ele} m</span>`:""}</td><td class="n">${n.low}°C</td><td class="n">${n.gmax} mph</td><td class="n">${n.rsum} mm</td><td class="n"><span class="pill ${tn.cls}" title="${esc(tn.verdict)}">${tn.margin>=0?"+":""}${tn.margin.toFixed(0)}°</span></td></tr>`;}).join("")}</table>`:"";
   $("#thermTable").innerHTML=`<tr><th>Layer</th><th class="n">Effect</th></tr>`+t.rows.map(r=>`<tr><td>${esc(r.n)}</td><td class="n">${r.abs?r.v+"°C":(r.v>0?"+":"")+r.v+"°C"}</td></tr>`).join("")+
     `<tr><th>Effective comfort</th><th class="n">${t.rating.toFixed(1)}°C</th></tr>`;
   $("#rBox").innerHTML=`<div class="row"><span class="pill ${t.R>=t.need?"p-ok":"p-cold"}">Total R${t.R.toFixed(1)}</span><span class="small muted">Need ~R${t.need} for ${t.low}°C${t.hammock&&!t.onGround?" in a hammock":""}</span></div>
     <div class="small muted" style="margin-top:6px">${t.pads.length?t.pads.map(p=>`${esc(p.it.name)}: R${p.it.r}`).join(" + "):"No sleeping mats selected."}</div>`;
+  const wo=warmthOptions(c);
+  $("#warmAdd").innerHTML=wo.length?wo.map(o=>`<div class="item"><div class="nm"><b>${esc(o.it.name)}</b><span class="small muted">${o.d.toFixed(1)}°C warmer for ${fmtW(o.it.g)} · ${o.per.toFixed(1)}°C per 100 g</span></div><button class="tog" data-addwarm="${o.it.id}">+ Add</button></div>`).join("")
+    :`<div class="small muted">Everything that adds warmth is already packed.${t.margin<-2?" Add a beanie or puffy jacket from + Add item, or consider a warmer bag.":""}</div>`;
   const p=protection(c);
   const row=(n,have,req)=>`<tr><td>${n}</td><td class="n">${have}/3</td><td class="n">${req}/3</td><td class="n"><span class="pill ${have>=req?"p-ok":"p-bad"}">${have>=req?"OK":"Short"}</span></td></tr>`;
   $("#protTable").innerHTML=`<tr><th>Threat</th><th class="n">You have</th><th class="n">Needed</th><th></th></tr>`+row("Rain",p.rain,NEED.rain(+wx.rain))+row("Wind",p.wind,NEED.wind(+wx.wind))+row("Midges",p.bug,NEED.bug(+wx.bugs));
@@ -878,10 +1043,26 @@ function renderWeather(){
     <div style="margin-top:8px"><span class="pill ${f.ok?"p-ok":"p-bad"}">${f.ok?"Enough fuel":"Not enough fuel"}</span>
     <span class="small muted">${f.ok?"":`Add ${Math.ceil((f.needR-f.have)/230)} more full canister${Math.ceil((f.needR-f.have)/230)>1?"s":""} or cut hot drinks.`} Weigh a used canister and subtract ~160 g to get the gas left.</span></div>`;
 }
+function renderRoute(c){
+  const r=c.route; $("#gpxClear").hidden=!r;
+  if(!r){$("#routeOut").innerHTML="";return;}
+  const camps=routeCamps(c), legs=routeLegs(c), opts=i=>`<option value="">Auto (${r.segEnds.length>1&&i<r.segEnds.length?"end of day "+i:"even split"})</option>`+r.wpts.map((w,j)=>`<option value="${j}" ${String((r.campSel||[])[i-1])===String(j)?"selected":""}>${esc(w.name)}</option>`).join("");
+  const tot=legs.reduce((s,l)=>s+l.time,0);
+  $("#routeOut").innerHTML=`<div style="margin-top:10px"><b>${esc(r.name)}</b>
+    <div class="row small muted" style="gap:12px;margin-top:4px"><span>📏 ${r.distKm.toFixed(1)} km</span>${r.hasEle?`<span>⬆️ ${r.up} m</span><span>⬇️ ${r.down} m</span><span>⛰️ ${r.minE}–${r.maxE} m</span>`:"<span>No elevation data in file</span>"}<span>🚶 ~${fmtH(tot)} walking with your ${kg(weights(c).pack)} pack</span></div></div>
+    ${profileSVG(c)}
+    <h3>Camps (${camps.length} night${camps.length>1?"s":""} — change Nights below)</h3>
+    <table><tr><th>Night</th><th>Camp spot</th><th class="n">At</th><th class="n">Height</th></tr>
+    ${camps.map((cp,i)=>`<tr><td>${i+1}</td><td>${r.wpts.length?`<select data-camp="${i}" style="max-width:52vw">${opts(i+1)}</select>`:esc(cp.name)}</td><td class="n">${cp.km.toFixed(1)} km</td><td class="n">${cp.ele!=null?cp.ele+" m":"—"}</td></tr>`).join("")}</table>
+    <h3>Each day</h3>
+    <table><tr><th>Day</th><th class="n">Distance</th><th class="n">Climb</th><th class="n">Walking</th><th class="n">Drink</th><th class="n">Leave by</th></tr>
+    ${legs.map(l=>`<tr><td>${l.day}${l.night?"":" (out)"}</td><td class="n">${l.km.toFixed(1)} km</td><td class="n">${l.up} m</td><td class="n">${fmtH(l.time)}</td><td class="n">~${l.drink} L</td><td class="n">${l.latest||"—"}</td></tr>`).join("")}</table>
+    <div class="small muted" style="margin-top:6px">Walking time uses Naismith's rule (4.5 km/h + 1 h per 600 m climbed), slowed 2% per kg above 12 kg. "Leave by" allows 15% for breaks and 30 min to pitch before sunset; it appears after you get the forecast. Drinking water excludes cooking.</div>`;
+}
 function renderTrips(){
   $("#trClass").innerHTML=S.classes.map(c=>`<option value="${c.id}" ${c.id===S.active?"selected":""}>${esc(c.name)}</option>`).join("");
   if(!$("#trDate").value) $("#trDate").value=todayISO();
-  if(!$("#trLoc").value&&S.loc) $("#trLoc").value=S.loc.name;
+  if(!$("#trLoc").value&&(cls().route||S.loc)) $("#trLoc").value=cls().route?cls().route.name:S.loc.name;
   if($("#trLow").value==="") $("#trLow").value=cls().wx.low;
   const cb=calibration();
   $("#calibCard").innerHTML=`<h2>🎯 Your sleep calibration</h2>
@@ -943,10 +1124,23 @@ $("#packCopy").onclick=()=>{const c=cls();let t=`${c.name}\n`;
   t+=`\nPack weight: ${kg(weights(c).pack)}`;
   (navigator.clipboard?navigator.clipboard.writeText(t):Promise.reject()).then(()=>toast("Copied"),()=>download(c.name+".txt",t,"text/plain"));};
 Object.entries(WXF).forEach(([id,k])=>{
-  $("#"+id).addEventListener("input",e=>{const v=e.target.value; cls().wx[k]=k==="ground"?v:(v===""?0:+v); save(); renderWeather(); renderSumbar();});
+  $("#"+id).addEventListener("input",e=>{const v=e.target.value,c=cls(); c.wx[k]=k==="ground"?v:(v===""?0:+v);
+    if(k==="nights"&&c.wx.nightsData&&c.wx.nightsData.length!==+v) c.wx.nightsData=null;
+    if(["low","high","windAvg","humid","rain","wind","bugs"].includes(k)&&c.wx.nightsData){c.wx.nightsData=null;c.wx.src="";}
+    save(); renderWeather(); renderSumbar();});
 });
 $("#fpHwb").onchange=e=>{cls().wx.hwb=e.target.checked;save();renderWeather();};
 $("#fcGo").onclick=getForecast;
+$("#gpxFile").onchange=async e=>{const f=e.target.files[0];if(!f)return;
+  try{const r=parseGPX(await f.text(),f.name);const c=cls();c.route=r;if(r.segEnds.length>1) c.wx.nights=r.segEnds.length-1;
+    c.wx.nightsData=null;save();render();toast(`Route loaded: ${r.distKm.toFixed(1)} km`);}
+  catch(err){toast(err.message||"Couldn't read that GPX");}
+  e.target.value="";};
+$("#gpxClear").onclick=()=>{const c=cls(),old=c.route,od=c.wx.nightsData;delete c.route;c.wx.nightsData=null;save();render();
+  toast("Route removed",()=>{c.route=old;c.wx.nightsData=od;save();render();});};
+$("#routeOut").onchange=e=>{const i=e.target.dataset.camp;if(i==null)return;const r=cls().route;r.campSel=r.campSel||[];r.campSel[+i]=e.target.value;
+  cls().wx.nightsData=null;save();render();toast("Camp moved — get the forecast again");};
+$("#warmAdd").onclick=e=>{const id=e.target.dataset.addwarm;if(!id)return;cls().items[id]=1;save();render();toast("Added to class");};
 $("#fcLoc").addEventListener("keydown",e=>{if(e.key==="Enter")getForecast();});
 $("#suggestBtn").onclick=suggestClass;
 
