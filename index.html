@@ -1,0 +1,745 @@
+<!DOCTYPE html>
+<html lang="en-GB">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+<meta name="theme-color" content="#1d2b22">
+<title>Sam's Camp Kit Planner</title>
+<style>
+:root{
+  --bg:#141c17; --panel:#1d2b22; --panel2:#24352a; --line:#34493b;
+  --text:#e8efe9; --muted:#9db2a3; --accent:#9ccc65; --accent2:#ffb74d;
+  --cold:#64b5f6; --hot:#ff8a65; --ok:#81c784; --warn:#ffd54f; --bad:#e57373;
+  --r:12px;
+}
+*{box-sizing:border-box}
+html,body{margin:0;background:var(--bg);color:var(--text);font:15px/1.45 system-ui,-apple-system,Segoe UI,Roboto,sans-serif}
+header{position:sticky;top:0;z-index:20;background:var(--panel);border-bottom:1px solid var(--line);padding:10px 14px 0}
+h1{font-size:18px;margin:0 0 8px;display:flex;align-items:center;gap:8px}
+h1 small{font-weight:400;color:var(--muted);font-size:12px}
+nav{display:flex;gap:4px;overflow-x:auto;scrollbar-width:none}
+nav button{flex:1 0 auto;background:none;border:0;color:var(--muted);padding:9px 12px;font-size:14px;border-bottom:3px solid transparent;cursor:pointer}
+nav button.on{color:var(--text);border-color:var(--accent)}
+main{max-width:980px;margin:0 auto;padding:14px 12px 120px}
+.view{display:none}.view.on{display:block}
+.card{background:var(--panel);border:1px solid var(--line);border-radius:var(--r);padding:12px;margin-bottom:12px}
+.row{display:flex;gap:8px;align-items:center;flex-wrap:wrap}
+.grow{flex:1 1 auto}
+h2{font-size:16px;margin:0 0 8px}
+h3{font-size:14px;margin:14px 0 6px;color:var(--accent);text-transform:uppercase;letter-spacing:.05em}
+.muted{color:var(--muted)}.small{font-size:12px}
+button,.btn{background:var(--panel2);color:var(--text);border:1px solid var(--line);border-radius:9px;padding:7px 11px;font-size:14px;cursor:pointer}
+button.pri{background:var(--accent);color:#14210f;border-color:var(--accent);font-weight:600}
+button.danger{border-color:#7a3b3b;color:#ffb3b3}
+button:disabled{opacity:.4}
+input,select,textarea{background:#101712;color:var(--text);border:1px solid var(--line);border-radius:8px;padding:7px 9px;font-size:14px;max-width:100%}
+input[type=number]{width:80px}
+label{font-size:13px;color:var(--muted);display:flex;flex-direction:column;gap:3px}
+.grid2{display:grid;grid-template-columns:repeat(auto-fit,minmax(150px,1fr));gap:8px}
+.item{display:flex;gap:10px;align-items:center;padding:9px 4px;border-bottom:1px solid var(--line)}
+.item:last-child{border-bottom:0}
+.item .nm{flex:1;min-width:0}
+.item .nm b{font-weight:600;display:block}
+.item .w{white-space:nowrap;color:var(--muted);font-size:13px;text-align:right}
+.chips{display:flex;gap:4px;flex-wrap:wrap;margin-top:3px}
+.chip{font-size:11px;padding:1px 7px;border-radius:20px;background:#2e4335;color:#cfe3d3}
+.chip.rain{background:#203a52}.chip.wind{background:#3a3a52}.chip.bug{background:#4a3d22}.chip.r{background:#3d2f4f}.chip.warm{background:#523126}.chip.ret{background:#552}
+.step{display:flex;align-items:center;gap:4px}
+.step button{width:32px;height:32px;padding:0;font-size:18px;line-height:1}
+.step span{min-width:34px;text-align:center;font-weight:600}
+.dim{opacity:.5}
+.tog{font-size:12px;padding:4px 8px}
+.tog.on{background:#3b4e2a;border-color:var(--accent)}
+.sumbar{position:fixed;left:0;right:0;bottom:0;z-index:30;background:var(--panel);border-top:1px solid var(--line);padding:8px 12px calc(8px + env(safe-area-inset-bottom))}
+.sumbar .in{max-width:980px;margin:0 auto;display:flex;gap:12px;align-items:center;flex-wrap:wrap;font-size:13px}
+.big{font-size:20px;font-weight:700}
+.pill{padding:3px 9px;border-radius:20px;font-weight:600;font-size:12px}
+.p-ok{background:#2e5631;color:#c8f0ca}.p-warn{background:#5a4c18;color:#ffe9a3}.p-bad{background:#5b2626;color:#ffc4c4}.p-cold{background:#1f3e5c;color:#cfe6ff}.p-hot{background:#5c2c1f;color:#ffd5c7}
+.bars{display:flex;height:12px;border-radius:6px;overflow:hidden;background:#101712;margin:6px 0}
+.bars div{height:100%}
+.legend{display:flex;flex-wrap:wrap;gap:8px;font-size:12px}
+.legend i{display:inline-block;width:10px;height:10px;border-radius:3px;margin-right:4px;vertical-align:-1px}
+.gauge{position:relative;height:18px;border-radius:9px;background:linear-gradient(90deg,var(--cold),var(--ok) 40%,var(--ok) 60%,var(--hot));margin:10px 0 4px}
+.gauge .needle{position:absolute;top:-4px;width:4px;height:26px;background:#fff;border-radius:2px;box-shadow:0 0 0 2px #000a;transition:left .3s}
+.gl{display:flex;justify-content:space-between;font-size:11px;color:var(--muted)}
+table{width:100%;border-collapse:collapse;font-size:13px}
+td,th{padding:5px 4px;border-bottom:1px solid var(--line);text-align:left}
+td.n,th.n{text-align:right}
+.warnings li{margin:4px 0}
+.ck{width:22px;height:22px;accent-color:var(--accent);flex:none}
+.done .nm b{text-decoration:line-through;color:var(--muted)}
+.prog{height:10px;background:#101712;border-radius:5px;overflow:hidden}
+.prog div{height:100%;background:var(--accent);transition:width .3s}
+dialog{background:var(--panel);color:var(--text);border:1px solid var(--line);border-radius:14px;width:min(560px,94vw);padding:14px}
+dialog::backdrop{background:#000a}
+.toast{position:fixed;left:50%;bottom:90px;transform:translateX(-50%);background:#000d;color:#fff;padding:8px 14px;border-radius:20px;font-size:13px;z-index:99;opacity:0;transition:opacity .3s;pointer-events:none}
+.toast.on{opacity:1}
+details summary{cursor:pointer;color:var(--muted);font-size:13px}
+.research{font-size:12px;color:var(--muted);margin-top:4px;border-left:2px solid var(--line);padding-left:8px}
+@media print{
+  header,.sumbar,nav,.noprint{display:none!important}
+  body{background:#fff;color:#000}
+  .card{border:1px solid #999;background:#fff}
+  .view{display:none!important}#v-pack{display:block!important}
+  .chip{background:#eee!important;color:#000}
+}
+</style>
+</head>
+<body>
+<header>
+  <div class="row" style="margin-bottom:8px"><h1 class="grow" style="margin:0">🏕️ Camp Kit Planner</h1><select id="hdrSel" title="Active class" style="max-width:55vw"></select></div>
+  <nav id="tabs">
+    <button data-v="kit" class="on">Kit</button>
+    <button data-v="classes">Class builder</button>
+    <button data-v="pack">Checklist</button>
+    <button data-v="weather">Weather stack</button>
+    <button data-v="data">Export</button>
+  </nav>
+</header>
+
+<main>
+<!-- KIT / INVENTORY -->
+<section class="view on" id="v-kit">
+  <div class="card">
+    <div class="row">
+      <input id="kitSearch" class="grow" placeholder="Search kit…">
+      <select id="kitFilter">
+        <option value="active">Active kit</option>
+        <option value="all">All (incl. retired)</option>
+        <option value="retired">Retired / spares</option>
+        <option value="custom">My added items</option>
+      </select>
+      <button class="pri" id="addItemBtn">+ Add item</button>
+    </div>
+    <div class="small muted" id="kitTotals" style="margin-top:8px"></div>
+  </div>
+  <div id="kitList"></div>
+</section>
+
+<!-- CLASS BUILDER -->
+<section class="view" id="v-classes">
+  <div class="card">
+    <div class="row">
+      <select id="classSel" class="grow"></select>
+      <button id="newClass">New</button>
+      <button id="dupClass">Duplicate</button>
+      <button id="renClass">Rename</button>
+      <button class="danger" id="delClass">Delete</button>
+    </div>
+    <div class="row small muted" style="margin-top:8px">
+      <span>Set how many of each item this class takes. Tap <b>Worn</b> for things on your body (not counted in pack weight).</span>
+    </div>
+    <div class="row" style="margin-top:8px">
+      <input id="clsSearch" class="grow" placeholder="Filter items…">
+      <label class="row" style="flex-direction:row;gap:6px"><input type="checkbox" id="clsOnlySel"> only selected</label>
+    </div>
+  </div>
+  <div id="clsWeights" class="card"></div>
+  <div id="clsList"></div>
+</section>
+
+<!-- CHECKLIST -->
+<section class="view" id="v-pack">
+  <div class="card">
+    <div class="row"><h2 class="grow" id="packTitle">Packing checklist</h2>
+      <button class="noprint" id="packReset">Untick all</button>
+      <button class="noprint" id="packPrint">Print</button>
+      <button class="noprint" id="packCopy">Copy as text</button>
+    </div>
+    <div class="prog"><div id="packProg"></div></div>
+    <div class="small muted" id="packStat" style="margin-top:6px"></div>
+  </div>
+  <div id="packList"></div>
+</section>
+
+<!-- WEATHER STACK -->
+<section class="view" id="v-weather">
+  <div class="card">
+    <h2>Expected conditions <span class="small muted" id="wxClassName"></span></h2>
+    <div class="grid2">
+      <label>Overnight low (°C)<input type="number" id="wxLow" step="1"></label>
+      <label>Daytime high (°C)<input type="number" id="wxHigh" step="1"></label>
+      <label>Rain<select id="wxRain"><option value="0">Dry</option><option value="1">Showers / drizzle</option><option value="2">Heavy / persistent</option></select></label>
+      <label>Wind<select id="wxWind"><option value="0">Calm (&lt;10 mph)</option><option value="1">Breezy (10–20 mph)</option><option value="2">Gusty / gale (25+ mph)</option></select></label>
+      <label>Midges / mozzies<select id="wxBugs"><option value="0">None</option><option value="1">Some</option><option value="2">Swarming (canal, still water)</option></select></label>
+      <label>Ground<select id="wxGround"><option value="normal">Normal turf</option><option value="soft">Soft peat / mud</option><option value="hard">Rock-hard dry soil</option><option value="frozen">Frozen</option></select></label>
+      <label>Nights<input type="number" id="wxNights" min="1" step="1"></label>
+      <label>Water carried (L)<input type="number" id="wxWater" min="0" step="0.5"></label>
+      <label>Food per day (kg)<input type="number" id="wxFood" min="0" step="0.1"></label>
+    </div>
+    <p class="small muted" style="margin:8px 0 0">Conditions are saved with the current class. You can check the Met Office forecast and type the numbers in.</p>
+  </div>
+  <div class="card">
+    <h2>Heat retention stack</h2>
+    <div id="thermVerdict"></div>
+    <div class="gauge"><div class="needle" id="needle"></div></div>
+    <div class="gl"><span>Too cold</span><span>Just right</span><span>Too warm</span></div>
+    <h3>How your layers stack up</h3>
+    <table id="thermTable"></table>
+    <h3>Ground insulation (R-value)</h3>
+    <div id="rBox"></div>
+  </div>
+  <div class="card">
+    <h2>Weather protection</h2>
+    <table id="protTable"></table>
+    <h3>Warnings &amp; tips</h3>
+    <ul class="warnings" id="wxWarn"></ul>
+  </div>
+  <details class="card"><summary>How the stacking maths works</summary>
+    <div class="small muted" style="margin-top:8px">
+      <p><b>Sleep rating</b> starts at your sleeping bag's comfort temperature. Each extra layer (thermals, gaiter, gloves) lowers it by its warmth bonus. Shelters add a little: tent +3°C, bivvy +2°C, tarp +1°C (capped at +5°C combined).</p>
+      <p><b>Ground R-value</b>: sleeping-mat R-values add together when stacked. Target R for the night: ≥10°C → R1, 5–10°C → R2, 0–5°C → R3, −5–0°C → R4, below −5°C → R5. Each point you're short adds about 3°C to your sleep rating (you'll feel the cold from below). Hammocks need R2+ underneath or you lose a lot of heat.</p>
+      <p><b>Verdict</b>: if your rating is above the overnight low, you'll be cold. If it's more than 8°C below the low you're carrying more warmth (and weight) than needed.</p>
+      <p>Ratings marked "est." are estimates — budget gear rarely has official EN/ISO ratings. Edit any item to put in your own numbers.</p>
+    </div>
+  </details>
+</section>
+
+<!-- DATA / EXPORT -->
+<section class="view" id="v-data">
+  <div class="card">
+    <h2>Export</h2>
+    <div class="row">
+      <button id="expInvCsv">Kit list (CSV)</button>
+      <button id="expInvJson">Kit list (JSON)</button>
+      <button id="expClass">Current class (JSON)</button>
+      <button id="expClassCsv">Current class (CSV)</button>
+      <button class="pri" id="expAll">Full backup (JSON)</button>
+    </div>
+    <p class="small muted">CSV opens in Excel / Google Sheets. JSON can be imported back into this app on any device.</p>
+  </div>
+  <div class="card">
+    <h2>Import</h2>
+    <div class="row"><input type="file" id="impFile" accept=".json,application/json"></div>
+    <p class="small muted">Accepts a full backup, a kit list, or a single class file. A class file is added to your classes; a kit list merges new items in by name.</p>
+  </div>
+  <div class="card">
+    <h2>Reset</h2>
+    <div class="row"><button class="danger" id="resetAll">Restore original kit &amp; preset classes</button></div>
+    <p class="small muted">Your data is saved in this browser only. Make a backup before clearing browser data or switching phones.</p>
+  </div>
+</section>
+</main>
+
+<div class="sumbar"><div class="in" id="sumbar"></div></div>
+<div class="toast" id="toast"></div>
+
+<dialog id="itemDlg">
+  <form method="dialog" id="itemForm">
+    <h2 id="dlgTitle">Item</h2>
+    <div class="grid2">
+      <label style="grid-column:1/-1">Name<input name="name" required></label>
+      <label>Category<select name="cat" id="dlgCat"></select></label>
+      <label>Quantity owned<input type="number" name="qty" min="0" step="1"></label>
+      <label>Weight each (g)<input type="number" name="g" min="0" step="1"></label>
+      <label>Status<select name="status"><option value="active">Active</option><option value="retired">Retired / spare</option></select></label>
+      <label>Item type<select name="kind">
+        <option value="other">General</option><option value="shelter">Shelter</option><option value="bag">Sleeping bag / quilt</option>
+        <option value="pad">Sleeping mat / pad</option><option value="layer">Warm layer</option><option value="consumable">Consumable (fuel/food)</option></select></label>
+      <label>Shelter style<select name="shelter"><option value="">—</option><option value="tent">Tent</option><option value="bivvy">Bivvy</option><option value="tarp">Tarp</option><option value="hammock">Hammock</option><option value="poncho">Poncho</option></select></label>
+      <label>Rain protection (0–3)<input type="number" name="rain" min="0" max="3" step="1"></label>
+      <label>Wind protection (0–3)<input type="number" name="wind" min="0" max="3" step="1"></label>
+      <label>Bug protection (0–3)<input type="number" name="bug" min="0" max="3" step="1"></label>
+      <label>Warmth bonus (°C)<input type="number" name="warmth" step="0.5"></label>
+      <label>R-value (mats)<input type="number" name="r" min="0" step="0.1"></label>
+      <label>Bag comfort temp (°C)<input type="number" name="comfort" step="1"></label>
+      <label>Bag limit temp (°C)<input type="number" name="limit" step="1"></label>
+      <label style="grid-column:1/-1">Seasons (comma separated)<input name="seasons" placeholder="Spring, Summer, Autumn, Winter"></label>
+      <label style="grid-column:1/-1">Weather &amp; terrain notes<textarea name="notes" rows="3"></textarea></label>
+    </div>
+    <div id="dlgResearch" class="research"></div>
+    <div class="row" style="margin-top:12px;justify-content:flex-end">
+      <button type="button" class="danger" id="dlgDel">Delete</button>
+      <span class="grow"></span>
+      <button value="cancel" formnovalidate>Cancel</button>
+      <button class="pri" value="save" id="dlgSave">Save</button>
+    </div>
+  </form>
+</dialog>
+
+<script>
+/* ============================================================
+   DEFAULT KIT — Sam's notebook inventory, checked against
+   retailer / manufacturer specs (Nov 2026). Weights in grams,
+   per single unit. "est." = no official figure found.
+   ============================================================ */
+const CATS = [
+  "Shelter & Rigging","Sleep & Thermal","Clothing","Packs & Storage",
+  "Kitchen & Hydration","Lighting & Power","Bugs & Recon","Hygiene & First Aid","Other"
+];
+const ALL4 = ["Spring","Summer","Autumn","Winter"];
+
+const DEFAULT_INV = [
+ // ---------- SHELTER & RIGGING ----------
+ {id:"tent_eiger",name:"Double Eiger Trekker Tent (Pinnacle Summit)",cat:"Shelter & Rigging",qty:1,g:1840,kind:"shelter",shelter:"tent",rain:2,wind:2,bug:3,warmth:3,seasons:ALL4,
+  notes:"Double-skin 2-person tunnel. Holds well in rain and strong gusts when pitched low, tail into the wind. Best for autumn, winter and exposed spots.",
+  research:"Checked: 1.84 kg, 2000HH polyester flysheet, taped seams, mesh-lined door, poles & pegs included (Summit/vfm e-store listings). 2000HH is entry-level — fine for UK showers; in a long storm, seam-seal and pitch tight."},
+ {id:"bivvy",name:"British Army Gore-Tex Bivvy Bag (MTP/DPM)",cat:"Shelter & Rigging",qty:1,g:850,kind:"shelter",shelter:"bivvy",rain:3,wind:3,bug:0,warmth:2,seasons:["Spring","Autumn","Winter"],
+  notes:"Breathable PTFE membrane stops driving rain and ground damp. Great for low-profile spring/autumn camps. No bug mesh, and feels cramped through long winter nights.",
+  research:"Checked: surplus listings give ~800–900 g, about 250–260 cm long, 100% polyamide + PTFE (MVP) membrane, drawcord hood, taped seams, no zip."},
+ {id:"tarp",name:"Wise Owl Wisefly Lite Tarp 11'×9'",cat:"Shelter & Rigging",qty:1,g:535,kind:"shelter",shelter:"tarp",rain:2,wind:1,bug:0,warmth:1,seasons:ALL4,
+  notes:"Overhead canopy for wet woodland, hammocks or as a porch awning. Don't pitch high on exposed ridges in gales — it acts like a sail.",
+  research:"Checked: Lite version listed at 18.9 oz (~535 g); the Standard Wisefly is 26 oz (~737 g). Your notebook said 0.74 kg, which matches the Standard — weigh yours and edit if needed. 3000mm PU ripstop nylon, taped seams; comes with 4 stakes and 6 guylines."},
+ {id:"hammock",name:"COVACURE Camping Hammock",cat:"Shelter & Rigging",qty:1,g:880,kind:"shelter",shelter:"hammock",rain:0,wind:0,bug:2,warmth:0,seasons:["Spring","Summer"],
+  notes:"Ideal May–September in mature woodland. Keeps you off boggy, rooty or midge-heavy ground. Poor in cold or wind — big heat loss underneath.",
+  research:"Checked: 210T parachute nylon; listings range 680–816 g depending on model (bug-net version ~780 g). 0.88 kg kept from your notebook (likely with straps). Bug rating assumes your model has the net — set to 0 if not."},
+ {id:"poncho",name:"Camo Multi-Use Poncho",cat:"Shelter & Rigging",qty:1,g:425,kind:"shelter",shelter:"poncho",rain:1,wind:0,bug:0,warmth:0,seasons:["Spring","Summer","Autumn"],
+  notes:"Rain gear, groundsheet, or a low 50 cm head-awning over the bivvy in spring/summer.",research:"Weight est. (350–500 g typical for nylon/PVC ponchos)."},
+ {id:"poles",name:"TheFitLife Lever-Lock Trekking Poles (pair)",cat:"Shelter & Rigging",qty:1,g:500,kind:"other",seasons:ALL4,
+  notes:"Props up the tarp or poncho awning; steadies you on steep, muddy ground.",research:"Brand weight not published; aluminium lever-lock pairs typically weigh 450–550 g."},
+ {id:"footprint",name:"Extra Tent Groundsheet / Footprint",cat:"Shelter & Rigging",qty:1,g:300,kind:"other",seasons:ALL4,
+  notes:"Blocks ground moisture; protects the tent floor or bivvy from rocks, heather and frozen mud.",research:"Weight est."},
+ {id:"ypeg",name:"Aluminium Y-Peg 18 cm",cat:"Shelter & Rigging",qty:12,g:15,kind:"other",seasons:ALL4,
+  notes:"Rigid — punches into dry summer dirt or frozen ground without bending.",research:"18 cm alloy Y-pegs typically 12–17 g each (your set of 12 ≈ 180 g)."},
+ {id:"spiral",name:"Black Hard Plastic Spiral Peg",cat:"Shelter & Rigging",qty:10,g:15,kind:"other",seasons:ALL4,
+  notes:"Best hold in waterlogged peat, mud and turf in high winds. Struggles in rock-hard summer soil.",research:"Weight est. (set of 10 ≈ 150 g)."},
+ {id:"paracord",name:"10 m Camo 7-Strand Paracord",cat:"Shelter & Rigging",qty:1,g:100,kind:"other",seasons:ALL4,
+  notes:"Tarp ridgelines, extra storm guylines, hanging gear.",research:"550-type 7-strand cord is roughly 7–10 g per metre."},
+ {id:"shook",name:"Stainless S-Hook Carabiner",cat:"Shelter & Rigging",qty:10,g:8,kind:"other",seasons:ALL4,
+  notes:"Rust-resistant clips for tarps, lanterns and pack gear — easy with cold, wet fingers.",research:"Weight est."},
+ {id:"vango",name:"Vango Soul 200 Tent (retired — broken poles)",cat:"Shelter & Rigging",qty:1,g:2260,kind:"shelter",shelter:"tent",rain:2,wind:1,bug:3,warmth:3,status:"retired",seasons:["Spring","Summer"],
+  notes:"Replaced by the Double Eiger. Flysheet and replacement poles kept as spares.",
+  research:"Checked: Vango lists 2.17–2.26 kg, 3000mm fly / 6000mm floor HH, PowerFlex fibreglass poles, inner-first pitch, rated 2-season (summer)."},
+ {id:"vangopoles",name:"Vango spare / replacement poles",cat:"Shelter & Rigging",qty:1,g:400,kind:"other",status:"retired",seasons:ALL4,notes:"Frankenstein / backup poles.",research:"From your notebook."},
+
+ // ---------- SLEEP & THERMAL ----------
+ {id:"bag",name:"Coolzon 3–4 Season Sleeping Bag",cat:"Sleep & Thermal",qty:1,g:1400,kind:"bag",comfort:8,limit:3,seasons:["Spring","Summer","Autumn"],
+  notes:"Synthetic fill keeps some warmth in damp UK nights. Add thermals and a beanie near freezing; unzip as a quilt in summer.",
+  research:"Checked: listed 1.4 kg, rectangular, hollow-fibre polyester fill, compression sack. No EN/ISO rating published and reviewers say it behaves more like a 2–3 season bag (one struggled in February). Comfort 8°C / limit 3°C are estimates — edit if your label says otherwise."},
+ {id:"aksoul",name:"AKSOUL 10 cm Inflatable Sleeping Mat",cat:"Sleep & Thermal",qty:1,g:889,kind:"pad",r:1.0,seasons:ALL4,
+  notes:"10 cm cushions rough ground and heather. Uninsulated air chambers lose heat in winter unless stacked over foam/foil.",
+  research:"Checked: 196×69×10 cm, 889 g, 40D nylon/TPU, built-in pillow and foot pump. No R-value published — uninsulated air mats usually test around R1–1.5 (R1.0 est.)."},
+ {id:"foam",name:"SIMOND MT500 Folding Foam Mattress",cat:"Sleep & Thermal",qty:1,g:370,kind:"pad",r:2.1,seasons:ALL4,
+  notes:"Closed-cell foam blocks cold from frozen ground. Put it between the foil mat and the AKSOUL. Doubles as a seat.",
+  research:"Checked (Decathlon): 180×55 cm version 370–380 g, R2.1 (ASTM F3340-18). The 195 cm 'Insulating' version is 480 g, R2.2 — edit if that's yours. Decathlon confirms R-values add when mats are stacked."},
+ {id:"foil",name:"Reflective Foil Mat",cat:"Sleep & Thermal",qty:1,g:150,kind:"pad",r:0.5,seasons:["Autumn","Winter"],
+  notes:"Reflects heat back up and stops ground chill. Largely unnecessary in summer.",research:"R0.5 est. — thin foil/foam mats add a little on their own but help most under other mats."},
+ {id:"pillow",name:"Square Plush Inflatable Pillow",cat:"Sleep & Thermal",qty:1,g:100,kind:"other",seasons:ALL4,notes:"Wrap in a fleece or gaiter in winter.",research:"Weight est."},
+ {id:"seat",name:"Folding Foam Seat Cushion",cat:"Sleep & Thermal",qty:1,g:50,kind:"other",seasons:ALL4,notes:"Dry, insulated seat on wet turf, logs or cold rocks.",research:"Weight est."},
+
+ // ---------- CLOTHING ----------
+ {id:"bltop",name:"Quechua BL100 Thermal Base Top",cat:"Clothing",qty:1,g:200,kind:"layer",warmth:2,seasons:["Autumn","Winter"],
+  notes:"Brushed-fleece moisture-wicking layer for cold hikes and dry sleepwear.",research:"Decathlon BL100: 100% polyester, brushed inside, flat seams. ~200 g est. per garment."},
+ {id:"blbot",name:"Quechua BL100 Thermal Base Bottoms",cat:"Clothing",qty:1,g:200,kind:"layer",warmth:1.5,seasons:["Autumn","Winter"],
+  notes:"Pairs with the top; dry legs inside the bag.",research:"~200 g est."},
+ {id:"gloves",name:"Forclaz MT500 Fleece Trekking Gloves",cat:"Clothing",qty:1,g:60,kind:"layer",warmth:0.5,seasons:["Autumn","Winter"],
+  notes:"Fleece, touchscreen tips — winter pitching and sleeping.",research:"Checked: 200 g/m² fleece, ~60 g per pair, Decathlon recommends around 5°C."},
+ {id:"gaiter",name:"Warm Thermal Neck Gaiter",cat:"Clothing",qty:2,g:50,kind:"layer",warmth:1,seasons:["Autumn","Winter"],
+  notes:"Fleece-lined windproof neck/face warmth for ridges and winter nights. (Warmth counted once, however many you take.)",research:"Weight est."},
+ {id:"buckethat",name:"Bucket Hat with Clip-on Mesh Shield",cat:"Clothing",qty:1,g:100,kind:"other",bug:2,seasons:["Spring","Summer"],
+  notes:"Sun protection, camo, and full face/neck midge defence.",research:"Weight est."},
+
+ // ---------- PACKS & STORAGE ----------
+ {id:"pack",name:"Karrimor Orkney 65 L Rucksack",cat:"Packs & Storage",qty:1,g:1900,kind:"other",seasons:ALL4,
+  notes:"Aluminium frame puts heavy multi-day loads on your hips; integrated rain cover.",
+  research:"Discontinued — no official weight found. Listings confirm aluminium frame, SA adjustable back, 77 cm back height, base compartment and side pockets. 1.9 kg est. (similar 65 L packs weigh 1.8–2.1 kg)."},
+ {id:"drybag",name:"North-Gate 30 L Dry Bag",cat:"Packs & Storage",qty:1,g:610,kind:"other",seasons:ALL4,
+  notes:"Keeps the sleeping bag and thermals 100% dry, or quarantines a soaked flysheet.",
+  research:"Weight from your notebook. 610 g suggests heavy PVC — lightweight 30 L silnylon liners weigh around 75 g if you ever want to save half a kilo."},
+ {id:"rubble",name:"Heavy-Duty Rubble Sack / Bin Bag",cat:"Packs & Storage",qty:2,g:50,kind:"other",seasons:ALL4,notes:"Covers the rucksack outside the tent/bivvy, or isolates muddy boots.",research:"Weight est."},
+ {id:"towel",name:"Quick-Dry Cooling Towel + Silicone Pod",cat:"Packs & Storage",qty:1,g:60,kind:"other",seasons:ALL4,notes:"Cools you on hot hikes; wipes morning condensation off tent walls.",research:"Weight est."},
+
+ // ---------- KITCHEN ----------
+ {id:"mess",name:"Aluminium Mess Kit (pan, 2 bowls, cup)",cat:"Kitchen & Hydration",qty:1,g:400,kind:"other",seasons:ALL4,notes:"Heats fast on gas. Cook behind a tarp or in the porch in high winds.",research:"Weight est."},
+ {id:"stove",name:"Pocket Rocket-style Gas Stove",cat:"Kitchen & Hydration",qty:1,g:100,kind:"other",seasons:ALL4,notes:"Fast boils and winter hot-water bottles. Needs a windbreak above ~15–20 mph.",research:"Clone stoves weigh 70–110 g."},
+ {id:"gas",name:"230 g Butane/Propane Gas Canister (full)",cat:"Kitchen & Hydration",qty:1,g:370,kind:"consumable",seasons:ALL4,notes:"Keep inside your sleeping bag on cold nights so it still vaporises in the morning.",
+  research:"Checked: 230 g canisters weigh ~360–390 g full and ~160 g empty. Butane-heavy blends lose pressure near or below 0°C; high-isobutane '4-season' gas copes better."},
+ {id:"cutlery",name:"Kitchen Cutlery",cat:"Kitchen & Hydration",qty:1,g:50,kind:"other",seasons:ALL4,notes:"Metal eating utensils.",research:"Weight est."},
+ {id:"bottle",name:"2 L Water Bottle / Container (empty)",cat:"Kitchen & Hydration",qty:1,g:50,kind:"other",seasons:ALL4,notes:"Water transport; boiled water in a sock = winter foot-warmer. Water weight is set on the Weather tab.",research:"Weight est."},
+
+ // ---------- LIGHTING & POWER ----------
+ {id:"headlamp",name:"USB Rechargeable LED Headlamp",cat:"Lighting & Power",qty:1,g:100,kind:"other",seasons:ALL4,notes:"Essential for pitching in long autumn/winter nights.",research:"Weight est."},
+ {id:"lantern",name:"Regatta LED Tent Lantern",cat:"Lighting & Power",qty:1,g:150,kind:"other",seasons:ALL4,notes:"Ambient light inside the tent or under the tarp.",research:"Weight est."},
+ {id:"torch",name:"Mini Rechargeable Torch",cat:"Lighting & Power",qty:1,g:50,kind:"other",seasons:ALL4,notes:"Backup if the headlamp dies in the cold.",research:"Weight est."},
+ {id:"powerbank",name:"Power Bank + Charging Cable",cat:"Lighting & Power",qty:1,g:250,kind:"other",seasons:ALL4,notes:"Keeps phone and lights going. Store inside your sleeping bag below freezing.",research:"Weight est."},
+
+ // ---------- BUGS & RECON ----------
+ {id:"headnet",name:"Mosquito Head Mesh Net",cat:"Bugs & Recon",qty:2,g:50,kind:"other",bug:2,seasons:["Spring","Summer"],notes:"Essential May–September by canals, still water and damp woodland.",research:"Weight est."},
+ {id:"monocular",name:"10×25 Monocular",cat:"Bugs & Recon",qty:1,g:80,kind:"other",seasons:ALL4,notes:"Scout pitch spots and wildlife from a distance.",research:"Weight est."},
+ {id:"knotcard",name:"Waterproof Knot Card (23 knots)",cat:"Bugs & Recon",qty:1,g:30,kind:"other",seasons:ALL4,notes:"Quick reference for tarp and guyline knots in rain or darkness.",research:"Weight est."},
+
+ // ---------- HYGIENE & FIRST AID ----------
+ {id:"bidet",name:"Portable Handheld Bidet Sprayer",cat:"Hygiene & First Aid",qty:3,g:33,kind:"other",seasons:ALL4,notes:"Fits standard water bottles.",research:"Set of 3 ≈ 100 g."},
+ {id:"trowel",name:"Lightweight Trowel",cat:"Hygiene & First Aid",qty:1,g:80,kind:"other",seasons:ALL4,notes:"Digs 15 cm (6\") cat-holes for Leave No Trace. Struggles only in frozen ground.",research:"Weight est."},
+ {id:"firstaid",name:"First Aid Kit",cat:"Hygiene & First Aid",qty:1,g:150,kind:"other",seasons:ALL4,notes:"Cuts, blisters, trail injuries.",research:"Weight est."},
+ {id:"toothbrush",name:"Charcoal Folding Toothbrush",cat:"Hygiene & First Aid",qty:2,g:15,kind:"other",seasons:ALL4,notes:"Compact spares.",research:"Weight est."}
+];
+
+/* Preset classes (loadouts) */
+const DEFAULT_CLASSES = [
+ {id:"cls_winter",name:"Winter Tent (exposed)",
+  items:{tent_eiger:1,footprint:1,ypeg:12,spiral:6,paracord:1,poles:1,bag:1,aksoul:1,foam:1,foil:1,pillow:1,seat:1,bltop:1,blbot:1,gloves:1,gaiter:2,
+         pack:1,drybag:1,rubble:1,towel:1,mess:1,stove:1,gas:1,cutlery:1,bottle:1,headlamp:1,lantern:1,torch:1,powerbank:1,knotcard:1,bidet:1,trowel:1,firstaid:1,toothbrush:1},
+  worn:{poles:1}, packed:{}, wx:{low:-1,high:6,rain:1,wind:2,bugs:0,ground:"frozen",nights:1,water:2,food:0.8}},
+ {id:"cls_bivvy",name:"Stealth Bivvy (spring / autumn)",
+  items:{bivvy:1,poncho:1,poles:1,paracord:1,ypeg:4,shook:4,bag:1,aksoul:1,foam:1,pillow:1,bltop:1,blbot:1,gaiter:1,
+         pack:1,drybag:1,rubble:1,mess:1,stove:1,gas:1,cutlery:1,bottle:1,headlamp:1,torch:1,powerbank:1,headnet:1,monocular:1,knotcard:1,bidet:1,trowel:1,firstaid:1,toothbrush:1},
+  worn:{poles:1}, packed:{}, wx:{low:6,high:14,rain:1,wind:1,bugs:1,ground:"normal",nights:1,water:2,food:0.7}},
+ {id:"cls_hammock",name:"Summer Hammock (woodland)",
+  items:{hammock:1,tarp:1,paracord:1,shook:6,ypeg:6,bag:1,foam:1,pillow:1,
+         pack:1,drybag:1,towel:1,mess:1,stove:1,gas:1,cutlery:1,bottle:1,headlamp:1,lantern:1,powerbank:1,buckethat:1,headnet:1,knotcard:1,bidet:1,trowel:1,firstaid:1,toothbrush:1},
+  worn:{buckethat:1}, packed:{}, wx:{low:11,high:21,rain:1,wind:0,bugs:2,ground:"normal",nights:1,water:2,food:0.7}}
+];
+
+/* ============================================================
+   STATE
+   ============================================================ */
+const KEY="sams-camp-planner-v1";
+const clone=o=>JSON.parse(JSON.stringify(o));
+let S;
+function freshState(){return {ver:1,inv:clone(DEFAULT_INV),classes:clone(DEFAULT_CLASSES),active:"cls_winter"};}
+function load(){
+  try{const raw=localStorage.getItem(KEY); if(raw){S=JSON.parse(raw); if(S&&S.inv&&S.classes) return;}}catch(e){}
+  S=freshState();
+}
+function save(){try{localStorage.setItem(KEY,JSON.stringify(S));}catch(e){}}
+load();
+
+const $=s=>document.querySelector(s);
+const esc=s=>String(s??"").replace(/[&<>"']/g,c=>({"&":"&amp;","<":"&lt;",">":"&gt;",'"':"&quot;","'":"&#39;"}[c]));
+const kg=g=>(g/1000).toFixed(2)+" kg";
+const fmtW=g=>g>=1000?kg(g):Math.round(g)+" g";
+function toast(m){const t=$("#toast");t.textContent=m;t.classList.add("on");clearTimeout(t._t);t._t=setTimeout(()=>t.classList.remove("on"),1800);}
+const item=id=>S.inv.find(i=>i.id===id);
+function cls(){let c=S.classes.find(c=>c.id===S.active); if(!c){c=S.classes[0]; if(!c){S.classes.push(newClassObj("My class"));c=S.classes[0];} S.active=c.id;} c.items=c.items||{};c.worn=c.worn||{};c.packed=c.packed||{};c.wx=Object.assign({low:5,high:12,rain:0,wind:0,bugs:0,ground:"normal",nights:1,water:2,food:0.7},c.wx||{}); return c;}
+function newClassObj(name){return {id:"cls_"+Date.now().toString(36),name,items:{},worn:{},packed:{},wx:{low:5,high:12,rain:0,wind:0,bugs:0,ground:"normal",nights:1,water:2,food:0.7}};}
+const CAT_COLORS=["#9ccc65","#64b5f6","#ba68c8","#ffb74d","#4db6ac","#fff176","#f06292","#a1887f","#90a4ae"];
+
+/* ============================================================
+   CALCULATIONS
+   ============================================================ */
+function classLines(c){
+  return Object.entries(c.items).map(([id,q])=>({it:item(id),q})).filter(x=>x.it&&x.q>0);
+}
+function weights(c){
+  let base=0,worn=0,cons=0,byCat={};
+  for(const {it,q} of classLines(c)){
+    const w=it.g*q;
+    if(c.worn[it.id]) worn+=w;
+    else if(it.kind==="consumable") cons+=w;
+    else {base+=w; byCat[it.cat]=(byCat[it.cat]||0)+w;}
+  }
+  const water=(+c.wx.water||0)*1000, food=(+c.wx.food||0)*(+c.wx.nights||1)*1000;
+  cons+=water+food;
+  return {base,worn,cons,water,food,pack:base+cons,total:base+cons+worn,byCat};
+}
+function needR(low){return low>=10?1:low>=5?2:low>=0?3:low>=-5?4:5;}
+function thermal(c){
+  const lines=classLines(c), wx=c.wx, low=+wx.low;
+  const rows=[]; let rating=null;
+  const bags=lines.filter(l=>l.it.kind==="bag");
+  if(bags.length){
+    const b=bags.slice().sort((a,b)=>(a.it.comfort??15)-(b.it.comfort??15))[0];
+    rating=(b.it.comfort??15);
+    rows.push({n:b.it.name+" (comfort)",v:rating,abs:true});
+    bags.filter(x=>x!==b).forEach(x=>{rows.push({n:x.it.name+" (as extra quilt)",v:-5});rating-=5;});
+  } else {
+    rating=20; rows.push({n:"No sleeping bag selected",v:20,abs:true});
+  }
+  lines.filter(l=>l.it.kind==="layer"&&(+l.it.warmth||0)).forEach(l=>{rows.push({n:l.it.name,v:-(+l.it.warmth)});rating-=+l.it.warmth;});
+  const shelters=lines.filter(l=>l.it.kind==="shelter");
+  let sb=0; shelters.forEach(l=>sb+=(+l.it.warmth||0)); sb=Math.min(sb,5);
+  if(sb){rows.push({n:"Shelter ("+shelters.map(s=>s.it.shelter).join(" + ")+")",v:-sb});rating-=sb;}
+  const pads=lines.filter(l=>l.it.kind==="pad"&&(+l.it.r||0));
+  const R=pads.reduce((s,l)=>s+(+l.it.r)*l.q,0);
+  const hammock=shelters.some(s=>s.it.shelter==="hammock");
+  const onGround=shelters.some(s=>["tent","bivvy","poncho","tarp"].includes(s.it.shelter))||!hammock;
+  const need=hammock&&!onGround?Math.max(2,needR(low)):needR(low);
+  let rPen=0;
+  if(R<need){rPen=(need-R)*3; if(hammock&&!onGround&&R<1) rPen+=3; rows.push({n:`Ground/underside loss: R${R.toFixed(1)} vs R${need} needed`,v:+rPen.toFixed(1)}); rating+=rPen;}
+  const margin=low-rating;
+  let verdict,cls_,pos;
+  if(margin< -2){verdict="Too cold — add insulation";cls_="p-cold";}
+  else if(margin<0){verdict="Borderline — expect a chilly night";cls_="p-warn";}
+  else if(margin<=8){verdict="Good — warm enough without excess";cls_="p-ok";}
+  else {verdict="Too warm — you could leave warmth (and weight) at home";cls_="p-hot";}
+  pos=Math.max(0,Math.min(100,50+margin*4));
+  return {rows,rating,margin,verdict,cls:cls_,pos,R,need,pads,hammock,onGround,low};
+}
+function protection(c){
+  const lines=classLines(c);
+  const mx=k=>lines.reduce((m,l)=>Math.max(m,+l.it[k]||0),0);
+  const has=s=>lines.some(l=>l.it.shelter===s);
+  let rain=mx("rain"),wind=mx("wind"),bug=mx("bug");
+  if(has("tarp")&&(has("bivvy")||has("hammock"))) rain=Math.max(rain,3);
+  return {rain,wind,bug};
+}
+function warnings(c){
+  const w=[],wx=c.wx,lines=classLines(c),ids=new Set(lines.map(l=>l.it.id));
+  const has=s=>lines.some(l=>l.it.shelter===s);
+  const p=protection(c),low=+wx.low;
+  const shelterCount=lines.filter(l=>l.it.kind==="shelter").length;
+  if(!shelterCount) w.push(["bad","No shelter in this class."]);
+  if(+wx.rain===2&&p.rain<2) w.push(["bad","Heavy rain forecast but your shelter rain rating is low. Take the tent, bivvy, or tarp."]);
+  if(+wx.rain>=1&&!ids.has("drybag")) w.push(["warn","Rain expected — pack the dry bag for your sleeping bag and thermals."]);
+  if(+wx.wind===2){
+    if(p.wind<2) w.push(["bad","Gale-force gusts: your shelter is weak in wind. The bivvy or a low-pitched tent is safer."]);
+    if(has("tarp")) w.push(["warn","Tarp in gusts: pitch it low and tight, never high on an exposed ridge."]);
+    if(has("hammock")) w.push(["warn","Hammock in strong wind = a lot of cooling underneath."]);
+    if(ids.has("stove")) w.push(["warn","Gas stove above ~15–20 mph needs a windbreak — cook in the porch or behind the tarp, with ventilation."]);
+  }
+  if(+wx.bugs>=1&&p.bug<2) w.push([+wx.bugs===2?"bad":"warn","Midges expected but no bug defence packed — add a head net or the bucket hat mesh."]);
+  if(has("bivvy")&&+wx.bugs===2&&!ids.has("headnet")&&!ids.has("buckethat")) w.push(["warn","The bivvy has no mesh — you'll want a head net on swarming nights."]);
+  const pegsNeeded=has("tent")||has("tarp")||has("poncho");
+  if(pegsNeeded){
+    if((wx.ground==="frozen"||wx.ground==="hard")&&!ids.has("ypeg")) w.push(["bad","Hard/frozen ground — take the aluminium Y-pegs; spirals won't go in."]);
+    if(wx.ground==="soft"&&!ids.has("spiral")) w.push(["warn","Soft peat/mud — the spiral pegs hold far better than Y-pegs."]);
+    if(!ids.has("ypeg")&&!ids.has("spiral")) w.push(["warn","Tent/tarp selected but no pegs."]);
+  }
+  if(wx.ground==="frozen"&&ids.has("trowel")) w.push(["info","Frozen ground: the trowel will struggle — plan where you'll go."]);
+  if(ids.has("gas")&&low<=0) w.push(["warn","Below 0°C a butane/propane canister loses pressure. Sleep with it in your bag, or buy 4-season (isobutane) gas."]);
+  if(ids.has("powerbank")&&low<=0) w.push(["info","Keep the power bank and phone in your sleeping bag overnight."]);
+  if((ids.has("tent_eiger")||ids.has("tarp"))&&!ids.has("paracord")) w.push(["info","No paracord — handy for extra storm guylines or a ridgeline."]);
+  if(has("tarp")&&!ids.has("poles")&&!has("hammock")) w.push(["info","Ground-pitched tarp usually needs trekking poles."]);
+  if(+wx.high>=20&&!ids.has("towel")) w.push(["info","Warm day — the cooling towel earns its 60 g."]);
+  if(!ids.has("headlamp")) w.push(["warn","No headlamp packed."]);
+  if(!ids.has("firstaid")) w.push(["warn","No first aid kit packed."]);
+  const t=thermal(c);
+  if(t.margin<-2) w.push(["bad",`Sleep system rated ~${t.rating.toFixed(0)}°C vs a ${low}°C low. Add thermals, the foam/foil mats, or wear the gaiter and gloves.`]);
+  if(t.margin>8) w.push(["info","Lots of spare warmth — leave the thermals or foil mat behind, or use the bag unzipped as a quilt."]);
+  if(t.hammock&&!t.onGround&&t.R<2) w.push(["bad","Hammock with little underneath: put the foam mat in the hammock (or use an underquilt)."]);
+  const wt=weights(c);
+  if(wt.pack>15000) w.push(["warn",`Pack weight ${kg(wt.pack)} is above the ~15 kg comfortable limit for the Orkney.`]);
+  return w;
+}
+
+/* ============================================================
+   RENDER
+   ============================================================ */
+function chipsFor(it){
+  const ch=[];
+  if(it.status==="retired") ch.push('<span class="chip ret">retired</span>');
+  (it.seasons||[]).forEach(s=>ch.push(`<span class="chip">${esc(s)}</span>`));
+  if(+it.rain) ch.push(`<span class="chip rain">rain ${it.rain}/3</span>`);
+  if(+it.wind) ch.push(`<span class="chip wind">wind ${it.wind}/3</span>`);
+  if(+it.bug) ch.push(`<span class="chip bug">bugs ${it.bug}/3</span>`);
+  if(+it.r) ch.push(`<span class="chip r">R${it.r}</span>`);
+  if(it.kind==="bag") ch.push(`<span class="chip warm">comfort ${it.comfort}°C / limit ${it.limit}°C</span>`);
+  if(+it.warmth&&it.kind!=="bag") ch.push(`<span class="chip warm">+${it.warmth}°C</span>`);
+  if(it.custom) ch.push('<span class="chip">added by you</span>');
+  return `<div class="chips">${ch.join("")}</div>`;
+}
+function groupByCat(list){
+  const cats=[...CATS,...new Set(list.map(i=>i.cat).filter(c=>!CATS.includes(c)))];
+  return cats.map(c=>[c,list.filter(i=>i.cat===c)]).filter(([,l])=>l.length);
+}
+function renderKit(){
+  const q=$("#kitSearch").value.toLowerCase(), f=$("#kitFilter").value;
+  let list=S.inv.filter(i=>{
+    if(f==="active"&&i.status==="retired") return false;
+    if(f==="retired"&&i.status!=="retired") return false;
+    if(f==="custom"&&!i.custom) return false;
+    return !q||(i.name+" "+i.notes+" "+i.cat).toLowerCase().includes(q);
+  });
+  const act=S.inv.filter(i=>i.status!=="retired"), all=S.inv;
+  const sum=l=>l.reduce((s,i)=>s+i.g*i.qty,0);
+  $("#kitTotals").innerHTML=`${act.length} active items · <b>${kg(sum(act))}</b> if you carried every active item · ${kg(sum(all))} including retired kit`;
+  $("#kitList").innerHTML=groupByCat(list).map(([c,l])=>`<div class="card"><h3 style="margin-top:0">${esc(c)} <span class="muted small">${kg(sum(l))}</span></h3>
+    ${l.map(i=>`<div class="item ${i.status==="retired"?"dim":""}" data-edit="${i.id}" style="cursor:pointer">
+      <div class="nm"><b>${esc(i.name)}${i.qty>1?` ×${i.qty}`:""}</b><span class="small muted">${esc(i.notes||"")}</span>${chipsFor(i)}</div>
+      <div class="w">${fmtW(i.g)}${i.qty>1?` each<br>${fmtW(i.g*i.qty)}`:""}</div></div>`).join("")}</div>`).join("")||'<div class="card muted">Nothing matches.</div>';
+}
+function renderClassSel(){
+  $("#classSel").innerHTML=S.classes.map(c=>`<option value="${c.id}" ${c.id===S.active?"selected":""}>${esc(c.name)}</option>`).join("");
+  $("#hdrSel").innerHTML=$("#classSel").innerHTML;
+}
+function renderWeightsCard(el,c){
+  const w=weights(c);
+  const cats=Object.entries(w.byCat).sort((a,b)=>b[1]-a[1]);
+  const top=classLines(c).filter(l=>!c.worn[l.it.id]).map(l=>({n:l.it.name,g:l.it.g*l.q})).sort((a,b)=>b.g-a.g).slice(0,5);
+  el.innerHTML=`<div class="row" style="justify-content:space-between">
+    <div><div class="small muted">Pack weight</div><div class="big">${kg(w.pack)}</div></div>
+    <div><div class="small muted">Base (dry)</div><b>${kg(w.base)}</b></div>
+    <div><div class="small muted">Consumables</div><b>${kg(w.cons)}</b></div>
+    <div><div class="small muted">Worn</div><b>${kg(w.worn)}</b></div>
+    <div><div class="small muted">Everything</div><b>${kg(w.total)}</b></div></div>
+    <div class="bars">${cats.map(([k,v])=>`<div title="${esc(k)}" style="width:${w.base?v/w.base*100:0}%;background:${CAT_COLORS[CATS.indexOf(k)%9]||"#888"}"></div>`).join("")}</div>
+    <div class="legend">${cats.map(([k,v])=>`<span><i style="background:${CAT_COLORS[CATS.indexOf(k)%9]||"#888"}"></i>${esc(k)} ${kg(v)}</span>`).join("")}</div>
+    <details style="margin-top:8px"><summary>Heaviest items &amp; consumables</summary>
+      <table>${top.map(t=>`<tr><td>${esc(t.n)}</td><td class="n">${fmtW(t.g)}</td></tr>`).join("")}
+      <tr><td>Water (${c.wx.water} L)</td><td class="n">${fmtW(w.water)}</td></tr>
+      <tr><td>Food (${c.wx.food} kg × ${c.wx.nights} day${c.wx.nights>1?"s":""})</td><td class="n">${fmtW(w.food)}</td></tr></table>
+      <div class="small muted">Change water/food/nights on the Weather stack tab.</div></details>`;
+}
+function renderClasses(){
+  renderClassSel();
+  const c=cls(), q=$("#clsSearch").value.toLowerCase(), only=$("#clsOnlySel").checked;
+  renderWeightsCard($("#clsWeights"),c);
+  const list=S.inv.filter(i=>{
+    const sel=(c.items[i.id]||0)>0;
+    if(only&&!sel) return false;
+    if(i.status==="retired"&&!sel&&!q) return false;
+    return !q||i.name.toLowerCase().includes(q);
+  });
+  $("#clsList").innerHTML=groupByCat(list).map(([cat,l])=>`<div class="card"><h3 style="margin-top:0">${esc(cat)}</h3>
+   ${l.map(i=>{const n=c.items[i.id]||0;return `<div class="item ${n?"":"dim"}">
+     <div class="nm"><b>${esc(i.name)}</b><span class="small muted">${fmtW(i.g)} each · own ${i.qty}${n?` · <b style="color:var(--text)">${fmtW(i.g*n)}</b>`:""}</span>${chipsFor(i)}</div>
+     <button class="tog ${c.worn[i.id]?"on":""}" data-worn="${i.id}" ${n?"":"disabled"}>Worn</button>
+     <div class="step"><button data-dec="${i.id}">−</button><span>${n}</span><button data-inc="${i.id}" ${n>=i.qty?"disabled":""}>+</button></div>
+   </div>`}).join("")}</div>`).join("")||'<div class="card muted">No items.</div>';
+}
+function renderPack(){
+  const c=cls(), lines=classLines(c);
+  $("#packTitle").textContent="Checklist: "+c.name;
+  const done=lines.filter(l=>c.packed[l.it.id]).length;
+  $("#packProg").style.width=(lines.length?done/lines.length*100:0)+"%";
+  const w=weights(c);
+  $("#packStat").textContent=`${done} of ${lines.length} packed · pack ${kg(w.pack)} (incl. ${c.wx.water} L water, food) · worn ${kg(w.worn)}`;
+  $("#packList").innerHTML=groupByCat(lines.map(l=>l.it)).map(([cat,l])=>`<div class="card"><h3 style="margin-top:0">${esc(cat)}</h3>
+   ${l.map(i=>{const n=c.items[i.id];return `<label class="item ${c.packed[i.id]?"done":""}" style="flex-direction:row;color:var(--text)">
+     <input type="checkbox" class="ck" data-pk="${i.id}" ${c.packed[i.id]?"checked":""}>
+     <div class="nm"><b>${esc(i.name)}${n>1?` ×${n}`:""}</b><span class="small muted">${c.worn[i.id]?"Worn · ":""}${esc(i.notes||"")}</span></div>
+     <div class="w">${fmtW(i.g*n)}</div></label>`}).join("")}</div>`).join("")||'<div class="card muted">This class is empty — add items in the Class builder.</div>';
+}
+function renderWeather(){
+  const c=cls(), wx=c.wx;
+  $("#wxClassName").textContent="for "+c.name;
+  [["wxLow","low"],["wxHigh","high"],["wxRain","rain"],["wxWind","wind"],["wxBugs","bugs"],["wxGround","ground"],["wxNights","nights"],["wxWater","water"],["wxFood","food"]]
+    .forEach(([id,k])=>{const el=$("#"+id); if(document.activeElement!==el) el.value=wx[k];});
+  const t=thermal(c);
+  $("#thermVerdict").innerHTML=`<div class="row"><span class="pill ${t.cls}">${t.verdict}</span>
+    <span class="small muted">Sleep system ≈ <b style="color:var(--text)">${t.rating.toFixed(1)}°C</b> comfort vs ${t.low}°C forecast low (margin ${t.margin>=0?"+":""}${t.margin.toFixed(1)}°C)</span></div>`;
+  $("#needle").style.left=`calc(${t.pos}% - 2px)`;
+  $("#thermTable").innerHTML=`<tr><th>Layer</th><th class="n">Effect</th></tr>`+t.rows.map(r=>`<tr><td>${esc(r.n)}</td><td class="n">${r.abs?r.v+"°C":(r.v>0?"+":"")+r.v+"°C"}</td></tr>`).join("")+
+    `<tr><th>Effective comfort</th><th class="n">${t.rating.toFixed(1)}°C</th></tr>`;
+  $("#rBox").innerHTML=`<div class="row"><span class="pill ${t.R>=t.need?"p-ok":"p-cold"}">Total R${t.R.toFixed(1)}</span><span class="small muted">Need ~R${t.need} for ${t.low}°C${t.hammock&&!t.onGround?" in a hammock":""}</span></div>
+    <div class="small muted" style="margin-top:6px">${t.pads.length?t.pads.map(p=>`${esc(p.it.name)}: R${p.it.r}`).join(" + "):"No sleeping mats selected."}</div>`;
+  const p=protection(c), need={rain:[0,1,2][wx.rain],wind:[0,1,2][wx.wind],bug:[0,2,2][wx.bugs]};
+  const row=(n,have,req)=>`<tr><td>${n}</td><td class="n">${have}/3</td><td class="n">${req}/3</td><td class="n"><span class="pill ${have>=req?"p-ok":"p-bad"}">${have>=req?"OK":"Short"}</span></td></tr>`;
+  $("#protTable").innerHTML=`<tr><th>Threat</th><th class="n">You have</th><th class="n">Needed</th><th></th></tr>`+row("Rain",p.rain,need.rain)+row("Wind",p.wind,need.wind)+row("Midges",p.bug,need.bug);
+  const ws=warnings(c), ic={bad:"⛔",warn:"⚠️",info:"💡"};
+  $("#wxWarn").innerHTML=ws.length?ws.map(([k,m])=>`<li>${ic[k]} ${esc(m)}</li>`).join(""):"<li>✅ Nothing flagged for these conditions.</li>";
+}
+function renderSumbar(){
+  const c=cls(), w=weights(c), t=thermal(c), p=protection(c), wx=c.wx;
+  const short=(p.rain<[0,1,2][wx.rain])||(p.wind<[0,1,2][wx.wind])||(p.bug<[0,2,2][wx.bugs]);
+  $("#sumbar").innerHTML=`<span><span class="muted">Pack</span> <b class="big">${kg(w.pack)}</b></span>
+   <span class="muted">base ${kg(w.base)} · worn ${kg(w.worn)}</span>
+   <span class="pill ${t.cls}">${t.rating.toFixed(0)}°C vs ${wx.low}°C</span>
+   <span class="pill ${short?"p-bad":"p-ok"}">${short?"Weather gap":"Weather OK"}</span>
+   <span class="grow"></span><span class="muted small">${esc(c.name)}</span>`;
+}
+let currentView="kit";
+function render(){
+  renderSumbar(); renderClassSel();
+  if(currentView==="kit") renderKit();
+  if(currentView==="classes") renderClasses();
+  if(currentView==="pack") renderPack();
+  if(currentView==="weather") renderWeather();
+}
+
+/* ============================================================
+   EVENTS
+   ============================================================ */
+$("#tabs").onclick=e=>{const b=e.target.closest("button");if(!b)return;
+  document.querySelectorAll("#tabs button").forEach(x=>x.classList.toggle("on",x===b));
+  document.querySelectorAll(".view").forEach(v=>v.classList.toggle("on",v.id==="v-"+b.dataset.v));
+  currentView=b.dataset.v; render(); window.scrollTo(0,0);};
+$("#kitSearch").oninput=renderKit; $("#kitFilter").onchange=renderKit;
+$("#clsSearch").oninput=renderClasses; $("#clsOnlySel").onchange=renderClasses;
+$("#classSel").onchange=$("#hdrSel").onchange=e=>{S.active=e.target.value;save();render();};
+$("#newClass").onclick=()=>{const n=prompt("Name for the new class:","My class");if(!n)return;const c=newClassObj(n);S.classes.push(c);S.active=c.id;save();render();};
+$("#dupClass").onclick=()=>{const c=clone(cls());c.id="cls_"+Date.now().toString(36);c.name+=" (copy)";c.packed={};S.classes.push(c);S.active=c.id;save();render();toast("Duplicated");};
+$("#renClass").onclick=()=>{const c=cls();const n=prompt("Rename class:",c.name);if(!n)return;c.name=n;save();render();};
+$("#delClass").onclick=()=>{if(S.classes.length<2)return toast("Keep at least one class");if(!confirm("Delete “"+cls().name+"”?"))return;S.classes=S.classes.filter(c=>c.id!==S.active);S.active=S.classes[0].id;save();render();};
+$("#clsList").onclick=e=>{const b=e.target.closest("button");if(!b)return;const c=cls();
+  if(b.dataset.inc){const i=item(b.dataset.inc);c.items[i.id]=Math.min(i.qty,(c.items[i.id]||0)+1);}
+  if(b.dataset.dec){const id=b.dataset.dec;c.items[id]=Math.max(0,(c.items[id]||0)-1);if(!c.items[id]){delete c.items[id];delete c.worn[id];delete c.packed[id];}}
+  if(b.dataset.worn){const id=b.dataset.worn;c.worn[id]?delete c.worn[id]:c.worn[id]=1;}
+  save();render();};
+$("#packList").onchange=e=>{const id=e.target.dataset.pk;if(!id)return;const c=cls();e.target.checked?c.packed[id]=1:delete c.packed[id];save();render();};
+$("#packReset").onclick=()=>{cls().packed={};save();render();};
+$("#packPrint").onclick=()=>window.print();
+$("#packCopy").onclick=()=>{const c=cls();let t=`${c.name}\n`;
+  groupByCat(classLines(c).map(l=>l.it)).forEach(([cat,l])=>{t+=`\n${cat}\n`;l.forEach(i=>t+=`[${c.packed[i.id]?"x":" "}] ${i.name}${c.items[i.id]>1?" x"+c.items[i.id]:""} (${fmtW(i.g*c.items[i.id])})\n`);});
+  t+=`\nPack weight: ${kg(weights(c).pack)}`;
+  (navigator.clipboard?navigator.clipboard.writeText(t):Promise.reject()).then(()=>toast("Copied"),()=>download(c.name+".txt",t,"text/plain"));};
+["wxLow","wxHigh","wxRain","wxWind","wxBugs","wxGround","wxNights","wxWater","wxFood"].forEach(id=>{
+  $("#"+id).addEventListener("input",e=>{const k={wxLow:"low",wxHigh:"high",wxRain:"rain",wxWind:"wind",wxBugs:"bugs",wxGround:"ground",wxNights:"nights",wxWater:"water",wxFood:"food"}[id];
+    const v=e.target.value; cls().wx[k]=k==="ground"?v:(v===""?0:+v); save(); renderWeather(); renderSumbar();});
+});
+
+/* ---- item dialog ---- */
+const dlg=$("#itemDlg"), form=$("#itemForm"); let editing=null;
+$("#dlgCat").innerHTML=CATS.map(c=>`<option>${c}</option>`).join("");
+function openItem(id){
+  editing=id?item(id):null;
+  const it=editing||{name:"",cat:"Other",qty:1,g:100,kind:"other",status:"active",seasons:[],notes:""};
+  $("#dlgTitle").textContent=editing?"Edit item":"Add your own item";
+  if(!CATS.includes(it.cat)) $("#dlgCat").insertAdjacentHTML("beforeend",`<option>${esc(it.cat)}</option>`);
+  const f=form.elements;
+  f.name.value=it.name;f.cat.value=it.cat;f.qty.value=it.qty;f.g.value=it.g;f.status.value=it.status||"active";f.kind.value=it.kind||"other";
+  f.shelter.value=it.shelter||"";f.rain.value=it.rain??"";f.wind.value=it.wind??"";f.bug.value=it.bug??"";f.warmth.value=it.warmth??"";
+  f.r.value=it.r??"";f.comfort.value=it.comfort??"";f.limit.value=it.limit??"";f.seasons.value=(it.seasons||[]).join(", ");f.notes.value=it.notes||"";
+  $("#dlgResearch").textContent=it.research?("Research: "+it.research):"";
+  $("#dlgDel").style.display=editing?"":"none";
+  dlg.showModal();
+}
+$("#addItemBtn").onclick=()=>openItem(null);
+$("#kitList").onclick=e=>{const r=e.target.closest("[data-edit]");if(r)openItem(r.dataset.edit);};
+dlg.addEventListener("close",()=>{
+  if(dlg.returnValue!=="save") return;
+  const f=form.elements, num=v=>v===""?undefined:+v;
+  const data={name:f.name.value.trim(),cat:f.cat.value,qty:Math.max(0,Math.round(+f.qty.value||0)),g:Math.max(0,+f.g.value||0),status:f.status.value,kind:f.kind.value,
+    shelter:f.shelter.value||undefined,rain:num(f.rain.value),wind:num(f.wind.value),bug:num(f.bug.value),warmth:num(f.warmth.value),r:num(f.r.value),
+    comfort:num(f.comfort.value),limit:num(f.limit.value),seasons:f.seasons.value.split(",").map(s=>s.trim()).filter(Boolean),notes:f.notes.value.trim()};
+  if(!data.name) return;
+  if(data.kind==="bag"&&data.comfort===undefined) data.comfort=10;
+  if(editing){Object.assign(editing,data);
+    S.classes.forEach(c=>{if((c.items[editing.id]||0)>editing.qty) c.items[editing.id]=editing.qty; if(!c.items[editing.id]) delete c.items[editing.id];});
+    toast("Saved");}
+  else {S.inv.push(Object.assign({id:"c_"+Date.now().toString(36),custom:true},data));
+    const c=cls(); if(confirm(`Also add “${data.name}” to the class “${c.name}”?`)) c.items[S.inv[S.inv.length-1].id]=Math.min(1,data.qty);
+    toast("Item added");}
+  save();render();
+});
+$("#dlgDel").onclick=()=>{if(!editing)return;if(!confirm("Delete “"+editing.name+"” from your kit?"))return;
+  const id=editing.id;S.inv=S.inv.filter(i=>i.id!==id);S.classes.forEach(c=>{delete c.items[id];delete c.worn[id];delete c.packed[id];});
+  editing=null;dlg.close("cancel");save();render();toast("Deleted");};
+
+/* ---- export / import ---- */
+function download(name,text,type){
+  const a=document.createElement("a");a.href=URL.createObjectURL(new Blob([text],{type}));a.download=name;document.body.appendChild(a);a.click();
+  setTimeout(()=>{URL.revokeObjectURL(a.href);a.remove();},500);
+}
+const csvCell=v=>{v=String(v??"");return /[",\n]/.test(v)?`"${v.replace(/"/g,'""')}"`:v;};
+const slug=s=>s.toLowerCase().replace(/[^a-z0-9]+/g,"-").replace(/^-|-$/g,"");
+$("#expInvCsv").onclick=()=>{
+  const h=["Name","Category","Qty owned","Weight each (g)","Total (g)","Status","Type","Shelter","Rain","Wind","Bugs","Warmth °C","R-value","Comfort °C","Limit °C","Seasons","Notes","Research"];
+  const rows=S.inv.map(i=>[i.name,i.cat,i.qty,i.g,i.g*i.qty,i.status||"active",i.kind,i.shelter,i.rain,i.wind,i.bug,i.warmth,i.r,i.comfort,i.limit,(i.seasons||[]).join("; "),i.notes,i.research]);
+  download("camp-kit.csv",[h,...rows].map(r=>r.map(csvCell).join(",")).join("\n"),"text/csv");};
+$("#expInvJson").onclick=()=>download("camp-kit.json",JSON.stringify({type:"kit",inv:S.inv},null,2),"application/json");
+$("#expClass").onclick=()=>{const c=cls();const used=classLines(c).map(l=>l.it);
+  download(`class-${slug(c.name)}.json`,JSON.stringify({type:"class",class:c,items:used},null,2),"application/json");};
+$("#expClassCsv").onclick=()=>{const c=cls();const h=["Name","Category","Qty","Weight each (g)","Total (g)","Worn","Packed"];
+  const rows=classLines(c).map(({it,q})=>[it.name,it.cat,q,it.g,it.g*q,c.worn[it.id]?"yes":"",c.packed[it.id]?"yes":""]);
+  const w=weights(c);rows.push([],["Water","",c.wx.water+" L","",w.water],["Food","","","",w.food],["Pack weight (g)","","","",w.pack]);
+  download(`class-${slug(c.name)}.csv`,[h,...rows].map(r=>r.map(csvCell).join(",")).join("\n"),"text/csv");};
+$("#expAll").onclick=()=>download("camp-planner-backup.json",JSON.stringify(Object.assign({type:"backup",exported:new Date().toISOString()},S),null,2),"application/json");
+$("#impFile").onchange=async e=>{
+  const f=e.target.files[0];if(!f)return;
+  try{
+    const d=JSON.parse(await f.text());
+    const mergeItems=list=>{let n=0;(list||[]).forEach(it=>{if(!it||!it.name)return;
+      if(!S.inv.some(x=>x.id===it.id||x.name===it.name)){S.inv.push(Object.assign({},it,{id:it.id&&!item(it.id)?it.id:"c_"+Math.random().toString(36).slice(2)}));n++;}});return n;};
+    if(d.type==="backup"||(d.inv&&d.classes)){
+      if(!confirm("Replace ALL current data with this backup?"))return;
+      S={ver:1,inv:d.inv,classes:d.classes,active:d.active||d.classes[0]?.id};toast("Backup restored");
+    } else if(d.type==="class"&&d.class){
+      const added=mergeItems(d.items);const c=Object.assign({},d.class,{id:"cls_"+Date.now().toString(36)});
+      // remap item ids by name if needed
+      const items={};Object.entries(c.items||{}).forEach(([id,q])=>{const src=(d.items||[]).find(x=>x.id===id);const local=item(id)&&(!src||item(id).name===src.name)?item(id):S.inv.find(x=>src&&x.name===src.name);if(local)items[local.id]=Math.min(q,local.qty);});
+      c.items=items;S.classes.push(c);S.active=c.id;toast(`Class imported${added?` (+${added} new items)`:""}`);
+    } else if(d.inv||Array.isArray(d)){
+      const n=mergeItems(d.inv||d);toast(`${n} new item${n===1?"":"s"} added`);
+    } else throw 0;
+    save();render();
+  }catch(err){toast("Couldn't read that file");}
+  e.target.value="";
+};
+$("#resetAll").onclick=()=>{if(!confirm("Restore the original kit list and preset classes? Your changes will be lost."))return;S=freshState();save();render();toast("Restored");};
+
+render();
+</script>
+</body>
+</html>
