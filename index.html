@@ -2687,6 +2687,22 @@ GAME_STORYLETS.push(
   choices:[{label:"Filter water from the cut",requires:{hasItem:["filter"]},effects:{energy:6,morale:4,setFlag:"water",noise:1,light:2,time:20},result:"Canal water, made safe. Tastes faintly of canal. Brilliant."},
            {label:"Ration the last mouthful",effects:{energy:-6,morale:-6},result:"It doesn't touch the sides."}]}
 );
+GAME_STORYLETS.push(
+ {id:"night_rain_arrives",phase:"night",when:{},weight:0,once:true,
+  text:"{hour}. Pattering. Then steady rain, right on schedule.",
+  choices:[{label:"Pull the poncho over the head end",requires:{hasItem:["poncho"]},effects:{dry:4,noise:2,energy:-2},result:"Drumming on the poncho, not on your face."},
+           {label:"Spare clothes into the dry bag, quick",requires:{hasItem:["drybag"]},effects:{setFlag:"kitDry",noise:2,light:1},result:"Whatever gets wet, the spare layer won't."},
+           {label:"Tuck in and let it rain",effects:{morale:-2,sleep:true},result:"The sound is quite nice, actually. For now."}]},
+ {id:"night_food_raid",phase:"night",when:{notFlag:"foodStashed",hourBetween:[22,4]},weight:4,once:true,
+  text:"{hour}. Rustling right by your head. Something is in your pack's lid pocket, and it's chewing.",
+  choices:[{label:"Bang the ground and hiss",effects:{noise:3,use:"snack",setFlag:"foodRaided",morale:-4},result:"A fox bolts with your flapjack. Respect, honestly."},
+           {label:"Torch it",requires:{hasItem:["headtorch"]},effects:{light:5,morale:-2,setFlag:"foodRaided"},result:"A rat, frozen in the beam, then gone. It got through the wrapper but not much else."},
+           {label:"Let it get on with it",effects:{use:"snack",setFlag:"foodRaided",setFlag2:"foodRaided2",morale:-6,sleep:true},result:"In the morning: shredded wrappers everywhere. Leave No Trace just got harder.",}]},
+ {id:"night_phone_cold",phase:"night",when:{lowBelow:3,notFlag:"phoneWarm",hourBetween:[1,5]},weight:3,once:true,
+  text:"{hour}. You reach for your phone to check the time. The screen flashes 1% and dies. It was on 40 an hour ago.",
+  choices:[{label:"Warm it in your armpit and charge it",requires:{hasItem:["powerbank"]},effects:{phone:30,bank:true,setFlag:"phoneWarm",morale:-2},result:"Cold batteries lie. Warm, it comes back to life."},
+           {label:"No phone till morning, then",effects:{phone:-100,morale:-5},result:"No time, no forecast, no map. Just you and the dark."}]}
+);
 
 /* ============================================================
    PITCH DARK — engine (Play tab)
@@ -2715,7 +2731,7 @@ function gLines(){ return Object.entries(G.items).map(([id,q])=>({it:item(id),q}
 function gHas(tag){
   const L=gLines(), any=f=>L.some(l=>f(l.it));
   switch(tag){
-    case"headtorch":return any(isLight); case"redlight":return any(it=>isLight(it)&&redOf(it)); case"lantern":return any(it=>RX.lantern.test(it.name));
+    case"headtorch":return any(isLight)&&(!G.res||G.res.torch>0); case"redlight":return any(it=>isLight(it)&&redOf(it)); case"lantern":return any(it=>RX.lantern.test(it.name));
     case"ypeg":return any(it=>RX.ypeg.test(it.name)); case"spiralpeg":return any(it=>RX.spiral.test(it.name));
     case"poncho":return any(it=>it.shelter==="poncho"||/poncho/i.test(it.name)); case"tarp":return any(it=>it.shelter==="tarp");
     case"flask":return any(it=>/flask|insulated bottle|thermos|vacuum/i.test(it.name)); case"stove":return any(it=>COOK_RX.test(it.name)&&!isGas(it)); case"gas":return any(isGas);
@@ -2787,6 +2803,7 @@ function gChoiceState(ch){
   const r=ch.requires||{}, missing=(r.hasItem||[]).filter(t=>!gHas(t));
   if(missing.length) return {ok:false,why:"needs "+missing.map(t=>G_TAGNAMES[t]||t).join(" & ")};
   if(r.uses) for(const [k,v] of Object.entries(r.uses)) if((G.uses[k]||0)<v) return {ok:false,why:k==="flask"?"flask is empty":"nothing left to eat"};
+  if(r.water&&(!G.res||G.res.water<r.water)) return {ok:false,why:"not enough water"};
   if(r.flag&&!G.flags[r.flag]) return {ok:false,why:""}; if(r.notFlag&&G.flags[r.notFlag]) return {ok:false,why:""};
   return {ok:true};
 }
@@ -2815,18 +2832,19 @@ function gStart(classId,scenKey,difficulty,seed){
     meters:{warmth:80,energy:Math.min(95,72+(meals.length?8:0)),dry:100,morale:65,suspicion:Math.round(Math.max(3,Math.min(45,(100-st.score)*0.5)))},
     uses:{snack,flask:flasks*2,hotmeal:meals.filter(m=>m.hot).length},flags:{},seen:{},log:[],swings:[],queue:["intro"],
     min:{warmth:80,energy:80,dry:100,morale:65},lowAt:{},maxS:0,near:0,pending:[],km:0,slept:0,nightHours:0,lnt:2,scene:null,ended:null,coldHour:null};
-  G.flaskAt=G.time-60; // filled with boiling water at home
+  G.flaskAt=G.time-60; gSysInit(); // filled with boiling water at home
   G.rs=G.seed; if(!G.stealthMatters) G.meters.suspicion=Math.round(G.meters.suspicion*0.4); G.min.energy=G.meters.energy; G.maxS=G.meters.suspicion;
   // layers already worn in the class count as worn from the start
   Object.keys(c.worn||{}).forEach(id=>{const it=item(id); if(it&&it.kind==="layer") G.wornLayers[id]=1;});
   gNext(); gSave();
 }
 function gSave(){ S.game=G; save(); }
-function gLoad(){ if(S.game&&S.game.v===1){ G=S.game; G.localDelta=G.localDelta||{}; G.pending=G.pending||[]; G.lowAt=G.lowAt||{}; G.near=G.near||0; if(G.flaskAt==null) G.flaskAt=G.time; G.km=G.km||0; G.scen=GAME_SCEN[G.scenKey]||GAME_SCEN.towpath; if(G.scenKey==="plan") G.scen=Object.assign({},GAME_SCEN.plan); return true;} return false; }
+function gLoad(){ if(S.game&&S.game.v===1){ G=S.game; G.localDelta=G.localDelta||{}; G.pending=G.pending||[]; G.lowAt=G.lowAt||{}; G.near=G.near||0; if(G.flaskAt==null) G.flaskAt=G.time; G.km=G.km||0; if(!G.res) gSysInit(); G.scen=GAME_SCEN[G.scenKey]||GAME_SCEN.towpath; if(G.scenKey==="plan") G.scen=Object.assign({},GAME_SCEN.plan); return true;} return false; }
 
 /* ---------- physics per turn ---------- */
 const gMult=()=>({easy:0.6,normal:1,hard:1.3}[G.difficulty]||1);
-function gPassive(minutes){
+function gPassive(minutes){ gPassiveBase(minutes); gSysPassive(minutes); }
+function gPassiveBase(minutes){
   const m=G.meters, k=gMult(), steps=minutes/60;
   if(G.phase==="walk"){ m.energy-= (1+G.packKg*0.2)*k*(minutes/30); m.warmth=Math.min(85,m.warmth+2); return; }
   if(G.phase==="pitch"||G.phase==="dawn"){ const T0=gTemp(G.time); if(T0<5) m.warmth-=(5-T0)*0.4*k*steps*2; m.energy-=1*k*steps; return; } // busy hands keep you warmish
@@ -2870,6 +2888,7 @@ function gApply(eff,label){
     if(eff.light&&G.stealthMatters&&nightish) m.suspicion+=eff.light*(gHas("redlight")?0.35:1)*(G.near>0?1.8:1)*(G.pitch==="canal"||G.pitch==="hilltop"?1.3:1)*k;
     if(eff.near!=null) G.near=eff.near;
     if(eff.later) [].concat(eff.later).forEach(L=>G.pending.push({at:G.time+(+L.in||60),id:L.id}));
+    gSysApply(eff);
     if(eff.km) G.km+=eff.km; if(eff.endWalk) G.walkLeft=0;
     if(eff.wear){ const L=gLines().filter(l=>l.it.kind==="layer"&&(+l.it.warmth||0)>0);
       if(eff.wear==="warmest"){const w=gWarmestUnworn(); if(w) G.wornLayers[w.id]=1;}
@@ -2902,7 +2921,7 @@ function gCheckEnd(){
 
 /* ---------- dynamic (code-built) scenes ---------- */
 function gDynamic(id){
-  const c=gClass();
+  const c=gClass(); { const sx=gSysDynamic(id); if(sx) return sx; if(id==="camp_hub") return null; }
   if(id==="intro") return {id,text:G.scen.intro||(G.scenKey==="towpath"?"Half three on a November afternoon. The light is already thinking about leaving. {pack} on your back, the towpath ahead, and a night out in front of you.":"Late afternoon. {pack} on your back, and a night out ahead of you."),
     sub:gIntroVoice(),choices:[{label:"Set off",effects:{morale:3}}]};
   if(id==="pitch_choose") return {id,text:"Time to find somewhere to sleep. Four options in the failing light:",choices:[
@@ -2936,10 +2955,10 @@ function gDynamic(id){
   if(id==="camp_food"){
     const ch=[], meals=c.meals||[], hot=meals.filter(m=>m.hot), cold=meals.filter(m=>!m.hot&&m.type!=="drink");
     const stoveOK=gHas("stove")&&gHas("gas")&&gHas("lighter");
-    if(hot.length&&stoveOK) ch.push({label:`Cook: ${hot[0].name}`.slice(0,44),effects:{energy:18,warmth:10,morale:10,suspicion:G.stealthMatters?3:0},result:"Hot food in the dark. The best meal you've had all week."});
+    if(hot.length&&stoveOK) ch.push({label:`Cook: ${hot[0].name}`.slice(0,44),requires:{water:0.5},effects:{use:"hotmeal",water:-0.5,ate:true,energy:18,warmth:10,morale:10,noise:2,light:1,time:30},result:"Hot food in the dark. The best meal you've had all week."});
     if(gHas("stove")&&!gHas("lighter")) ch.push({label:"Light the stove",effects:{morale:-6,setFlag:"noLighter"},result:"Click. Click. Nothing. No igniter, no lighter."});
     if(gHas("flask")&&G.uses.flask>0) ch.push({label:"Hot drink from the flask",requires:{uses:{flask:1}},effects:{use:"flask",warmth:10,morale:8},result:"Steam in the torchlight. Your hands come back to life."});
-    ch.push({label:cold.length?`Eat: ${cold[0].name}`.slice(0,44):"Eat something cold",requires:{uses:{snack:1}},effects:{use:"snack",energy:14,morale:4},result:"Cold, but it's fuel."});
+    ch.push({label:cold.length?`Eat: ${cold[0].name}`.slice(0,44):"Eat something cold",requires:{uses:{snack:1}},effects:{use:"snack",noise:1,energy:14,morale:4},result:"Cold, but it's fuel."});
     ch.push({label:"Skip food, save it for later",effects:{morale:-3,later:{in:420,id:"later_hungry"}},result:"You'll regret this around 2am."});
     return {id,text:"Camp is up. Your stomach is reminding you that you walked here.",choices:ch};
   }
@@ -2985,6 +3004,7 @@ function gDynamic(id){
     if(m.warmth<60) ch.push({label:"Warm up: sit-ups and toe wiggles in the bag",effects:{warmth:6,energy:-6,noise:2,time:15},result:"Ridiculous, effective. You're breathing hard and warmer."});
     if(G.flags.bursting) ch.push({label:"Give in and go for a wee",effects:{warmth:-6,clearFlag:"bursting",setFlag:"weed",noise:1,time:15},result:"Out, cold, back in. Instant relief. Should've done it at nine."});
     if(gHas("headtorch")&&gShelters().some(s=>["tent","tarp","poncho"].includes(s.shelter))) ch.push({label:"Check the lines with the torch",effects:{light:6,energy:-2,warmth:-3,time:15,checkPitch:true},result:""});
+    gActions("night").forEach(a=>ch.push(a));
     if(m.warmth<45||m.morale<35||m.dry<30) ch.push({label:`Call it: pack up and walk out (~${gWalkOut()})`,effects:{ending:"walkedhome"}});
     return {id,text:`${amb} ${body}`,choices:ch};
   }
@@ -2992,7 +3012,7 @@ function gDynamic(id){
     const real=gRand()<(0.3+(G.pitch==="canal"?0.2:0)+(G.meters.suspicion>40?0.15:0)+(G.scen.route==="moor"?-0.15:0));
     const txt=["Something moves in the leaves, close. Heavy. Then it stops.","A crunch. Then another. Footsteps? On the path, or in the field?","A light flickers beyond the hedge for a second, then it's gone.","A twig snaps somewhere behind your head."][Math.floor(gRand()*4)];
     const ch=[{label:"Lie still and listen",hide:true,effects:real?{suspicion:4,morale:-4,time:20}:{morale:-3,warmth:-2,time:20},result:real?"Voices, low. Two people and a dog, passing ten yards off. They never see you.":"Ten minutes of nothing. A badger, probably. Your heart takes longer to settle."}];
-    if(gHas("headtorch")) ch.push({label:"Torch on it",hide:true,effects:real?{light:14,morale:-5,near:2,time:10}:{light:3,morale:4,time:10},result:real?"Two startled faces in your beam. 'Bloody hell!' Now they definitely know you're here.":"Two green eyes. A fox, deeply unimpressed. You laugh, quietly."});
+    if(gHas("headtorch")) ch.push({label:"Torch on it",hide:true,effects:real?{light:14,morale:-5,near:2,time:10}:{light:3,morale:4,time:10},result:real?["Two startled faces in your beam. 'Bloody hell!' Now they definitely know you're here.","A dog walker, shielding their eyes. 'Christ, you scared me.' They hurry off, phone already out.","A lad on a bike, stopped dead. He stares, then pedals off fast."][Math.floor(gRand()*3)]:["Two green eyes. A fox, deeply unimpressed. You laugh, quietly.","A muntjac, frozen, then gone in two bounds.","A hedgehog, snuffling, completely unbothered by you."][Math.floor(gRand()*3)]});
     ch.push({label:"Ignore it and go back to sleep",hide:true,effects:real?{sleep:true,near:1,later:{in:40,id:"later_found"}}:{sleep:true,morale:2},result:real?"You roll over. It goes quiet. Probably nothing.":"Nothing. You were right."});
     return {id,text:`${gFmtTime(G.time)}. ${txt}`,choices:ch};
   }
@@ -3028,10 +3048,10 @@ function gPick(){
 function gNext(){
   if(G.ended) return;
   let s=null;
-  if(G.queue.length){ const id=G.queue.shift(); s=gDynamic(id)||GAME_STORYLETS.find(x=>x.id===id); }
+  if(G.queue.length){ const id=G.queue.shift(); s=gDynamic(id)||GAME_STORYLETS.find(x=>x.id===id); if(!s&&id==="camp_hub") return gNext(); }
   else if(G.phase==="walk"){ if(G.walkLeft<=0){ G.phase="pitch"; G.queue.push("pitch_choose","pitch_setup"); if(gRand()<0.7) G.queue.push("__pitchrandom"); return gNext(); }
     s=gRand()<0.6?gPick():null; if(!s) s=gDynamic("walk_pace"); }
-  else if(G.phase==="pitch"){ G.phase="camp"; G.queue.push("camp_food"); if(gRand()<0.6) G.queue.push("__camprandom"); G.queue.push("camp_wee","camp_bed"); return gNext(); }
+  else if(G.phase==="pitch"){ G.phase="camp"; G.queue.push("camp_food"); if(gRand()<0.6) G.queue.push("__camprandom"); G.queue.push("camp_hub","camp_bed"); return gNext(); }
   else if(G.phase==="camp"){ G.phase="night"; return gNext(); }
   else if(G.phase==="night"){
     if(G.time/60>=24+G.sunrise){ G.phase="dawn"; G.queue.push("dawn_sunrise"); if(gRand()<0.6) G.queue.push("__dawnrandom"); G.queue.push("dawn_lnt"); return gNext(); }
@@ -3080,7 +3100,7 @@ function gChoose(i){
   if(G.queue[0]==="__dawnrandom"){ G.queue.shift(); const p=gPick(); if(p) G.queue.unshift(p.id); }
   Object.keys(G.meters).forEach(k=>G.meters[k]=gClamp(G.meters[k]));
   gTrack();
-  G.lastResult=blockMsg||ch.result||"";
+  G.lastResult=blockMsg||G._sysResult||ch.result||""; delete G._sysResult;
   if(eff.use==="flask"&&G.lastHeat<0.6) G.lastResult+=" It's only "+gFlaskWord()+" now.";
   if(G.log.length) G.log[G.log.length-1].result=G.lastResult;
   const dl=Object.keys(G_ICON).map(k=>[k,Math.round(G.meters[k]-before[k])]).filter(([,v])=>v);
@@ -3159,7 +3179,7 @@ function gDebrief(){
     Warmth:gGrade(G.min.warmth,[60,45,30,15]),
     Sleep:k==="dawn"?gGrade(sleepRatio*100,[70,50,35,20]):"–",
     Stealth:gGrade(100-G.maxS,[75,60,40,20]),
-    "Leave No Trace":k==="dawn"?gGrade(G.lnt,[4,3,2,1]):"–",
+    "Leave No Trace":k==="dawn"?gGrade(G.lnt-(G.flags.foodRaided2?1:0),[4,3,2,1]):"–",
     Weight:gGrade(100-G.packKg*5,[60,50,40,30])
   };
   const turn=G.swings.slice().sort((a,b)=>b.swing-a.swing)[0]||null;
@@ -3186,6 +3206,7 @@ function gLessons(c){
   if(G.min.energy<30) add("You ran low on energy. Plan more calories (and something hot) on the Food tab.",{type:"view",v:"food",label:"Open Food tab"});
   if(G.flags.darkPitch) add("Pitching in the dark with no head torch cost you time and morale.",owned.find(isLight)&&!gHas("headtorch")?{type:"pack",id:owned.find(isLight).id,label:"+ Pack the head torch"}:{type:"wish",tpl:{name:"Head torch with red light mode",cat:"Lighting & Power",g:80,redlight:true},label:"+ Wishlist: head torch"});
   if(G.flags.noLighter) add("A stove with no lighter is just weight.",{type:"wish",tpl:{name:"Lighter + storm matches",cat:"Kitchen & Hydration",g:30},label:"+ Wishlist: lighter"});
+  gSysLessons(add);
   if(!out.length) add(G.ended.kind==="dawn"?"Nothing went badly wrong. This loadout handled tonight. Try a harder scenario or the Hard setting.":"Look at the turning point above. That's where the night went.",null);
   return out;
 }
@@ -3217,7 +3238,7 @@ function renderPlay(){
   const sc=G.scene;
   root.innerHTML=`<div class="card gtop">
       <div class="gms">${Object.keys(G_ICON).map(gMeterBar).join("")}</div>
-      <div class="row small muted" style="margin-top:6px"><span>🕒 ${gFmtTime(G.time)}</span><span>🌡️ ${gTemp(G.time).toFixed(0)}°C</span><span>${{walk:"Walking in",pitch:"Pitching",camp:"Evening",night:"Night",dawn:"Dawn"}[G.phase]}</span><span class="grow"></span><span>${esc(G.scen.name)}</span></div>
+      <div class="row small muted" style="margin-top:6px"><span>🕒 ${gFmtTime(G.time)}</span><span>🌡️ ${gTemp(G.time).toFixed(0)}°C</span><span>${{walk:"Walking in",pitch:"Pitching",camp:"Evening",night:"Night",dawn:"Dawn"}[G.phase]}</span><span class="grow"></span><span>${esc(G.scen.name)}</span></div>${gSysHud()}
     </div>
     <div class="card gscene">
       ${G.lastResult||G.lastDelta?`<p class="gres">${esc(G.lastResult||"")}${G.lastDelta?` <span class="gdelta">${G.lastDelta}</span>`:""}</p>`:""}
@@ -3288,6 +3309,135 @@ document.addEventListener("click",e=>{
   if(b.dataset.gshare!=null){ const t=`🌑 Pitch Dark: ${G.scen.name}\n${GAME_ENDINGS[G.ended.kind].title}\n\n`+G.log.map(x=>`${x.t} ${x.choice}${x.result?" — "+x.result:""}`).join("\n")+(G.result.story?`\n\n${G.result.story}`:"")+`\n\nGrades: `+Object.entries(G.result.grades).map(([k,v])=>`${k} ${v}`).join(", ");
     (navigator.clipboard?navigator.clipboard.writeText(t):Promise.reject()).then(()=>toast("Story copied"),()=>download("pitch-dark-night.txt",t,"text/plain")); return; }
 });
+/* ---------- v4 systems: water, batteries, sweat, hunger, forecast, camp jobs, kit actions ---------- */
+const G_WATER_RX=/bottle|container|bladder|canteen|nalgene|platypus|hydration/i, G_FLASK_RX=/flask|insulated|thermos|vacuum/i;
+function gSysInit(){
+  const cap=gLines().filter(l=>G_WATER_RX.test(l.it.name)&&!G_FLASK_RX.test(l.it.name))
+    .reduce((s,l)=>{const m=l.it.name.match(/(\d+(?:\.\d+)?)\s*L\b/i); return s+(m?+m[1]:0.75)*l.q;},0);
+  const torch=gLines().some(l=>isLight(l.it));
+  G.res={waterCap:Math.round(cap*10)/10, water:Math.max(0.5,Math.round(cap*10)/10), phone:82, torch:torch?100:0, bank:gHas("powerbank")?2:0, sweat:0};
+  G.lastAte=G.time; G.campActs=0;
+  // the weather has a plan: rain and wind arrive at a time, which the phone forecast can tell you
+  G.wxPlan={};
+  if(G.wx.rain>=1) G.wxPlan.rainAt=(24+Math.floor(gRand()*5))*60+(G.wx.rain>=2?-180:0); // 21:00-04:00
+  if(G.wx.wind>=2) G.wxPlan.gustAt=(23+Math.floor(gRand()*4))*60;
+}
+const gDarkNow=()=>G.time/60>=G.sunset&&G.time/60<24+G.sunrise;
+function gSysPassive(minutes){
+  if(!G.res) gSysInit();
+  const R=G.res, m=G.meters, k=gMult(), steps=minutes/60, T=gTemp(G.time);
+  // water
+  const use=G.phase==="walk"?(G.wx.high>=15?0.5:0.3):G.phase==="night"?0.04:0.12;
+  R.water=Math.max(0,R.water-use*steps);
+  if(R.water<=0){ m.energy-=2*k*steps; m.morale-=1*k*steps; G.flags.thirsty=true; if(!G.lowAt.waterOut) G.lowAt.waterOut=gFmtTime(G.time); }
+  // sweat: walking hard in layers soaks your base layer; damp clothes chill you once you stop
+  const worn=Object.keys(G.wornLayers).length;
+  if(G.phase==="walk") R.sweat=Math.min(100,R.sweat+(4+worn*2+(G.wx.high>=15?4:0))*steps*2);
+  else R.sweat=Math.max(0,R.sweat-(G.phase==="night"?3:5)*steps);
+  if(G.phase==="camp"&&R.sweat>50) G.flags._sweatLesson=true;
+  if(G.phase!=="walk"&&R.sweat>30){ m.warmth-=(R.sweat-30)/25*k*steps; m.dry-=1*steps; }
+  // hunger clock: no food for 6 h and your internal heater runs low
+  const since=(G.time-(G.lastAte??G.time))/60;
+  if(since>6&&G.phase!=="walk"){ m.warmth-=1.2*k*steps; G.flags.hungry=true; } else delete G.flags.hungry;
+  // batteries: phones die in the cold
+  R.phone=Math.max(0,R.phone-(1.5+(T<3&&!G.flags.phoneWarm?4:0))*steps);
+  if(R.phone<=0&&!G.lowAt.phoneDead) G.lowAt.phoneDead=gFmtTime(G.time);
+  // hot water bottle cooling
+  if(G.flags.hwbAt!=null&&G.phase==="night"){ const h=(G.time-G.flags.hwbAt)/60; if(h<5) m.warmth+=2.2*steps; }
+  // weather arriving on schedule
+  if(G.wxPlan&&G.wxPlan.rainAt!=null&&G.time>=G.wxPlan.rainAt&&!G.flags.raining){ G.flags.raining=true; G.pending.push({at:G.time,id:"night_rain_arrives"}); }
+  if(G.wxPlan&&G.wxPlan.gustAt!=null&&G.time>=G.wxPlan.gustAt&&!G.flags.gusting){ G.flags.gusting=true; if(!G.flags.loosePitchChecked&&gShelters().some(s=>["tent","tarp","poncho"].includes(s.shelter))&&gRand()<0.4) G.flags.loosePitch=true; }
+  if(G.flags.raining&&!G.flags.kitDry&&G.phase==="night"){ const p=protection(gModelClass(G.time)); if(p.rain<2) m.dry-=1.5*steps; }
+}
+function gSysApply(eff){
+  if(!G.res) gSysInit();
+  const R=G.res;
+  if(eff.water!=null) R.water=Math.max(0,Math.min(Math.max(R.waterCap,0.5),R.water+eff.water));
+  if(eff.fillWater) R.water=Math.max(R.waterCap,0.5);
+  if(eff.water>0||eff.fillWater) delete G.flags.thirsty;
+  if(eff.phone!=null) R.phone=Math.max(0,Math.min(100,R.phone+eff.phone));
+  if(eff.bank) R.bank=Math.max(0,R.bank-1);
+  if(eff.sweat!=null) R.sweat=Math.max(0,Math.min(100,R.sweat+eff.sweat));
+  if(eff.light) R.torch=Math.max(0,R.torch-eff.light*0.9);
+  if(eff.use==="snack"||eff.use==="hotmeal"||eff.ate) G.lastAte=G.time;
+  if(eff.hwb) G.flags.hwbAt=G.time;
+  if(eff.unwear){ const w=Object.keys(G.wornLayers).map(id=>item(id)).filter(Boolean).sort((a,b)=>(b.warmth||0)-(a.warmth||0))[0]; if(w) delete G.wornLayers[w.id]; }
+  if(eff.setFlag2) G.flags[eff.setFlag2]=true;
+  if(eff.endCamp&&!G.flags.weed){ G.flags.skippedWee=true; G.pending.push({at:G.time+300,id:"night_wee"}); }
+  if(eff.forecast) G._sysResult=R.phone>3?gForecast():"Dead. Of course.";
+  if(eff.again&&G.phase==="camp") G.queue.unshift("camp_hub");
+  if(eff.camp) G.campActs++;
+}
+function gShort(n){ n=n.replace(/\s*\(.*?\)\s*/g," ").replace(/^(North-Gate|Karrimor|Quechua|British Army|Mountain Warehouse|Coolzon)\s+/i,"").trim(); if(n.length<=24) return n; return n.slice(0,24).replace(/\s+\S*$/,""); }
+function gStoveOK(){ return gHas("stove")&&gHas("gas")&&gHas("lighter"); }
+function gBright(){ return gLines().filter(l=>visOf(l.it)>=3&&!/hi-?vis/i.test(l.it.name)&&(l.it.kind==="shelter"||RX.drybag.test(l.it.name)||l.it.cat==="Clothing"||RX.pack.test(l.it.name))); }
+/* contextual things you can do with your kit, any time you're stopped */
+function gActions(where){
+  const R=G.res, m=G.meters, A=[], dark=gDarkNow(), stealthy=G.stealthMatters;
+  const once=f=>!G.flags["did_"+f];
+  if(R.water>=0.2) A.push({label:`Drink some water (${R.water.toFixed(1)} L left)`,effects:{water:-0.25,energy:3,morale:1,time:5},result:G.flags.thirsty?"You were properly thirsty. Better.":"Cold, but good."});
+  if(gStoveOK()&&R.water>=0.5&&gHas("flask")) A.push({label:"Boil water and refill the flask",requires:{water:0.5},effects:{water:-0.5,refill:"flask",warmth:3,noise:3,light:2,time:20},result:"The stove roars like a jet engine in the silence. Flask full of boiling water."});
+  if(gHas("flask")&&(G.uses.flask||0)>0&&G.flags.hwbAt==null&&where==="night"&&G.wx.low<8) A.push({label:`Flask in a sock at your feet (${gFlaskWord()})`,requires:{uses:{flask:1}},effects:{use:"flask",hwb:true,morale:4,time:10},result:"A hot water bottle for your toes. It'll keep giving for a few hours."});
+  if(gHas("socks")&&once("socks")&&(R.sweat>25||m.dry<70)) A.push({label:"Change into dry socks and base layer",effects:{setFlag:"did_socks",sweat:-100,dry:12,warmth:3,noise:2,time:15},result:"Cold for a minute, then dry, warm and smug. Sleep kit stays sleep kit."});
+  else if(R.sweat>40&&once("strip")) A.push({label:"Strip off the sweaty top and dry off",effects:{setFlag:"did_strip",sweat:-60,warmth:-4,dry:6,noise:2,time:10},result:"Brutal for thirty seconds. Much better than lying in a cold wet top."});
+  if(Object.keys(G.wornLayers).length&&gTemp(G.time)-thermal(gModelClass(G.time),{noCalib:true}).rating>7) A.push({label:"Take a layer off: you're too warm",effects:{unwear:true,dry:2,noise:1,time:5},result:"Cooler. Sweating in your bag is how you get cold later."});
+  if(R.phone>3) A.push({label:`Check the phone (${Math.round(R.phone)}%)`,effects:{phone:-4,light:2,morale:2,time:5,forecast:true},result:""});
+  if(R.bank>0&&R.phone<60) A.push({label:"Charge the phone from the power bank",effects:{phone:40,bank:true,time:5},result:"Plugged in, tucked in the bag with you. Back above half."});
+  if(!G.flags.phoneWarm&&G.wx.low<5) A.push({label:"Put the phone in the bag with you",effects:{setFlag:"phoneWarm",time:5},result:"Cold kills batteries. Body heat doesn't."});
+  if(where==="camp"){
+    if(once("stash")&&(G.uses.snack||0)>0) A.push({label:"Stash the food inside the pack",effects:{setFlag:"foodStashed",setFlag2:"did_stash",time:5,camp:true,again:true},result:"Zipped in, lid pocket empty. Foxes are clever and rats are cleverer."});
+    if(once("clear")) A.push({label:"Clear sticks and stones from under your mat",effects:{setFlag:"clearedGround",setFlag2:"did_clear",energy:-2,time:10,camp:true,again:true},result:"Two roots and a beer can top. That would have been your hip at 2am."});
+    if(stealthy&&once("hide")&&gBright().length) A.push({label:`Hide the bright stuff (${gShort(gBright()[0].it.name)})`,effects:{suspicion:-7,setFlag:"did_hide",time:10,camp:true,again:true},result:"Inside the pack, under the poncho. You're a lump in the dark now, not a beacon."});
+    if(gHas("drybag")&&once("drybag")&&(G.wx.rain>=1||G.wx.humid>=85)) A.push({label:"Pack spare clothes into the dry bag",effects:{setFlag:"kitDry",setFlag2:"did_drybag",time:10,camp:true,again:true},result:"Whatever happens tonight, there's a dry layer in there."});
+    if(once("escape")&&!dark) A.push({label:"Work out your way out in the dark",effects:{setFlag:"escape",setFlag2:"did_escape",energy:-3,time:15,camp:true,again:true},result:"Gate, path, lane. If you have to leave at 3am, you won't be guessing."});
+    if(gHas("filter")&&R.water<R.waterCap&&(G.pitch==="canal"||G.scen.route==="moor")) A.push({label:"Filter water from the "+(G.scen.route==="moor"?"stream":"cut"),effects:{fillWater:true,light:dark?2:0,time:20,camp:true,again:true},result:"Full bottles again. Tastes of nothing, which is the point."});
+    if(!G.flags.weed) A.push({label:"Go for a wee, well away from the water",effects:{setFlag:"weed",warmth:-2,noise:1,time:10,camp:true,again:true},result:"Thirty seconds of misery. Future you is grateful."});
+    if(gShelters().some(s=>["bivvy","tent"].includes(s.shelter))&&G.wx.humid>=80&&!G.flags.vented) A.push({label:"Vent the shelter before you get in",effects:{setFlag:"vented",warmth:-2,time:5,camp:true,again:true},result:"Hood cracked open, door unzipped a hand's width. Less drip later."});
+  }
+  if(where==="night"&&G.flags.raining&&gHas("drybag")&&!G.flags.kitDry) A.push({label:"Get the spare clothes into the dry bag",effects:{setFlag:"kitDry",noise:2,light:2,time:10},result:"Fumbling in the dark, but your spare layer is safe."});
+  return A;
+}
+function gSysDynamic(id){
+  if(id==="camp_hub"){
+    if(G.campActs>=6||G.time/60>=Math.max(23,G.sunset+2.5)) return null;
+    const dark=gDarkNow(), left=Math.round((G.sunset*60-G.time)/15)*15;
+    const jobs=gActions("camp").map(a=>Object.assign({},a,{effects:Object.assign({camp:true,again:true},a.effects)}));
+    const text=(dark?"Full dark now.":`About ${left>=60?(left/60).toFixed(left%60?1:0)+" h":left+" min"} of light left.`)+" Jobs before bed. Every one costs time, and the cold doesn't wait.";
+    return {id,text,choices:[{label:"That's everything: get ready for bed",effects:{time:0,endCamp:true},result:""},...jobs.slice(0,7)]};
+  }
+  return null;
+}
+function gForecast(){
+  const P=G.wxPlan||{}, bits=[];
+  bits.push(`${gFmtTime(G.time)}. ${Math.round(gTemp(G.time))}°C now, ${G.wx.low}°C by dawn.`);
+  if(P.rainAt!=null) bits.push(G.time<P.rainAt?`Rain from about ${gFmtTime(P.rainAt)}.`:"Rain on and off till dawn.");
+  if(P.gustAt!=null) bits.push(G.time<P.gustAt?`Gusts picking up around ${gFmtTime(P.gustAt)}.`:"Gusty till morning.");
+  if(P.rainAt==null&&P.gustAt==null) bits.push("Dry and settled.");
+  bits.push(`Sunrise ${gFmtTime(G.sunrise*60)}.`);
+  if(G.res.phone<15) bits.push(`Battery ${Math.round(G.res.phone)}%.`);
+  return bits.join(" ");
+}
+function gSysHud(){
+  if(!G.res) return "";
+  const R=G.res, chips=[];
+  if(G.flags.thirsty) chips.push("thirsty"); if(G.flags.hungry) chips.push("hungry"); if(R.sweat>30) chips.push("sweaty");
+  if(G.flags.bursting) chips.push("bursting"); if(G.flags.raining) chips.push("raining"); if(G.flags.hwbAt!=null&&(G.time-G.flags.hwbAt)<300) chips.push("hot water bottle");
+  if(G.near>0) chips.push("someone nearby");
+  return `<div class="row small" style="margin-top:6px;gap:10px">
+    <span title="water">🥤 ${R.water.toFixed(1)} L</span><span title="phone">📱 ${Math.round(R.phone)}%</span>${R.torch>0||gLines().some(l=>isLight(l.it))?`<span title="torch">🔦 ${Math.round(R.torch)}%</span>`:""}
+    <span title="food">🍫 ${G.uses.snack||0}</span>${gHas("flask")?`<span title="flask">☕ ${G.uses.flask||0} (${gFlaskWord()})</span>`:""}
+    ${chips.map(c=>`<span class="chip">${c}</span>`).join("")}</div>`;
+}
+function gSysLessons(add){
+  const owned=S.inv.filter(usable), c=gClass(), inClass=id=>!!G.items[id];
+  if(G.lowAt.waterOut){ const b=owned.find(i=>G_WATER_RX.test(i.name)&&!G_FLASK_RX.test(i.name)&&!inClass(i.id));
+    add(`You ran out of water around ${G.lowAt.waterOut}. ${G.res.waterCap<1?"This class has almost no water capacity.":"Top up when you pass a tap."}`,b?{type:"pack",id:b.id,label:"+ Pack the "+b.name}:null); }
+  if(G.lowAt.phoneDead){ const pb=owned.find(i=>RX.power.test(i.name));
+    add(`Your phone died at ${G.lowAt.phoneDead}. Cold drains batteries: keep it in the bag with you.`,pb&&!inClass(pb.id)?{type:"pack",id:pb.id,label:"+ Pack the "+pb.name}:null); }
+  if(G.flags.foodRaided) add("Something got into your food. Stash it inside the pack, not in the lid pocket.",null);
+  if(G.flags._sweatLesson) add("You arrived soaked in sweat and it chilled you all evening. Strip a layer before the climbs, and keep dry sleep socks.",owned.find(i=>/sock/i.test(i.name))&&!inClass(owned.find(i=>/sock/i.test(i.name)).id)?{type:"pack",id:owned.find(i=>/sock/i.test(i.name)).id,label:"+ Pack spare socks"}:null);
+  if(G.res.torch<=0&&gLines().some(l=>isLight(l.it))) add("Your torch ran flat. Charge it before you go, and use red light where you can.",null);
+}
 
 document.querySelectorAll("details[data-sec]").forEach(d=>{const v=S.ui&&S.ui[d.dataset.sec];if(v!=null)d.open=v;});
 render();

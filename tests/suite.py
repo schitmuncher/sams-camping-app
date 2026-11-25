@@ -208,6 +208,11 @@ with sync_playwright() as p:
     ok("false alarm hides its outcome",E("(()=>{gStart('cls_winter','towpath','normal',3);return gDynamic('night_sound').choices.every(c=>c.hide)})()"))
     ok("skipping the wee comes back later",E("(()=>{gStart('cls_winter','towpath','normal',4);G.scene=gDynamic('camp_wee');gChoose(1);return G.pending.some(p=>p.id==='night_wee')})()"))
     ok("ending has a night story",E("(()=>{gStart('cls_winter','towpath','normal',2);let n=0;while(!G.ended&&n<120){n++;gChoose(G.scene.choices.findIndex(c=>gChoiceState(c).ok));}return !!(G.result&&G.result.story!=null)})()"))
+    ok("water runs down while walking",E("(()=>{gStart('cls_winter','towpath','normal',11);const w=G.res.water;gPassive(60);return G.res.water<w})()"))
+    ok("phone drains faster in the cold unless kept warm",E("(()=>{gStart('cls_winter','towpath','normal',12);G.phase='night';G.time=26*60;const a=G.res.phone;gPassive(60);const d1=a-G.res.phone;G.flags.phoneWarm=true;const b=G.res.phone;gPassive(60);return d1>(b-G.res.phone)})()"))
+    ok("camp jobs loop back to the jobs list",E("(()=>{gStart('cls_winter','towpath','normal',13);G.phase='camp';G.time=17*60;G.scene=gDynamic('camp_hub');const i=G.scene.choices.findIndex(c=>/Stash|Clear/.test(c.label));gChoose(i);return G.scene.id==='camp_hub'})()"))
+    ok("phone forecast tells you when the rain comes",E("(()=>{gStart('cls_winter','storm','normal',14);G.res.phone=80;return /Rain from about/.test(gForecast())})()"))
+    ok("kit status row shown",pg.evaluate("(()=>{gStart('cls_winter','towpath','normal',15);renderPlay();return document.querySelector('#playRoot').innerText.includes(' L')})()"))
     pg.click("[data-gagain]") if pg.query_selector("[data-gagain]") else None
     E("G=null;delete S.game;S.gameStats=null;S.gameLocals=null;save()")
 
