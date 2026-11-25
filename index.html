@@ -37,7 +37,7 @@ button,.btn{background:var(--panel2);color:var(--text);border:1px solid var(--li
 button.pri{background:var(--accent);color:#14210f;border-color:var(--accent);font-weight:600}
 button.danger{border-color:#7a3b3b;color:#ffb3b3}
 button:disabled{opacity:.4}
-input,select,textarea{background:#101712;color:var(--text);border:1px solid var(--line);border-radius:8px;padding:7px 9px;font-size:14px;max-width:100%}
+input,select,textarea{font-family:inherit;background:#101712;color:var(--text);border:1px solid var(--line);border-radius:8px;padding:7px 9px;font-size:14px;max-width:100%}
 input[type=number]{width:90px}
 label{font-size:13px;color:var(--muted);display:flex;flex-direction:column;gap:3px}
 label.inl{flex-direction:row;align-items:center;gap:6px}
@@ -112,6 +112,7 @@ details.sub>summary{font-size:13px;color:var(--accent);font-weight:600}
 .ess{border-bottom:1px solid var(--line)}
 .ess .body{padding:0 2px 10px 26px;font-size:13px}
 .ess .body p{margin:4px 0}
+@media (max-width:480px){.sumbar .sb-sub{display:none}.sumbar .big{font-size:18px}}
 .chart text{font-size:10px;fill:var(--muted)}
 @media print{
   header,.sumbar,nav,.noprint{display:none!important}
@@ -466,30 +467,42 @@ details.sub>summary{font-size:13px;color:var(--accent);font-weight:600}
     <div class="grid2">
       <label style="grid-column:1/-1">Name<input name="name" required></label>
       <label>Category<select name="cat" id="dlgCat"></select></label>
-      <label>Quantity owned<input type="number" name="qty" min="0" step="1"></label>
-      <label>Weight each (g)<input type="number" name="g" min="0" step="1"></label>
-      <label class="inl" style="align-self:end"><input type="checkbox" name="measured"> I've weighed it</label>
-      <label>Status<select name="status"><option value="active">Active</option><option value="retired">Retired / spare</option><option value="wishlist">Wishlist (don't own yet)</option></select></label>
-      <label>Condition<select name="condition"><option value="good">Good</option><option value="worn">Worn — keep an eye on it</option><option value="repair">Needs repair</option></select></label>
-      <label>Wishlist: replaces…<select name="replaces" id="dlgReplaces"></select></label>
-      <label>Price (£)<input type="number" name="price" min="0" step="0.01"></label>
       <label>Item type<select name="kind">
         <option value="other">General</option><option value="shelter">Shelter</option><option value="bag">Sleeping bag / quilt</option>
         <option value="pad">Sleeping mat / pad</option><option value="layer">Warm layer</option><option value="consumable">Consumable (fuel/food)</option></select></label>
-      <label>Shelter style<select name="shelter"><option value="">—</option><option value="tent">Tent</option><option value="bivvy">Bivvy</option><option value="tarp">Tarp</option><option value="hammock">Hammock</option><option value="poncho">Poncho</option></select></label>
-      <label>Rain protection (0–3)<input type="number" name="rain" min="0" max="3" step="1"></label>
-      <label>Wind protection (0–3)<input type="number" name="wind" min="0" max="3" step="1"></label>
-      <label>Bug protection (0–3)<input type="number" name="bug" min="0" max="3" step="1"></label>
-      <label>Warmth bonus (°C)<input type="number" name="warmth" step="0.5"></label>
-      <label>R-value (mats)<input type="number" name="r" min="0" step="0.1"></label>
-      <label>Bag comfort temp (°C)<input type="number" name="comfort" step="1"></label>
-      <label>Bag limit temp (°C)<input type="number" name="limit" step="1"></label>
-      <label>Colour (stealth)<select name="vis"><option value="">Unknown / guess from name</option><option value="0">Camo</option><option value="1">Muted (green, olive, brown, black, grey)</option><option value="2">Noticeable (blue, silver, white)</option><option value="3">Bright (orange, red, yellow)</option></select></label>
-      <label>Profile (shelters)<select name="profile"><option value="">Auto from type</option><option value="0">Flat (bivvy)</option><option value="1">Low (tarp/awning)</option><option value="2">Tent height</option><option value="3">Raised (hammock)</option></select></label>
-      <label class="inl" style="align-self:end"><input type="checkbox" name="redlight"> Has red light mode</label>
-      <label style="grid-column:1/-1">Seasons (comma separated)<input name="seasons" placeholder="Spring, Summer, Autumn, Winter"></label>
-      <label style="grid-column:1/-1">Weather &amp; terrain notes<textarea name="notes" rows="3"></textarea></label>
+      <label>Quantity owned<input type="number" name="qty" min="0" step="1"></label>
+      <label>Weight each (g)<input type="number" name="g" min="0" step="1"></label>
+      <label class="inl" style="grid-column:1/-1"><input type="checkbox" name="measured"> I've weighed it myself</label>
+      <label style="grid-column:1/-1">Notes<textarea name="notes" rows="2"></textarea></label>
     </div>
+    <details class="sub" data-sec="dlgWarm"><summary>🌡️ Warmth &amp; weather ratings</summary>
+      <div class="grid2" style="margin-top:8px">
+        <label>Shelter style<select name="shelter"><option value="">—</option><option value="tent">Tent</option><option value="bivvy">Bivvy</option><option value="tarp">Tarp</option><option value="hammock">Hammock</option><option value="poncho">Poncho</option></select></label>
+        <label>Warmth bonus (°C)<input type="number" name="warmth" step="0.5"></label>
+        <label>Rain protection (0–3)<input type="number" name="rain" min="0" max="3" step="1"></label>
+        <label>Wind protection (0–3)<input type="number" name="wind" min="0" max="3" step="1"></label>
+        <label>Bug protection (0–3)<input type="number" name="bug" min="0" max="3" step="1"></label>
+        <label>R-value (mats)<input type="number" name="r" min="0" step="0.1"></label>
+        <label>Bag comfort temp (°C)<input type="number" name="comfort" step="1"></label>
+        <label>Bag limit temp (°C)<input type="number" name="limit" step="1"></label>
+        <label style="grid-column:1/-1">Seasons (comma separated)<input name="seasons" placeholder="Spring, Summer, Autumn, Winter"></label>
+      </div>
+    </details>
+    <details class="sub" data-sec="dlgStealth"><summary>🥷 Colour &amp; stealth</summary>
+      <div class="grid2" style="margin-top:8px">
+        <label>Colour (stealth)<select name="vis"><option value="">Unknown / guess from name</option><option value="0">Camo</option><option value="1">Muted (green, olive, brown, black, grey)</option><option value="2">Noticeable (blue, silver, white)</option><option value="3">Bright (orange, red, yellow)</option></select></label>
+        <label>Profile (shelters)<select name="profile"><option value="">Auto from type</option><option value="0">Flat (bivvy)</option><option value="1">Low (tarp/awning)</option><option value="2">Tent height</option><option value="3">Raised (hammock)</option></select></label>
+        <label class="inl" style="grid-column:1/-1"><input type="checkbox" name="redlight"> Light has a red mode</label>
+      </div>
+    </details>
+    <details class="sub" data-sec="dlgOwn"><summary>📦 Status, condition &amp; wishlist</summary>
+      <div class="grid2" style="margin-top:8px">
+        <label>Status<select name="status"><option value="active">Active</option><option value="retired">Retired / spare</option><option value="wishlist">Wishlist (don't own yet)</option></select></label>
+        <label>Condition<select name="condition"><option value="good">Good</option><option value="worn">Worn — keep an eye on it</option><option value="repair">Needs repair</option></select></label>
+        <label>Wishlist: replaces…<select name="replaces" id="dlgReplaces"></select></label>
+        <label>Price (£)<input type="number" name="price" min="0" step="0.01"></label>
+      </div>
+    </details>
     <div id="dlgResearch" class="research"></div>
     <div class="row" style="margin-top:12px;justify-content:flex-end">
       <button type="button" class="danger" id="dlgDel">Delete</button>
@@ -614,7 +627,7 @@ const DEFAULT_INV = [
 /* Preset classes (loadouts) */
 const DEFAULT_CLASSES = [
  {id:"cls_winter",name:"Winter Tent (exposed)",
-  items:{tent_eiger:1,footprint:1,ypeg:12,spiral:6,paracord:1,poles:1,bag:1,aksoul:1,foam:1,foil:1,pillow:1,seat:1,bltop:1,blbot:1,gloves:1,gaiter:2,
+  items:{tent_eiger:1,footprint:1,poncho:1,ypeg:12,spiral:6,paracord:1,poles:1,bag:1,aksoul:1,foam:1,foil:1,pillow:1,seat:1,bltop:1,blbot:1,gloves:1,gaiter:2,
          pack:1,drybag:1,rubble:1,towel:1,mess:1,stove:1,gas:1,cutlery:1,bottle:1,headlamp:1,lantern:1,torch:1,powerbank:1,knotcard:1,bidet:1,trowel:1,firstaid:1,toothbrush:1},
   worn:{poles:1}, packed:{}, wx:{low:-1,high:6,rain:1,wind:2,bugs:0,ground:"frozen",nights:1,water:2,food:0.8}},
  {id:"cls_bivvy",name:"Stealth Bivvy (spring / autumn)",
@@ -699,8 +712,8 @@ const KEY="sams-camp-planner-v1";
 const clone=o=>JSON.parse(JSON.stringify(o));
 const WX_DEFAULT={low:5,high:12,rain:0,wind:0,windAvg:5,humid:80,bugs:0,ground:"normal",nights:1,water:2,food:0.7,meals:2,drinks:3,hwb:true,gasLeft:230,kcal:2800,stealth:0};
 let S;
-function freshState(){return {seed:4,ver:2,inv:clone(DEFAULT_INV),classes:clone(DEFAULT_CLASSES),active:"cls_winter",trips:[],calibOn:true,loc:null,welcomed:true};}
-function emptyState(){const c=newClassObj("My first class");return {seed:4,ver:2,inv:[],classes:[c],active:c.id,trips:[],calibOn:true,loc:null,welcomed:true};}
+function freshState(){return {seed:5,ver:2,inv:clone(DEFAULT_INV),classes:clone(DEFAULT_CLASSES),active:"cls_winter",trips:[],calibOn:true,loc:null,welcomed:true};}
+function emptyState(){const c=newClassObj("My first class");return {seed:5,ver:2,inv:[],classes:[c],active:c.id,trips:[],calibOn:true,loc:null,welcomed:true};}
 function load(){
   let stored=false;
   try{const raw=localStorage.getItem(KEY); if(raw){S=JSON.parse(raw);stored=true;}}catch(e){S=null;}
@@ -711,6 +724,7 @@ function load(){
   if((S.seed||1)<2){ if(S.inv.some(i=>i.id==="tent_eiger")) ["nfchat","parka","mwfleece","thermtrousers"].forEach(id=>{const d=DEFAULT_INV.find(x=>x.id===id); if(d&&!S.inv.some(i=>i.id===id||i.name===d.name)) S.inv.push(clone(d));}); S.seed=2; }
   if((S.seed||1)<3){ if(S.inv.some(i=>i.id==="tent_eiger")) applySamV3(S.inv); S.seed=3; }
   if((S.seed||1)<4){ if(S.inv.some(i=>i.id==="tent_eiger")) applySamV4(S.inv,S.classes); S.seed=4; }
+  if((S.seed||1)<5){ const w=S.classes.find(c=>c.id==="cls_winter"), po=S.inv.find(i=>i.id==="poncho"); if(w&&w.items&&po&&po.status!=="retired"&&po.status!=="wishlist"&&po.qty>0&&!w.items.poncho) w.items.poncho=1; S.seed=5; }
 }
 function save(){try{localStorage.setItem(KEY,JSON.stringify(S));}catch(e){}}
 load();
@@ -877,6 +891,7 @@ function warnings(c){
   if(wx.ground==="frozen"&&inClass(c,"trowel")) w.push(["info","Frozen ground: the trowel will struggle — plan where you'll go."]);
   if(lines.some(l=>isGas(l.it))&&low<=0) w.push(["warn","Below 0°C a butane/propane canister loses pressure. Sleep with it in your bag, or use 4-season (isobutane) gas."]);
   if(inClass(c,"power")&&low<=0) w.push(["info","Keep the power bank and phone in your sleeping bag overnight."]);
+  if(!inClass(c,"stove",it=>!isGas(it))&&lines.some(l=>isGas(l.it))) w.push(["info","Gas canister packed but no stove — leave it at home (see Kit check)."]);
   if(inClass(c,"stove",it=>!isGas(it))){const f=fuelPlan(c); if(!f.cans) w.push(["warn","Stove packed but no gas canister."]); else if(!f.ok) w.push(["warn",`Fuel short: need ~${Math.round(f.needR)} g of gas (with reserve), you're carrying ~${Math.round(f.have)} g.`]);}
   const broken=lines.filter(l=>l.it.condition==="repair"); if(broken.length) w.push(["bad","Needs repair: "+broken.map(l=>l.it.name).join(", ")+"."]);
   const worn=lines.filter(l=>l.it.condition==="worn"); if(worn.length) w.push(["info","Check before you go (marked worn): "+worn.map(l=>l.it.name).join(", ")+"."]);
@@ -974,6 +989,7 @@ function suggestClass(){
     if(gas){c.items[gas.id]=1;const f=fuelPlan(c);const n=Math.min(gas.qty,Math.max(1,Math.ceil(f.needR/Math.max(1,+wx.gasLeft||230))));c.items[gas.id]=n;
       R.push(`🔥 ${n} gas canister${n>1?"s":""} — about ${Math.round(f.needR)} g of gas needed incl. reserve.`+(n*(+wx.gasLeft||230)<f.needR?" You'll need to buy more.":""));}
     else R.push("⚠️ Stove packed but no gas in your kit.");}
+  if(!stove){const ct=first("cutlery");if(ct)add(ct);}
   const bt=first("bottle"); if(bt) add(bt);
   // lights, bugs, recon, hygiene
   const hl=first("headlamp"); if(hl) add(hl); const tc=first("torch",notHead); if(tc) add(tc);
@@ -985,6 +1001,7 @@ function suggestClass(){
   if(mode==="bivvy"){const op=first("optic");if(op)add(op);}
   ["firstaid","trowel","tooth","bidet"].forEach(k=>{const it=first(k);if(it)add(it,1);});
   c.reasons=R; c.draft=true;
+  S.classes=S.classes.filter(x=>!x.draft);
   S.classes.push(c); S.active=c.id; save();
   showView("classes"); toast("Suggested class created");
 }
@@ -1272,10 +1289,11 @@ function renderClasses(){
 function renderPack(){
   const c=cls(), lines=classLines(c);
   $("#packTitle").textContent="Checklist: "+c.name;
-  const done=lines.filter(l=>c.packed[l.it.id]).length;
-  $("#packProg").style.width=(lines.length?done/lines.length*100:0)+"%";
+  const mealsAll=c.meals||[], pm=c.packedMeals||{};
+  const done=lines.filter(l=>c.packed[l.it.id]).length+mealsAll.filter(m=>pm[m.id]).length, totalN=lines.length+mealsAll.length;
+  $("#packProg").style.width=(totalN?done/totalN*100:0)+"%";
   const w=weights(c);
-  $("#packStat").textContent=`${done} of ${lines.length} packed · pack ${kg(w.pack)} (incl. ${c.wx.water} L water, food) · worn ${kg(w.worn)}`;
+  $("#packStat").textContent=`${done} of ${totalN} packed · pack ${kg(w.pack)} (incl. ${c.wx.water} L water, food) · worn ${kg(w.worn)}`;
   const meals=(c.meals||[]).slice().sort((a,b)=>a.day-b.day||MEAL_TYPES.indexOf(a.type)-MEAL_TYPES.indexOf(b.type));
   c.packedMeals=c.packedMeals||{};
   const foodCard=meals.length?`<div class="card"><h3 style="margin-top:0">Food (meal plan)</h3>${meals.map(m=>`<label class="item ${c.packedMeals[m.id]?"done":""}" style="flex-direction:row;color:var(--text)">
@@ -1376,7 +1394,7 @@ function renderSumbar(){
   const c=cls(), w=weights(c), t=thermal(c), p=protection(c), wx=c.wx;
   const short=(p.rain<NEED.rain(+wx.rain))||(p.wind<NEED.wind(+wx.wind))||(p.bug<NEED.bug(+wx.bugs));
   $("#sumbar").innerHTML=`<span><span class="muted">Pack</span> <b class="big">${kg(w.pack)}</b></span>
-   <span class="muted">base ${kg(w.base)} · worn ${kg(w.worn)}</span>
+   <span class="muted sb-sub">base ${kg(w.base)} · worn ${kg(w.worn)}</span>
    <span class="pill ${t.cls}">${t.rating.toFixed(0)}°C vs ${wx.low}°C</span>
    <span class="pill ${short?"p-bad":"p-ok"}">${short?"Weather gap":"Weather OK"}</span>
    ${+wx.stealth?(()=>{const s=stealth(c);return `<span class="pill ${s.ok?"p-ok":"p-warn"}">🥷 ${s.score}</span>`;})():""}
@@ -1786,11 +1804,24 @@ function utensilsNeeded(c){
     out.push(Object.assign({label:u.label,tpl:u.tpl,why:"Needed for your meal plan."},statusFor(c,it=>u.find.test(it.name)&&!isGas(it))));});
   return out;
 }
+function deadWeight(c){
+  const lines=classLines(c), out=[];
+  const stove=lines.some(l=>COOK_RX.test(l.it.name)&&!isGas(l.it));
+  if(!stove){
+    lines.filter(l=>isGas(l.it)).forEach(l=>out.push({it:l.it,q:l.q,why:"No stove packed, so the gas can't be used."}));
+    lines.filter(l=>/wind ?(shield|screen)/i.test(l.it.name)).forEach(l=>out.push({it:l.it,q:l.q,why:"Stove windshield, but no stove packed."}));
+    const hotMeals=(c.meals||[]).some(m=>m.hot);
+    lines.filter(l=>/mess kit|\bpot\b|cook ?set|cookware/i.test(l.it.name)&&!/bowl|cup|mug/i.test(l.it.name)&&!hotMeals).forEach(l=>out.push({it:l.it,q:l.q,why:"Cooking pot with no stove. Keep it only if you'll eat from it.",soft:true}));
+  }
+  if(+c.wx.stealth>=1) lines.filter(l=>RX.lantern.test(l.it.name)).forEach(l=>out.push({it:l.it,q:l.q,why:"Lantern glow gives your pitch away."}));
+  if(+c.wx.high<15&&+c.wx.bugs===0) lines.filter(l=>/sun ?(cream|screen|block)/i.test(l.it.name)).forEach(l=>out.push({it:l.it,q:l.q,why:"Cool day, so you're unlikely to need it.",soft:true}));
+  return out;
+}
 function kitCheck(c){
   const ess=ESSENTIALS.filter(e=>!e.when||e.when(c)).map(e=>Object.assign({label:e.label,lvl:typeof e.lvl==="function"?e.lvl(c):e.lvl,tpl:e.tpl,why:e.why},statusFor(c,e.test)));
   utensilsNeeded(c).forEach(u=>{if(u.status==="unknown") return; if(!ess.some(e=>e.label===u.label)) ess.push(Object.assign({lvl:"warn"},u));});
   if(!(c.meals&&c.meals.length)&&!(+c.wx.food>0)) ess.push({label:"Food plan",lvl:"warn",status:"food",why:"No food planned — use the Food tab."});
-  return {ess,upgrades:upgrades(c)};
+  return {ess,upgrades:upgrades(c),dead:deadWeight(c)};
 }
 function bestOwned(c){
   const items=Object.assign({},c.items);
@@ -1861,15 +1892,19 @@ function essRow(e,ic,action){
     ${e.tpl&&e.status!=="owned"?`<p class="muted">Typical weight ~${fmtW(e.tpl.g)}.</p>`:""}<div class="row">${action}</div></div></details>`;
 }
 function renderKitCheck(el,c){
-  const {ess,upgrades:up}=kitCheck(c); CHECK_TPLS=[];
+  const {ess,upgrades:up,dead}=kitCheck(c); CHECK_TPLS=[];
   const ic={bad:"⛔",warn:"⚠️",info:"💡"};
+  const deadG=dead.reduce((s,d)=>s+itemW(d.it,c)*d.q,0);
   const missing=ess.filter(e=>e.status==="missing"||e.status==="food"), unpacked=ess.filter(e=>e.status==="owned");
   const tplBtn=t=>{CHECK_TPLS.push(t);return onWishlist(t.name)?`<span class="chip wish">on wishlist ✓</span>`:`<button class="tog" data-wish="${CHECK_TPLS.length-1}">+ Add to wishlist</button>`;};
   const okCount=ess.filter(e=>e.status==="packed").length, bad=ess.filter(e=>e.lvl==="bad"&&e.status!=="packed").length;
-  const sumTxt=!missing.length&&!unpacked.length&&!up.length?`<span class="pill p-ok">all essentials packed</span>`:
-    `${bad?`<span class="pill p-bad">${bad} essential${bad>1?"s":""}</span> `:""}${[unpacked.length&&`${unpacked.length} not packed`,missing.length&&`${missing.length} missing`,up.length&&`${up.length} to buy`].filter(Boolean).join(" · ")}`;
-  const body=(!missing.length&&!unpacked.length&&!up.length)?`<p class="small muted">${okCount} checks passed for these conditions.</p>`:
+  const clean=!missing.length&&!unpacked.length&&!up.length&&!dead.length;
+  const sumTxt=clean?`<span class="pill p-ok">all essentials packed</span>`:
+    `${bad?`<span class="pill p-bad">${bad} essential${bad>1?"s":""}</span> `:""}${[unpacked.length&&`${unpacked.length} not packed`,missing.length&&`${missing.length} missing`,dead.length&&`${fmtW(deadG)} spare weight`,up.length&&`${up.length} to buy`].filter(Boolean).join(" · ")}`;
+  const deadHtml=dead.length?`<h3>Packed but not needed — save ${fmtW(deadG)}</h3>${dead.map(d=>`<div class="item"><div class="nm"><b>${d.soft?"💡":"🪨"} ${esc(d.it.name)}${d.q>1?` ×${d.q}`:""}</b><span class="small muted">${fmtW(itemW(d.it,c)*d.q)} · ${esc(d.why)}</span></div><button class="tog" data-unpackit="${d.it.id}">− Remove</button></div>`).join("")}`:"";
+  const body=clean?`<p class="small muted">${okCount} checks passed for these conditions.</p>`:
     `${unpacked.length?`<h3>Own it, not packed</h3>${unpacked.map(e=>essRow(e,ic[e.lvl],`<button class="tog pri" data-packit="${e.it.id}">+ Pack ${esc(e.it.name.split(" ").slice(0,3).join(" "))}</button>`)).join("")}`:""}
+    ${deadHtml}
     ${missing.length?`<h3>Missing from your kit</h3>${missing.map(e=>essRow(e,ic[e.lvl],e.status==="food"?`<button class="tog" data-goview="food">Open Food tab</button>`:tplBtn(e.tpl))).join("")}`:""}
     ${up.length?`<h3>Not up to these conditions — worth getting</h3>${up.map(u=>`<details class="ess"><summary><span>🛒</span><span class="lab"><b>${esc(u.tpl.name)}${u.tpl.qty>1?` ×${u.tpl.qty}`:""}</b></span></summary><div class="body"><p>${esc(u.why)}</p><p class="muted">Typical weight ~${fmtW(u.tpl.g)}${u.tpl.qty>1?" each":""}.</p><div class="row">${tplBtn(u.tpl)}</div></div></details>`).join("")}`:""}
     <p class="small muted">Tap any item to see what it is and why. ${okCount} essential${okCount===1?"":"s"} already packed.</p>`;
@@ -1878,6 +1913,8 @@ function renderKitCheck(el,c){
 function essentialGaps(c){return kitCheck(c).ess.filter(e=>e.lvl==="bad"&&e.status!=="packed").length;}
 document.addEventListener("click",e=>{
   const w=e.target.closest("[data-wish]"); if(w){addWish(CHECK_TPLS[+w.dataset.wish]);return;}
+  const u=e.target.closest("[data-unpackit]"); if(u){const c=cls(),id=u.dataset.unpackit,old={q:c.items[id],w:c.worn[id]};delete c.items[id];delete c.worn[id];delete c.packed[id];save();render();
+    toast("Removed from class",()=>{c.items[id]=old.q;if(old.w)c.worn[id]=old.w;save();render();});return;}
   const p=e.target.closest("[data-packit]"); if(p){const c=cls();c.items[p.dataset.packit]=1;save();render();toast("Packed");return;}
   const g=e.target.closest("[data-goview]"); if(g){showView(g.dataset.goview);}
 });
