@@ -107,6 +107,7 @@ details summary{cursor:pointer;color:var(--muted);font-size:13px}
     <button data-v="classes"><span class="ic">🧩</span>Classes</button>
     <button data-v="pack"><span class="ic">✅</span>Pack</button>
     <button data-v="weather"><span class="ic">🗺️</span>Plan</button>
+    <button data-v="food"><span class="ic">🍲</span>Food</button>
     <button data-v="trips"><span class="ic">📓</span>Trips</button>
     <button data-v="data"><span class="ic">💾</span>Data</button>
   </nav>
@@ -154,6 +155,7 @@ details summary{cursor:pointer;color:var(--muted);font-size:13px}
   </div>
   <div id="clsReasons"></div>
   <div id="clsWeights" class="card"></div>
+  <div id="kitCheckCls"></div>
   <div id="clsList"></div>
 </section>
 
@@ -225,6 +227,7 @@ details summary{cursor:pointer;color:var(--muted);font-size:13px}
     <h3>Cheapest warmth to add</h3>
     <div id="warmAdd"></div>
   </div>
+  <div id="kitCheckPlan"></div>
   <div class="card">
     <h2>Weather protection</h2>
     <table id="protTable"></table>
@@ -253,6 +256,30 @@ details summary{cursor:pointer;color:var(--muted);font-size:13px}
       <p><b>Verdict</b>: rating above the low = cold. More than 8°C below the low = you're carrying more warmth (and weight) than needed.</p>
     </div>
   </details>
+</section>
+
+<!-- FOOD -->
+<section class="view" id="v-food">
+  <div class="card">
+    <h2>🍲 Meal plan <span class="small muted" id="foodClass"></span></h2>
+    <div class="row">
+      <button class="pri" id="mealAiBtn">🤖 Plan meals with AI</button>
+      <button id="mealAddBtn">+ Add meal</button>
+    </div>
+    <div class="grid2" style="margin-top:10px">
+      <label>Calorie target per day (kcal)<input type="number" id="wxKcal" min="0" step="100"></label>
+    </div>
+    <div id="foodTotals" style="margin-top:10px"></div>
+  </div>
+  <div id="foodUtensils"></div>
+  <div id="foodDays"></div>
+  <div class="card">
+    <div class="row">
+      <button id="mealShop">Copy shopping list</button>
+      <button id="mealCsv">Export meals (CSV)</button>
+      <button class="danger" id="mealClear">Clear meal plan</button>
+    </div>
+  </div>
 </section>
 
 <!-- TRIPS -->
@@ -343,6 +370,45 @@ details summary{cursor:pointer;color:var(--muted);font-size:13px}
     <button id="aiClose">Close</button>
     <button class="pri" id="aiAdd" hidden>Add selected</button>
   </div>
+</dialog>
+
+<dialog id="mealAiDlg">
+  <h2>🤖 Plan meals with your AI</h2>
+  <p class="small muted" style="margin-top:0">The prompt includes your trip length, the forecast, your calorie target and the cooking kit in this class, so the AI plans meals you can actually cook.</p>
+  <h3>1 · Copy the prompt</h3>
+  <div class="row"><button class="pri" id="mealCopy">Copy prompt</button><button id="mealDl">Download as .txt</button></div>
+  <details style="margin-top:6px"><summary>Show the prompt</summary><textarea id="mealPrompt" rows="8" readonly style="width:100%;margin-top:6px;font-size:12px"></textarea></details>
+  <h3>2 · Chat, then say "done"</h3>
+  <p class="small muted" style="margin:0">Tell it your diet, dislikes, budget and where you'll shop. It replies with a JSON block.</p>
+  <h3>3 · Paste its reply</h3>
+  <textarea id="mealReply" rows="5" style="width:100%" placeholder="Paste the AI's reply…"></textarea>
+  <div class="row" style="margin-top:8px"><button class="pri" id="mealCheck">Check meals</button><input type="file" id="mealFile" accept=".json,.txt,application/json,text/plain" style="max-width:60%"></div>
+  <div id="mealPreview"></div>
+  <div class="row" style="margin-top:12px;justify-content:flex-end">
+    <button id="mealAiClose">Close</button>
+    <button id="mealAppend" hidden>Add to plan</button>
+    <button class="pri" id="mealReplace" hidden>Replace plan</button>
+  </div>
+</dialog>
+
+<dialog id="mealDlg">
+  <form method="dialog" id="mealForm">
+    <h2>Add a meal</h2>
+    <div class="grid2">
+      <label style="grid-column:1/-1">Name<input name="name" required placeholder="e.g. Couscous with chorizo"></label>
+      <label>Day<input type="number" name="day" min="1" step="1" value="1"></label>
+      <label>Type<select name="type"><option>breakfast</option><option>lunch</option><option selected>dinner</option><option>snack</option><option>drink</option></select></label>
+      <label>Packed weight (g)<input type="number" name="g" min="0" step="1"></label>
+      <label>Calories (kcal)<input type="number" name="kcal" min="0" step="10"></label>
+      <label>Protein (g)<input type="number" name="protein" min="0" step="1"></label>
+      <label>Water to cook (ml)<input type="number" name="water" min="0" step="50"></label>
+      <label class="inl" style="align-self:end"><input type="checkbox" name="hot"> Needs the stove</label>
+      <label style="grid-column:1/-1">Utensils (comma separated)<input name="utensils" placeholder="stove, pot, spork"></label>
+    </div>
+    <div class="row" style="margin-top:12px;justify-content:flex-end">
+      <button value="cancel" formnovalidate>Cancel</button><button class="pri" value="save">Add</button>
+    </div>
+  </form>
 </dialog>
 
 <dialog id="itemDlg">
@@ -519,7 +585,7 @@ const TEMPLATES = [
    ============================================================ */
 const KEY="sams-camp-planner-v1";
 const clone=o=>JSON.parse(JSON.stringify(o));
-const WX_DEFAULT={low:5,high:12,rain:0,wind:0,windAvg:5,humid:80,bugs:0,ground:"normal",nights:1,water:2,food:0.7,meals:2,drinks:3,hwb:true,gasLeft:230};
+const WX_DEFAULT={low:5,high:12,rain:0,wind:0,windAvg:5,humid:80,bugs:0,ground:"normal",nights:1,water:2,food:0.7,meals:2,drinks:3,hwb:true,gasLeft:230,kcal:2800};
 let S;
 function freshState(){return {ver:2,inv:clone(DEFAULT_INV),classes:clone(DEFAULT_CLASSES),active:"cls_winter",trips:[],calibOn:true,loc:null,welcomed:true};}
 function emptyState(){const c=newClassObj("My first class");return {ver:2,inv:[],classes:[c],active:c.id,trips:[],calibOn:true,loc:null,welcomed:true};}
@@ -576,7 +642,7 @@ function weights(c){
     else if(it.kind==="consumable") cons+=w;
     else {base+=w; byCat[it.cat]=(byCat[it.cat]||0)+w;}
   }
-  const water=(+c.wx.water||0)*1000, food=(+c.wx.food||0)*(+c.wx.nights||1)*1000;
+  const water=(+c.wx.water||0)*1000, food=c.meals&&c.meals.length?c.meals.reduce((s,m)=>s+(+m.g||0),0):(+c.wx.food||0)*(+c.wx.nights||1)*1000;
   cons+=water+food;
   return {base,worn,cons,water,food,pack:base+cons,total:base+cons+worn,byCat};
 }
@@ -654,12 +720,13 @@ const notHead=it=>!RX.headlamp.test(it.name);
 function fuelPlan(c){
   const wx=c.wx,n=Math.max(1,+wx.nights||1),low=+wx.low;
   const hwb=wx.hwb&&low<5;
-  const litres=n*((+wx.meals||0)*0.5+(+wx.drinks||0)*0.3)+(hwb?n*0.75:0);
+  const fromMeals=!!(c.meals&&c.meals.length);
+  const litres=(fromMeals?c.meals.filter(m=>m.hot).reduce((s,m)=>s+(+m.water||0),0)/1000:n*((+wx.meals||0)*0.5+(+wx.drinks||0)*0.3))+(hwb?n*0.75:0);
   const gpl=Math.round(12*([1,1.25,1.5][+wx.wind]||1)*(low<5?1.2:1)*10)/10;
   const need=litres*gpl, needR=need*1.15;
   const cans=classLines(c).filter(l=>isGas(l.it)).reduce((s,l)=>s+l.q,0), left=Math.max(0,Math.min(230,+wx.gasLeft||0));
   const have=cans*left;
-  return {litres,gpl,need,needR,have,cans,hwb,ok:have>=needR};
+  return {litres,gpl,need,needR,have,cans,hwb,fromMeals,ok:have>=needR};
 }
 function warnings(c){
   const w=[],wx=c.wx,lines=classLines(c);
@@ -716,7 +783,7 @@ function suggestClass(){
   if(!packCount()) return toast("Add some gear first");
   const src=cls(), wx=clone(src.wx);
   const label=wx.src?wx.src.split(" · ")[0]:`${wx.low}°C`;
-  const c=newClassObj(`Suggested · ${label}`.trim()); c.wx=wx; if(src.route) c.route=src.route;
+  const c=newClassObj(`Suggested · ${label}`.trim()); c.wx=wx; if(src.route) c.route=src.route; if(src.meals) c.meals=clone(src.meals);
   const R=[]; const low=+wx.low,wind=+wx.wind,rain=+wx.rain,bugs=+wx.bugs,high=+wx.high;
   const add=(it,q=1)=>{if(!usable(it)) return false; c.items[it.id]=Math.min(Math.max(1,q),it.qty); return true;};
   const first=(key,f)=>findAll(key,f)[0];
@@ -1039,7 +1106,7 @@ function renderWeightsCard(el,c){
     <details style="margin-top:8px"><summary>Heaviest items &amp; consumables</summary>
       <table>${top.map(t=>`<tr><td>${esc(t.n)}</td><td class="n">${fmtW(t.g)}</td></tr>`).join("")}
       <tr><td>Water (${c.wx.water} L)</td><td class="n">${fmtW(w.water)}</td></tr>
-      <tr><td>Food (${c.wx.food} kg × ${c.wx.nights} day${c.wx.nights>1?"s":""})</td><td class="n">${fmtW(w.food)}</td></tr></table>
+      <tr><td>${c.meals&&c.meals.length?`Food (meal plan, ${c.meals.length} items)`:`Food (${c.wx.food} kg × ${c.wx.nights} day${c.wx.nights>1?"s":""})`}</td><td class="n">${fmtW(w.food)}</td></tr></table>
       <div class="small muted">Change water, food and nights on the Weather tab.</div></details>`;
 }
 function renderClasses(){
@@ -1048,6 +1115,7 @@ function renderClasses(){
     ${c.wx.src?`<div class="small muted" style="margin-bottom:6px">${esc(c.wx.src)} — ${esc(c.wx.detail||"")}</div>`:""}
     <ul class="reasons">${c.reasons.map(r=>`<li>${esc(r)}</li>`).join("")}</ul></div>`:"";
   renderWeightsCard($("#clsWeights"),c);
+  renderKitCheck($("#kitCheckCls"),c);
   const list=S.inv.filter(i=>{
     const sel=(c.items[i.id]||0)>0;
     if(i.status==="wishlist") return false;
@@ -1069,7 +1137,11 @@ function renderPack(){
   $("#packProg").style.width=(lines.length?done/lines.length*100:0)+"%";
   const w=weights(c);
   $("#packStat").textContent=`${done} of ${lines.length} packed · pack ${kg(w.pack)} (incl. ${c.wx.water} L water, food) · worn ${kg(w.worn)}`;
-  $("#packList").innerHTML=groupByCat(lines.map(l=>l.it)).map(([cat,l])=>`<div class="card"><h3 style="margin-top:0">${esc(cat)}</h3>
+  const meals=(c.meals||[]).slice().sort((a,b)=>a.day-b.day||MEAL_TYPES.indexOf(a.type)-MEAL_TYPES.indexOf(b.type));
+  c.packedMeals=c.packedMeals||{};
+  const foodCard=meals.length?`<div class="card"><h3 style="margin-top:0">Food (meal plan)</h3>${meals.map(m=>`<label class="item ${c.packedMeals[m.id]?"done":""}" style="flex-direction:row;color:var(--text)">
+     <input type="checkbox" class="ck" data-pkmeal="${m.id}" ${c.packedMeals[m.id]?"checked":""}><div class="nm"><b>Day ${m.day} ${m.type}: ${esc(m.name)}</b></div><div class="w">${fmtW(m.g)}</div></label>`).join("")}</div>`:"";
+  $("#packList").innerHTML=foodCard+groupByCat(lines.map(l=>l.it)).map(([cat,l])=>`<div class="card"><h3 style="margin-top:0">${esc(cat)}</h3>
    ${l.map(i=>{const n=c.items[i.id];return `<label class="item ${c.packed[i.id]?"done":""}" style="flex-direction:row;color:var(--text)">
      <input type="checkbox" class="ck" data-pk="${i.id}" ${c.packed[i.id]?"checked":""}>
      <div class="nm"><b>${esc(i.name)}${n>1?` ×${n}`:""}</b><span class="small muted">${c.worn[i.id]?"Worn · ":""}${i.condition==="repair"?"⚠️ needs repair · ":""}${esc(i.notes||"")}</span></div>
@@ -1086,6 +1158,7 @@ function renderWeather(){
   $("#fcSrc").innerHTML=wx.src?`📡 <b>${esc(wx.src)}</b> — ${esc(wx.detail||"")}. Midges are a rough guess from season, temperature and wind.`:
     "Fills in the conditions below for the night you pick (up to 16 days ahead). Free data from Open-Meteo.";
   renderRoute(c);
+  renderKitCheck($("#kitCheckPlan"),c);
   const t=thermal(c);
   $("#thermVerdict").innerHTML=`<div class="row"><span class="pill ${t.cls}">${t.verdict}</span>
     <span class="small muted">Sleep system ≈ <b style="color:var(--text)">${t.rating.toFixed(1)}°C</b> comfort${t.limitRating!=null?`, ${t.limitRating.toFixed(1)}°C limit`:""} vs ${t.low}°C ${wx.nightsData&&wx.nightsData.length>1?"coldest night":"forecast low"} (margin ${t.margin>=0?"+":""}${t.margin.toFixed(1)}°C)</span></div>`;
@@ -1109,7 +1182,7 @@ function renderWeather(){
   const f=fuelPlan(c);
   if(!classLines(c).some(l=>RX.stove.test(l.it.name)&&!isGas(l.it))){$("#fpOut").innerHTML=`<div class="small muted">No stove in this class — add one to plan fuel.</div>`;}
   else $("#fpOut").innerHTML=`<table>
-    <tr><td>Water to boil (${wx.nights} night${wx.nights>1?"s":""}${f.hwb?", incl. hot-water bottle":""})</td><td class="n">${f.litres.toFixed(1)} L</td></tr>
+    <tr><td>Water to boil (${f.fromMeals?"from your meal plan":`${wx.nights} night${wx.nights>1?"s":""}`}${f.hwb?", incl. hot-water bottle":""})</td><td class="n">${f.litres.toFixed(1)} L</td></tr>
     <tr><td>Stove burn rate (${["calm","breezy","gusty"][+wx.wind]||"calm"}${+wx.low<5?", cold":""})</td><td class="n">~${f.gpl} g/L</td></tr>
     <tr><td>Gas needed (+15% reserve)</td><td class="n"><b>${Math.round(f.needR)} g</b></td></tr>
     <tr><td>Gas carried (${f.cans} canister${f.cans===1?"":"s"} × ${Math.round(+wx.gasLeft||0)} g)</td><td class="n">${Math.round(f.have)} g</td></tr></table>
@@ -1156,12 +1229,13 @@ function renderSumbar(){
   $("#sumbar").innerHTML=`<span><span class="muted">Pack</span> <b class="big">${kg(w.pack)}</b></span>
    <span class="muted">base ${kg(w.base)} · worn ${kg(w.worn)}</span>
    <span class="pill ${t.cls}">${t.rating.toFixed(0)}°C vs ${wx.low}°C</span>
-   <span class="pill ${short?"p-bad":"p-ok"}">${short?"Weather gap":"Weather OK"}</span>`;
+   <span class="pill ${short?"p-bad":"p-ok"}">${short?"Weather gap":"Weather OK"}</span>
+   ${(()=>{const g=packCount()?essentialGaps(c):0;return g?`<span class="pill p-bad">${g} essential${g>1?"s":""} missing</span>`:"";})()}`;
 }
 let currentView="kit";
 function render(){
   renderSumbar(); renderClassSel(); renderWelcome();
-  ({kit:renderKit,classes:renderClasses,pack:renderPack,weather:renderWeather,trips:renderTrips}[currentView]||(()=>{}))();
+  ({kit:renderKit,classes:renderClasses,pack:renderPack,weather:renderWeather,trips:renderTrips,food:renderFood}[currentView]||(()=>{}))();
 }
 function showView(v){
   currentView=v;
@@ -1189,8 +1263,9 @@ $("#clsList").onclick=e=>{const b=e.target.closest("button");if(!b)return;const 
   if(b.dataset.dec){const id=b.dataset.dec;c.items[id]=Math.max(0,(c.items[id]||0)-1);if(!c.items[id]){delete c.items[id];delete c.worn[id];delete c.packed[id];}}
   if(b.dataset.worn){const id=b.dataset.worn;c.worn[id]?delete c.worn[id]:c.worn[id]=1;}
   save();render();};
-$("#packList").onchange=e=>{const id=e.target.dataset.pk;if(!id)return;const c=cls();e.target.checked?c.packed[id]=1:delete c.packed[id];save();render();};
-$("#packReset").onclick=()=>{const c=cls(),old=c.packed;c.packed={};save();render();toast("Unticked all",()=>{c.packed=old;save();render();});};
+$("#packList").onchange=e=>{const mid=e.target.dataset.pkmeal;if(mid){const c=cls();c.packedMeals=c.packedMeals||{};e.target.checked?c.packedMeals[mid]=1:delete c.packedMeals[mid];save();render();return;}
+  const id=e.target.dataset.pk;if(!id)return;const c=cls();e.target.checked?c.packed[id]=1:delete c.packed[id];save();render();};
+$("#packReset").onclick=()=>{const c=cls(),old=c.packed;c.packed={};c.packedMeals={};save();render();toast("Unticked all",()=>{c.packed=old;save();render();});};
 $("#packPrint").onclick=()=>window.print();
 $("#packCopy").onclick=()=>{const c=cls();let t=`${c.name}\n`;
   groupByCat(classLines(c).map(l=>l.it)).forEach(([cat,l])=>{t+=`\n${cat}\n`;l.forEach(i=>t+=`[${c.packed[i.id]?"x":" "}] ${i.name}${c.items[i.id]>1?" x"+c.items[i.id]:""} (${fmtW(itemW(i,c)*c.items[i.id])})\n`);});
@@ -1468,6 +1543,255 @@ $("#welcome").onclick=e=>{
 };
 $("#resetEmpty").onclick=async()=>{if(!await ask("Start fresh? This removes every item, class and trip on this device so you can add your own gear.",{ok:"Start fresh",danger:true}))return;
   const old=S;S=emptyState();save();showView("kit");toast("Everything cleared",()=>{S=old;save();render();});};
+
+/* ============================================================
+   KIT CHECK — essentials & upgrade suggestions
+   ============================================================ */
+const COOK_RX=/stove|burner|jetboil|cooker|pocket ?rocket/i;
+function stoveNeedsLighter(c){const st=classLines(c).filter(l=>COOK_RX.test(l.it.name)&&!isGas(l.it));
+  return st.length>0&&!st.some(l=>/piezo|igniter|ignition|jetboil|auto[- ]?ignit/i.test(l.it.name));}
+const ESSENTIALS=[
+ {label:"Shelter",lvl:"bad",test:it=>it.kind==="shelter",tpl:{name:"Lightweight 1–2 person tent",cat:"Shelter & Rigging",g:1500,kind:"shelter",shelter:"tent",rain:2,wind:2,bug:3,warmth:3},why:"Somewhere to sleep out of the weather."},
+ {label:"Sleeping bag or quilt",lvl:"bad",test:it=>it.kind==="bag",tpl:{name:"3-season sleeping bag (comfort ~0°C)",cat:"Sleep & Thermal",g:1200,kind:"bag",comfort:0,limit:-6}},
+ {label:"Sleeping mat",lvl:"bad",test:it=>it.kind==="pad",tpl:{name:"Insulated sleeping mat (R4)",cat:"Sleep & Thermal",g:500,kind:"pad",r:4}},
+ {label:"Rucksack",lvl:"bad",test:it=>RX.pack.test(it.name)&&!RX.drybag.test(it.name)&&!RX.rubble.test(it.name)&&!/power ?bank/i.test(it.name),tpl:{name:"50–65 L rucksack",cat:"Packs & Storage",g:1500}},
+ {label:"Head torch",lvl:"bad",test:it=>RX.headlamp.test(it.name)||RX.torch.test(it.name),tpl:{name:"Head torch",cat:"Lighting & Power",g:80}},
+ {label:"First aid kit",lvl:"bad",test:it=>RX.firstaid.test(it.name),tpl:{name:"First aid kit",cat:"Hygiene & First Aid",g:150}},
+ {label:"Water bottle",lvl:"bad",test:it=>RX.bottle.test(it.name),tpl:{name:"1 L water bottle",cat:"Kitchen & Hydration",g:30}},
+ {label:"Lighter or matches",lvl:"bad",when:c=>stoveNeedsLighter(c),test:it=>/lighter|match(es)?\b|fire ?steel|ferro/i.test(it.name),tpl:{name:"Lighter + storm matches",cat:"Kitchen & Hydration",g:30},why:"Your stove has no built-in igniter."},
+ {label:"Waterproof jacket or poncho",lvl:c=>+c.wx.rain>=1?"bad":"warn",test:it=>/waterproof (jacket|coat|shell)|rain ?(jacket|coat|shell)|poncho|hard ?shell|(jacket|coat|shell).{0,20}gore|gore.{0,20}(jacket|coat)/i.test(it.name),tpl:{name:"Waterproof jacket",cat:"Clothing",g:400},why:"UK weather turns fast — worth having even on a dry forecast."},
+ {label:"Warm hat",lvl:"warn",when:c=>+c.wx.low<8,test:it=>/beanie|warm hat|wool hat|bobble hat|balaclava|fleece hat/i.test(it.name),tpl:{name:"Beanie",cat:"Clothing",g:60,kind:"layer",warmth:1},why:"Cheap, light warmth for cold nights."},
+ {label:"Map & compass",lvl:"warn",test:it=>/\bmap\b|compass|\bgps\b|garmin|os explorer|harvey/i.test(it.name),tpl:{name:"OS map + compass",cat:"Bugs & Recon",g:120},why:"Phones die in the cold and lose signal — carry a backup."},
+ {label:"Water filter or tablets",lvl:"warn",test:it=>/filter|purif|sawyer|lifestraw|katadyn|befree|steripen|chlorine|water tablet/i.test(it.name),tpl:{name:"Squeeze water filter",cat:"Kitchen & Hydration",g:85},why:"Canal, river and stream water must be treated before drinking."},
+ {label:"Dry spare socks",lvl:"info",when:c=>+c.wx.rain>=1||+c.wx.nights>=2,test:it=>/sock/i.test(it.name),tpl:{name:"Spare socks",cat:"Clothing",g:80}},
+ {label:"Knife or multi-tool",lvl:"info",test:it=>/knife|multi-?tool|leatherman|opinel|victorinox/i.test(it.name),tpl:{name:"Small folding knife",cat:"Other",g:60}},
+ {label:"Sun cream",lvl:"info",when:c=>+c.wx.high>=17,test:it=>/sun ?(cream|screen|block)|\bspf\b/i.test(it.name),tpl:{name:"Sun cream (small)",cat:"Hygiene & First Aid",g:60}},
+ {label:"Repair kit",lvl:"info",when:c=>classLines(c).some(l=>l.it.kind==="pad"&&/inflat|air|self/i.test(l.it.name)),test:it=>/repair|patch|duct ?tape|tenacious/i.test(it.name),tpl:{name:"Repair kit (patches + tape)",cat:"Other",g:30},why:"A punctured inflatable mat means a cold night."},
+ {label:"Trowel / toilet kit",lvl:"info",test:it=>/trowel|toilet|loo roll|wipes/i.test(it.name),tpl:{name:"Trowel",cat:"Hygiene & First Aid",g:60},why:"Leave No Trace."}
+];
+const UTENSILS=[
+ {re:/frying|skillet/i,find:/frying|skillet/i,label:"Frying pan",tpl:{name:"Small frying pan",cat:"Kitchen & Hydration",g:200}},
+ {re:/\bpot\b|\bpan\b|saucepan/i,find:/mess kit|\bpot\b|\bpan\b|cook ?set|cookware|jetboil/i,label:"Cooking pot",tpl:{name:"Cooking pot ~750 ml",cat:"Kitchen & Hydration",g:120}},
+ {re:/mug|cup/i,find:/mug|cup|mess kit|jetboil/i,label:"Mug",tpl:{name:"Camping mug",cat:"Kitchen & Hydration",g:60}},
+ {re:/bowl/i,find:/bowl|mess kit/i,label:"Bowl",tpl:{name:"Folding bowl",cat:"Kitchen & Hydration",g:50}},
+ {re:/stove|burner/i,find:COOK_RX,label:"Stove",tpl:{name:"Gas stove",cat:"Kitchen & Hydration",g:80}},
+ {re:/spork|spoon|fork|cutlery/i,find:/spork|spoon|cutlery|fork/i,label:"Spork / cutlery",tpl:{name:"Long-handled spork",cat:"Kitchen & Hydration",g:20}},
+ {re:/knife/i,find:/knife|multi-?tool|leatherman|opinel|victorinox/i,label:"Knife",tpl:{name:"Small folding knife",cat:"Other",g:60}},
+ {re:/lighter|match/i,find:/lighter|match|fire ?steel/i,label:"Lighter",tpl:{name:"Lighter + storm matches",cat:"Kitchen & Hydration",g:20}},
+ {re:/wind ?(shield|screen)/i,find:/wind ?(shield|screen)/i,label:"Windshield",tpl:{name:"Stove windshield",cat:"Kitchen & Hydration",g:60}},
+ {re:/filter|purif/i,find:/filter|purif|sawyer|katadyn|befree/i,label:"Water filter",tpl:{name:"Squeeze water filter",cat:"Kitchen & Hydration",g:85}}
+];
+function statusFor(c,test){
+  const inC=classLines(c).find(l=>test(l.it)); if(inC) return {status:"packed",it:inC.it};
+  const own=S.inv.find(it=>usable(it)&&test(it)); if(own) return {status:"owned",it:own};
+  return {status:"missing"};
+}
+function utensilsNeeded(c){
+  const words=[...new Set((c.meals||[]).flatMap(m=>m.utensils||[]).map(u=>String(u).trim().toLowerCase()).filter(Boolean))];
+  const out=[],seen=new Set();
+  words.forEach(w=>{const u=UTENSILS.find(x=>x.re.test(w));
+    if(!u){out.push({label:w,status:"unknown"});return;}
+    if(seen.has(u.label)) return; seen.add(u.label);
+    out.push(Object.assign({label:u.label,tpl:u.tpl,why:"Needed for your meal plan."},statusFor(c,it=>u.find.test(it.name)&&!isGas(it))));});
+  return out;
+}
+function kitCheck(c){
+  const ess=ESSENTIALS.filter(e=>!e.when||e.when(c)).map(e=>Object.assign({label:e.label,lvl:typeof e.lvl==="function"?e.lvl(c):e.lvl,tpl:e.tpl,why:e.why},statusFor(c,e.test)));
+  utensilsNeeded(c).forEach(u=>{if(u.status==="unknown") return; if(!ess.some(e=>e.label===u.label)) ess.push(Object.assign({lvl:"warn"},u));});
+  if(!(c.meals&&c.meals.length)&&!(+c.wx.food>0)) ess.push({label:"Food plan",lvl:"warn",status:"food",why:"No food planned — use the Food tab."});
+  return {ess,upgrades:upgrades(c)};
+}
+function bestOwned(c){
+  const items=Object.assign({},c.items);
+  S.inv.filter(it=>usable(it)&&(it.kind==="layer"||it.kind==="pad")).forEach(it=>{if(!items[it.id]) items[it.id]=1;});
+  const bags=S.inv.filter(it=>usable(it)&&it.kind==="bag").sort((a,b)=>(a.comfort??15)-(b.comfort??15));
+  if(bags[0]&&!Object.keys(items).some(id=>item(id)&&item(id).kind==="bag")) items[bags[0].id]=1;
+  return Object.assign({},c,{items});
+}
+function upgrades(c){
+  const out=[],wx=c.wx,low=+wx.low,owned=S.inv.filter(usable);
+  if(!owned.length) return out;
+  const tb=thermal(bestOwned(c));
+  if(tb.margin<-2){
+    const bags=owned.filter(i=>i.kind==="bag").sort((a,b)=>(a.comfort??15)-(b.comfort??15)), best=bags[0];
+    if(!best||(best.comfort??15)>low+2) out.push({why:`Even with every warm layer you own, you'd be ~${Math.abs(tb.margin).toFixed(0)}°C short. ${best?`Your warmest bag is rated ${best.comfort}°C comfort`:"You have no sleeping bag"} — for ${low}°C nights look for comfort ${Math.round(low)}°C or lower.`,
+      tpl:{name:`Sleeping bag, comfort ${Math.round(low)}°C or lower`,cat:"Sleep & Thermal",g:low<0?1400:1100,kind:"bag",comfort:Math.round(low),limit:Math.round(low)-6}});
+    if(tb.R<tb.need) out.push({why:`Your mats only reach R${tb.R.toFixed(1)}; ${low}°C ground needs about R${tb.need}. An insulated mat fixes the cold-from-below problem.`,tpl:{name:`Insulated sleeping mat (R${Math.max(3,tb.need)}+)`,cat:"Sleep & Thermal",g:500,kind:"pad",r:Math.max(3,tb.need)}});
+    if(!owned.some(i=>/puffy|down jacket|insulated jacket|synthetic jacket|primaloft|microlight/i.test(i.name))) out.push({why:"A puffy jacket is the most versatile warmth you can carry — camp evenings and inside the bag.",tpl:{name:"Insulated (puffy) jacket",cat:"Clothing",g:450,kind:"layer",warmth:3}});
+  }
+  const sh=owned.filter(i=>i.kind==="shelter"), mx=k=>sh.reduce((m,i)=>Math.max(m,+i[k]||0),0);
+  let rainBest=mx("rain"); if(sh.some(i=>i.shelter==="tarp")&&sh.some(i=>["bivvy","hammock"].includes(i.shelter))) rainBest=Math.max(rainBest,3);
+  if(sh.length&&rainBest<NEED.rain(+wx.rain)) out.push({why:"None of your shelters is rated for this much rain.",tpl:{name:"Tent with 3000 mm+ flysheet",cat:"Shelter & Rigging",g:1800,kind:"shelter",shelter:"tent",rain:3,wind:2,bug:3,warmth:3}});
+  if(sh.length&&mx("wind")<NEED.wind(+wx.wind)) out.push({why:"None of your shelters is rated for gale-force gusts.",tpl:{name:"Low tunnel / geodesic tent (wind-rated)",cat:"Shelter & Rigging",g:2000,kind:"shelter",shelter:"tent",rain:3,wind:3,bug:3,warmth:3}});
+  if(+wx.bugs>=1&&!owned.some(i=>(+i.bug||0)>=2)) out.push({why:"Midges expected and you own no bug protection.",tpl:{name:"Midge head net",cat:"Bugs & Recon",g:30,bug:2}});
+  const pitched=classLines(c).some(l=>["tent","tarp","poncho"].includes(l.it.shelter));
+  if(pitched&&(wx.ground==="frozen"||wx.ground==="hard")&&!owned.some(i=>RX.ypeg.test(i.name))) out.push({why:"Hard or frozen ground needs rigid metal pegs.",tpl:{name:"Aluminium Y-pegs",cat:"Shelter & Rigging",g:15,qty:8}});
+  if(pitched&&wx.ground==="soft"&&!owned.some(i=>RX.spiral.test(i.name))) out.push({why:"Soft peat and mud need long spiral/peat pegs to hold.",tpl:{name:"Spiral / peat pegs",cat:"Shelter & Rigging",g:15,qty:8}});
+  if(classLines(c).some(l=>COOK_RX.test(l.it.name)&&!isGas(l.it))){
+    const f=fuelPlan(c), ownCans=owned.filter(isGas).reduce((s,i)=>s+i.qty,0), left=+wx.gasLeft||230;
+    if(ownCans*Math.min(230,left)<f.needR){const n=Math.ceil((f.needR-ownCans*Math.min(230,left))/230);
+      out.push({why:`This trip needs ~${Math.round(f.needR)} g of gas; you own ~${Math.round(ownCans*Math.min(230,left))} g.`,tpl:{name:"230 g gas canister",cat:"Kitchen & Hydration",g:370,kind:"consumable",qty:n}});}
+  }
+  return out;
+}
+const onWishlist=name=>S.inv.some(i=>i.status==="wishlist"&&normName(i.name)===normName(name));
+function addWish(tpl){
+  if(onWishlist(tpl.name)) return toast("Already on your wishlist");
+  S.inv.push(Object.assign({id:"c_"+Date.now().toString(36)+Math.random().toString(36).slice(2,5),custom:true,qty:1,kind:"other",seasons:[],notes:"Suggested by the kit check.",research:"Typical weight — est."},tpl,{status:"wishlist"}));
+  save();render();toast("Added to wishlist (Kit tab → Wishlist)");
+}
+let CHECK_TPLS=[];
+function renderKitCheck(el,c,compact){
+  const {ess,upgrades:up}=kitCheck(c); CHECK_TPLS=[];
+  const ic={bad:"⛔",warn:"⚠️",info:"💡"};
+  const missing=ess.filter(e=>e.status==="missing"||e.status==="food"), unpacked=ess.filter(e=>e.status==="owned");
+  const tplBtn=t=>{CHECK_TPLS.push(t);return onWishlist(t.name)?`<span class="chip wish">on wishlist ✓</span>`:`<button class="tog" data-wish="${CHECK_TPLS.length-1}">+ Wishlist</button>`;};
+  const okCount=ess.filter(e=>e.status==="packed").length;
+  if(!missing.length&&!unpacked.length&&!up.length){el.innerHTML=`<div class="card"><h2>🧭 Kit check</h2><div class="small"><span class="pill p-ok">All essentials packed</span> <span class="muted">${okCount} checks passed for these conditions.</span></div></div>`;return;}
+  el.innerHTML=`<div class="card"><h2>🧭 Kit check</h2>
+    ${unpacked.length?`<h3>You own these but haven't packed them</h3>${unpacked.map(e=>`<div class="item"><div class="nm"><b>${ic[e.lvl]} ${esc(e.label)}</b><span class="small muted">${esc(e.it.name)} · ${fmtW(e.it.g)}${e.why?" — "+esc(e.why):""}</span></div><button class="tog" data-packit="${e.it.id}">+ Pack</button></div>`).join("")}`:""}
+    ${missing.length?`<h3>Missing from your kit</h3>${missing.map(e=>`<div class="item"><div class="nm"><b>${ic[e.lvl]} ${esc(e.label)}</b><span class="small muted">${e.tpl?`Typically ~${fmtW(e.tpl.g)}. `:""}${esc(e.why||"")}</span></div>${e.status==="food"?`<button class="tog" data-goview="food">Plan food</button>`:tplBtn(e.tpl)}</div>`).join("")}`:""}
+    ${up.length?`<h3>Your kit isn't up to these conditions — worth getting</h3>${up.map(u=>`<div class="item"><div class="nm"><b>🛒 ${esc(u.tpl.name)}${u.tpl.qty>1?` ×${u.tpl.qty}`:""}</b><span class="small muted">${esc(u.why)} ~${fmtW(u.tpl.g)}${u.tpl.qty>1?" each":""}.</span></div>${tplBtn(u.tpl)}</div>`).join("")}`:""}
+    <div class="small muted" style="margin-top:6px">${okCount} essential${okCount===1?"":"s"} already packed. Suggestions are based on the conditions on the Plan tab.</div></div>`;
+}
+function essentialGaps(c){return kitCheck(c).ess.filter(e=>e.lvl==="bad"&&e.status!=="packed").length;}
+document.addEventListener("click",e=>{
+  const w=e.target.closest("[data-wish]"); if(w){addWish(CHECK_TPLS[+w.dataset.wish]);return;}
+  const p=e.target.closest("[data-packit]"); if(p){const c=cls();c.items[p.dataset.packit]=1;save();render();toast("Packed");return;}
+  const g=e.target.closest("[data-goview]"); if(g){showView(g.dataset.goview);}
+});
+
+/* ============================================================
+   FOOD — meal plans (from an AI or by hand)
+   ============================================================ */
+const MEAL_TYPES=["breakfast","lunch","dinner","snack","drink"];
+const tripDays=c=>Math.max(1,(+c.wx.nights||1)+1);
+function cleanMeal(o){
+  if(!o||!String(o.name||"").trim()) return null;
+  const n=v=>v===undefined||v===null||v===""||isNaN(+v)?0:+v;
+  return {id:"m_"+Math.random().toString(36).slice(2,9),day:Math.max(1,Math.round(n(o.day)||1)),type:MEAL_TYPES.includes(String(o.type).toLowerCase())?String(o.type).toLowerCase():"snack",
+    name:String(o.name).trim().slice(0,120),g:Math.max(0,n(o.g??o.grams??o.weight)),kcal:Math.max(0,n(o.kcal??o.calories)),protein:Math.max(0,n(o.protein)),
+    water:Math.max(0,n(o.water??o.water_ml)),hot:o.hot===true||o.hot==="true",cookMin:Math.max(0,n(o.cookMin)),
+    utensils:Array.isArray(o.utensils)?o.utensils.map(u=>String(u).slice(0,30)).slice(0,10):String(o.utensils||"").split(",").map(s=>s.trim()).filter(Boolean),
+    notes:String(o.notes||"").slice(0,300)};
+}
+function mealTotals(c){
+  const m=c.meals||[],days=tripDays(c),byDay={};
+  m.forEach(x=>{const d=byDay[x.day]=byDay[x.day]||{kcal:0,g:0,protein:0,water:0,n:0};d.kcal+=x.kcal;d.g+=x.g;d.protein+=x.protein;d.water+=x.hot?x.water:0;d.n++;});
+  const kcal=m.reduce((s,x)=>s+x.kcal,0),g=m.reduce((s,x)=>s+x.g,0),water=m.filter(x=>x.hot).reduce((s,x)=>s+x.water,0),cold=m.filter(x=>!x.hot).reduce((s,x)=>s+x.water,0);
+  return {kcal,g,water,cold,byDay,days,dens:g?kcal/g*100:0,hot:m.filter(x=>x.hot).length};
+}
+function buildMealPrompt(c){
+  const d=tripDays(c),wx=c.wx;
+  const cook=classLines(c).filter(l=>l.it.cat==="Kitchen & Hydration"||COOK_RX.test(l.it.name)).map(l=>`${l.it.name}${l.q>1?" ×"+l.q:""}`);
+  const hasStove=classLines(c).some(l=>COOK_RX.test(l.it.name)&&!isGas(l.it));
+  return [
+"You are planning camping / backpacking meals for me. My planner app will import your answer.",
+"",
+"MY TRIP",
+`- ${d} day${d>1?"s":""}, ${wx.nights} night${wx.nights>1?"s":""} wild camping in the UK${c.route?` (route: ${c.route.name}, ${c.route.distKm.toFixed(0)} km, ${c.route.up} m of climbing)`:""}.`,
+`- Expected night low ${wx.low}°C, day high ${wx.high}°C.${+wx.low<5?" Cold nights: a hot, calorie-heavy evening meal and hot drinks matter.":""}`,
+`- Calorie target: about ${wx.kcal||2800} kcal per day (walking with a heavy pack burns more than usual).`,
+`- Cooking kit I'm taking: ${cook.length?cook.join(", "):"nothing listed"}.${hasStove?"":" NO STOVE — plan no-cook meals only (hot: false)."}`,
+`- Everything is carried on my back, so keep weight down: aim for roughly 400+ kcal per 100 g where sensible, minimal water for cooking, simple one-pot meals.`,
+"",
+"HOW TO WORK WITH ME",
+"- First ask me about dietary needs, allergies, dislikes, budget, and where I'll shop (UK supermarkets, outdoor shops, dehydrated brands). Keep questions short.",
+"- Then suggest a day-by-day plan with breakfast, lunch, dinner, snacks and drinks. Day 1 is the first walking day; the last day is usually breakfast, lunch and snacks only.",
+"- Use real products and packet weights where you can (e.g. specific supermarket items or brands), otherwise sensible estimates.",
+"- When I say \"done\", reply with ONE json code block only, exactly in this format:",
+"",
+"```json",
+"{",
+'  "type": "meals",',
+'  "meals": [',
+'    {"day":1,"type":"dinner","name":"Couscous with chorizo and cheese","g":220,"kcal":980,"protein":38,"water":250,"hot":true,"cookMin":5,"utensils":["stove","pot","spork"],"notes":"Pour boiling water, cover 5 min"}',
+"  ]",
+"}",
+"```",
+"",
+"FIELDS",
+"- day: number (1 = first day); type: breakfast | lunch | dinner | snack | drink",
+"- name: what it is (brand/product if known)",
+"- g: packed weight in grams as carried (food plus any packaging I'll carry)",
+"- kcal: calories; protein: grams",
+"- water: ml of water needed to cook, rehydrate or make it (0 if none)",
+"- hot: true if it needs the stove; cookMin: minutes on the stove",
+"- utensils: from stove, pot, mug, bowl, spork, knife, lighter, frying pan, windshield, filter",
+"- notes: short prep instructions",
+"Use plain numbers only (no units). One entry per item eaten (e.g. snacks can be one entry per day)."
+  ].join("\n");
+}
+let mealParsed=null;
+function parseMealReply(text){
+  let t=String(text||"").trim(); if(!t) throw new Error("Paste the AI's reply first");
+  const fence=t.match(/```(?:json)?\s*([\s\S]*?)```/i); if(fence) t=fence[1];
+  const a=t.indexOf("{"),a2=t.indexOf("["),start=(a<0?a2:(a2<0?a:Math.min(a,a2))),end=Math.max(t.lastIndexOf("}"),t.lastIndexOf("]"));
+  if(start<0||end<start) throw new Error("Couldn't find the JSON — ask the AI to output the JSON block");
+  let d; try{d=JSON.parse(t.slice(start,end+1));}catch(e){throw new Error("The JSON looks broken — ask the AI to resend just the JSON block");}
+  const meals=(Array.isArray(d)?d:d.meals||d.items||[]).map(cleanMeal).filter(Boolean);
+  if(!meals.length) throw new Error("No meals found in that reply");
+  return meals;
+}
+function renderMealPreview(){
+  const box=$("#mealPreview"); if(!mealParsed){box.innerHTML="";$("#mealAppend").hidden=$("#mealReplace").hidden=true;return;}
+  const c=Object.assign({},cls(),{meals:mealParsed}), t=mealTotals(c);
+  box.innerHTML=`<h3>${mealParsed.length} items over ${Object.keys(t.byDay).length} day${Object.keys(t.byDay).length>1?"s":""}</h3>
+    <div class="small muted">${Math.round(t.kcal)} kcal · ${kg(t.g)} · ${Math.round(t.dens)} kcal/100 g · ${(t.water/1000).toFixed(1)} L to boil</div>
+    ${Object.entries(t.byDay).map(([d,v])=>`<div class="small">Day ${d}: ${Math.round(v.kcal)} kcal, ${fmtW(v.g)}</div>`).join("")}`;
+  $("#mealAppend").hidden=!(cls().meals&&cls().meals.length); $("#mealReplace").hidden=false;
+  $("#mealReplace").textContent=cls().meals&&cls().meals.length?"Replace plan":"Use this plan";
+}
+function renderFood(){
+  const c=cls(), m=c.meals||[], t=mealTotals(c), target=+c.wx.kcal||2800;
+  $("#foodClass").textContent="for "+c.name;
+  if(document.activeElement!==$("#wxKcal")) $("#wxKcal").value=c.wx.kcal;
+  if(!m.length){
+    $("#foodTotals").innerHTML=`<p class="small muted" style="margin:0">No meals planned for this class yet. Tap <b>Plan meals with AI</b>: you get a prompt that includes your ${t.days}-day trip, the forecast, your calorie target and the cooking kit you've packed. Or add meals by hand. Until then, food weight uses ${c.wx.food} kg per day from the Plan tab.</p>`;
+    $("#foodUtensils").innerHTML="";$("#foodDays").innerHTML="";return;
+  }
+  const days=Object.keys(t.byDay).map(Number).sort((a,b)=>a-b), avg=t.kcal/Math.max(1,days.length);
+  $("#foodTotals").innerHTML=`<div class="row" style="justify-content:space-between">
+    <div><div class="small muted">Food weight</div><div class="big">${kg(t.g)}</div></div>
+    <div><div class="small muted">Avg per day</div><b>${Math.round(avg)} kcal</b></div>
+    <div><div class="small muted">Density</div><b>${Math.round(t.dens)} kcal/100 g</b></div>
+    <div><div class="small muted">Water to boil</div><b>${(t.water/1000).toFixed(1)} L</b></div></div>
+    <div class="small muted" style="margin-top:6px">${t.dens<300?"⚠️ Fairly heavy for the calories — swap in nuts, cheese, oils, chocolate or dehydrated meals. ":t.dens>=400?"✅ Good calorie density. ":""}Food weight and stove fuel on the Plan tab now come from this plan.${+c.wx.low<5&&avg<target?" Cold nights burn extra calories — aim above your target.":""}</div>`;
+  const ut=utensilsNeeded(c);
+  $("#foodUtensils").innerHTML=ut.length?`<div class="card"><h2>🍳 Cooking kit for these meals</h2>${ut.map(u=>`<div class="item"><div class="nm"><b>${u.status==="packed"?"✅":u.status==="owned"?"🎒":u.status==="missing"?"⛔":"❔"} ${esc(u.label)}</b><span class="small muted">${u.status==="packed"?"Packed: "+esc(u.it.name):u.status==="owned"?"You own "+esc(u.it.name)+" — not packed":u.status==="missing"?"Not in your kit":"Check you have this"}</span></div>
+    ${u.status==="owned"?`<button class="tog" data-packit="${u.it.id}">+ Pack</button>`:u.status==="missing"?(onWishlist(u.tpl.name)||S.inv.some(i=>i.status==="wishlist"&&UTENSILS.find(x=>x.label===u.label)?.find.test(i.name))?`<span class="chip wish">on wishlist ✓</span>`:`<button class="tog" data-wishtpl='${esc(JSON.stringify(u.tpl))}'>+ Wishlist</button>`):""}</div>`).join("")}</div>`:"";
+  const ic={breakfast:"🌅",lunch:"🥪",dinner:"🍲",snack:"🍫",drink:"☕"};
+  $("#foodDays").innerHTML=days.map(d=>{const v=t.byDay[d],pct=Math.min(100,v.kcal/target*100),items=m.filter(x=>x.day===d).sort((a,b)=>MEAL_TYPES.indexOf(a.type)-MEAL_TYPES.indexOf(b.type));
+    return `<div class="card"><div class="row"><h2 class="grow">Day ${d}${d>t.days?` <span class="small muted">(beyond your ${t.days}-day trip)</span>`:""}</h2><span class="small muted">${Math.round(v.kcal)} / ${target} kcal · ${fmtW(v.g)}</span></div>
+      <div class="prog"><div style="width:${pct}%;background:${v.kcal>=target*0.9?"var(--accent)":"var(--warn)"}"></div></div>
+      ${items.map(x=>`<div class="item"><div class="nm"><b>${ic[x.type]||"🍽️"} ${esc(x.name)}</b><span class="small muted">${x.type} · ${Math.round(x.kcal)} kcal · ${fmtW(x.g)}${x.protein?` · ${Math.round(x.protein)} g protein`:""}${x.hot?` · 🔥 ${x.water} ml${x.cookMin?`, ${x.cookMin} min`:""}`:x.water?` · ${x.water} ml cold water`:""}</span>
+        ${x.notes?`<div class="small muted">${esc(x.notes)}</div>`:""}${x.utensils.length?`<div class="chips">${x.utensils.map(u=>`<span class="chip">${esc(u)}</span>`).join("")}</div>`:""}</div>
+        <button class="tog danger" data-delmeal="${x.id}">✕</button></div>`).join("")}</div>`;}).join("");
+}
+$("#mealAiBtn").onclick=()=>{$("#mealPrompt").value=buildMealPrompt(cls());renderMealPreview();$("#mealAiDlg").showModal();};
+$("#mealAiClose").onclick=()=>$("#mealAiDlg").close();
+$("#mealCopy").onclick=()=>{const p=$("#mealPrompt").value;(navigator.clipboard?navigator.clipboard.writeText(p):Promise.reject()).then(()=>toast("Prompt copied — paste it into your AI"),()=>{$("#mealPrompt").closest("details").open=true;$("#mealPrompt").select();toast("Select all and copy the prompt");});};
+$("#mealDl").onclick=()=>download("camp-meals-ai-prompt.txt",$("#mealPrompt").value,"text/plain");
+$("#mealCheck").onclick=()=>{try{mealParsed=parseMealReply($("#mealReply").value);}catch(e){mealParsed=null;toast(e.message);}renderMealPreview();};
+$("#mealFile").onchange=async e=>{const f=e.target.files[0];if(!f)return;$("#mealReply").value=await f.text();$("#mealCheck").click();e.target.value="";};
+function applyMeals(replace){const c=cls(),old=c.meals?clone(c.meals):null;c.meals=replace?mealParsed:[...(c.meals||[]),...mealParsed];
+  mealParsed=null;$("#mealReply").value="";$("#mealAiDlg").close();save();showView("food");toast(`${c.meals.length} meal items in plan`,()=>{c.meals=old;save();render();});}
+$("#mealReplace").onclick=()=>applyMeals(true);
+$("#mealAppend").onclick=()=>applyMeals(false);
+$("#mealAddBtn").onclick=()=>{const f=$("#mealForm");f.reset();f.elements.day.value=1;$("#mealDlg").returnValue="";$("#mealDlg").showModal();};
+$("#mealDlg").addEventListener("close",()=>{if($("#mealDlg").returnValue!=="save")return;const f=$("#mealForm").elements;
+  const m=cleanMeal({name:f.name.value,day:f.day.value,type:f.type.value,g:f.g.value,kcal:f.kcal.value,protein:f.protein.value,water:f.water.value,hot:f.hot.checked,utensils:f.utensils.value});
+  if(!m)return;const c=cls();c.meals=[...(c.meals||[]),m];save();render();toast("Meal added");});
+$("#foodDays").onclick=e=>{const id=e.target.dataset.delmeal;if(!id)return;const c=cls(),i=c.meals.findIndex(x=>x.id===id),m=c.meals[i];c.meals.splice(i,1);save();render();toast("Removed",()=>{c.meals.splice(i,0,m);save();render();});};
+$("#foodUtensils").onclick=e=>{const b=e.target.closest("[data-wishtpl]");if(b)addWish(JSON.parse(b.dataset.wishtpl));};
+$("#mealClear").onclick=()=>{const c=cls();if(!c.meals||!c.meals.length)return;const old=c.meals;c.meals=[];save();render();toast("Meal plan cleared",()=>{c.meals=old;save();render();});};
+$("#mealShop").onclick=()=>{const c=cls(),m=c.meals||[];if(!m.length)return toast("No meals planned");
+  const agg={};m.forEach(x=>{const k=x.name;agg[k]=agg[k]||{n:0,g:0};agg[k].n++;agg[k].g+=x.g;});
+  const t=`Shopping list — ${c.name}\n\n`+Object.entries(agg).sort().map(([k,v])=>`[ ] ${k}${v.n>1?` ×${v.n}`:""} (${fmtW(v.g)})`).join("\n")+`\n\nTotal food: ${kg(mealTotals(c).g)}`;
+  (navigator.clipboard?navigator.clipboard.writeText(t):Promise.reject()).then(()=>toast("Shopping list copied"),()=>download("shopping-list.txt",t,"text/plain"));};
+$("#mealCsv").onclick=()=>{const c=cls();download(`meals-${slug(c.name)}.csv`,toCsv([["Day","Type","Name","Weight (g)","kcal","Protein (g)","Water (ml)","Hot","Cook min","Utensils","Notes"],
+  ...(c.meals||[]).map(x=>[x.day,x.type,x.name,x.g,x.kcal,x.protein,x.water,x.hot?"yes":"",x.cookMin,x.utensils.join("; "),x.notes])]),"text/csv");};
+$("#wxKcal").addEventListener("input",e=>{cls().wx.kcal=+e.target.value||0;save();renderFood();});
 
 /* ---- install as app (PWA) ---- */
 let deferredPrompt=null;
