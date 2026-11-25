@@ -1,0 +1,8 @@
+```json
+{"type":"kit","inv":[],"updates":[
+ {"name":"Double Eiger Trekker Tent (Pinnacle Summit)","vis":1,"colour":"sage green"},
+ {"name":"USB Rechargeable LED Headlamp","redlight":true},
+ {"name":"Coolzon 3–4 Season Sleeping Bag","comfort":6,"limit":1,"research":"label"},
+ {"name":"Wise Owl Wisefly Lite Tarp 11'×9'","g":737,"measured":true}
+]}
+```

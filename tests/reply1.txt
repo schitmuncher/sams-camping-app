@@ -1,0 +1,9 @@
+Great, here's your kit:
+```json
+{"type":"kit","inv":[
+ {"name":"Karrimor Orkney 65L rucksack","cat":"Packs & Storage","qty":1,"g":1950,"kind":"other"},
+ {"name":"MSR PocketRocket 2","cat":"Kitchen & Hydration","qty":1,"g":73,"kind":"other","seasons":["Spring","Summer","Autumn","Winter"],"notes":"Fast boils.","research":"MSR spec"},
+ {"name":"Rab Microlight Alpine jacket","cat":"Clothing","qty":1,"g":450,"kind":"layer","warmth":3,"research":"Rab spec"}
+],
+"updates":[{"name":"Coolzon 3–4 Season Sleeping Bag","g":1385,"measured":true}]}
+```

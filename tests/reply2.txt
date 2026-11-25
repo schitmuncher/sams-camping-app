@@ -1,0 +1,15 @@
+```json
+{"type":"kit","inv":[
+ {"name":"Vango Banshee Pro 200","cat":"Shelter & Rigging","qty":1,"g":2040,"kind":"shelter","shelter":"tent","rain":3,"wind":3,"bug":3,"warmth":3,"seasons":["Spring","Summer","Autumn","Winter"]},
+ {"name":"Snugpak Softie 9 Hawk","cat":"Sleep & Thermal","qty":1,"g":1500,"kind":"bag","comfort":2,"limit":-5},
+ {"name":"Thermarest Z Lite Sol","cat":"Sleep & Thermal","qty":1,"g":410,"kind":"pad","r":2.0},
+ {"name":"Thermarest NeoAir XLite NXT","cat":"Sleep & Thermal","qty":1,"g":354,"kind":"pad","r":4.5},
+ {"name":"MSR Groundhog stakes","cat":"Shelter & Rigging","qty":8,"g":13,"kind":"other"},
+ {"name":"Osprey Exos 58 backpack","cat":"Packs & Storage","qty":1,"g":1200,"kind":"other"},
+ {"name":"Jetboil Flash","cat":"Kitchen & Hydration","qty":1,"g":371,"kind":"other"},
+ {"name":"Jetboil Jetpower gas 230g","cat":"Kitchen & Hydration","qty":2,"g":380,"kind":"consumable"},
+ {"name":"Petzl Actik Core head torch","cat":"Lighting & Power","qty":1,"g":75,"kind":"other"},
+ {"name":"Lifesystems first aid kit","cat":"Hygiene & First Aid","qty":1,"g":150},
+ {"name":"Merino beanie","cat":"Clothing","qty":1,"g":50,"kind":"layer","warmth":1}
+]}
+```

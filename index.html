@@ -1146,7 +1146,8 @@ async function getForecast(){
     wx.detail=`${n>1?"worst case: ":""}low ${wx.low}°C, high ${wx.high}°C, gusts up to ${gm} mph, ${rs.toFixed(1)} mm rain, ${wx.humid}% humidity`;
     save(); render(); toast("Forecast loaded");
   }catch(e){
-    toast(navigator.onLine===false?"No signal — enter conditions by hand":(e.message||"Forecast failed"));
+    const net=navigator.onLine===false||/failed to fetch|networkerror|load failed|network/i.test(e.message||"");
+    toast(net?"Couldn't reach the forecast — check your signal, or enter conditions by hand":(e.message||"Forecast failed"));
   }finally{btn.disabled=false;btn.textContent="Get forecast";}
 }
 function nightChartSVG(c){
@@ -1324,7 +1325,9 @@ function renderWeather(){
   $("#thermVerdict").innerHTML=`<div class="row"><span class="pill ${t.cls}">${t.verdict}</span>
     <span class="small muted">Sleep system ≈ <b style="color:var(--text)">${t.rating.toFixed(1)}°C</b> comfort${t.limitRating!=null?`, ${t.limitRating.toFixed(1)}°C limit`:""} vs ${t.low}°C ${wx.nightsData&&wx.nightsData.length>1?"coldest night":"forecast low"} (margin ${t.margin>=0?"+":""}${t.margin.toFixed(1)}°C)</span></div>`;
   $("#needle").style.left=`calc(${t.pos}% - 2px)`;
-  $("#sumHeat").innerHTML=`<span class="pill ${t.cls}">${t.rating.toFixed(0)}°C vs ${t.low}°C</span> ${t.margin<-2?"too cold":t.margin<0?"borderline":t.margin<=8?"good":"too warm"}`;
+  const hasBag=classLines(c).some(l=>l.it.kind==="bag");
+  $("#sumHeat").innerHTML=hasBag?`<span class="pill ${t.cls}">${t.rating.toFixed(0)}°C vs ${t.low}°C</span> ${t.margin<-2?"too cold":t.margin<0?"borderline":t.margin<=8?"good":"too warm"}`:`<span class="pill p-warn">no sleeping bag in this class</span>`;
+  if(!hasBag) $("#thermVerdict").innerHTML=`<div class="small muted">Add a sleeping bag to this class (Classes tab) to get a warmth rating.${packCount()?"":" Your kit is empty — start on the Kit tab."}</div>`;
   $("#nightChart").innerHTML=nightChartSVG(c);
   const nd=wx.nightsData||[];
   $("#nightTable").innerHTML=nd.length>1?`<h3>Night by night</h3><table><tr><th>Night</th><th>Camp</th><th class="n">Low</th><th class="n">Gusts</th><th class="n">Rain</th><th class="n">Verdict</th></tr>
@@ -1341,7 +1344,8 @@ function renderWeather(){
   $("#protTable").innerHTML=`<tr><th>Threat</th><th class="n">You have</th><th class="n">Needed</th><th></th></tr>`+row("Rain",p.rain,NEED.rain(+wx.rain))+row("Wind",p.wind,NEED.wind(+wx.wind))+row("Midges",p.bug,NEED.bug(+wx.bugs));
   const ws=warnings(c), ic={bad:"⛔",warn:"⚠️",info:"💡"};
   const nb=ws.filter(w=>w[0]==="bad").length,nw=ws.filter(w=>w[0]==="warn").length,shortP=p.rain<NEED.rain(+wx.rain)||p.wind<NEED.wind(+wx.wind)||p.bug<NEED.bug(+wx.bugs);
-  $("#sumProt").innerHTML=`<span class="pill ${shortP||nb?"p-bad":nw?"p-warn":"p-ok"}">${shortP?"gap":nb+nw?nb+nw+" warning"+(nb+nw>1?"s":""):"OK"}</span>`;
+  const hasShelter=classLines(c).some(l=>l.it.kind==="shelter");
+  $("#sumProt").innerHTML=!classLines(c).length?`<span class="pill p-warn">class is empty</span>`:!hasShelter?`<span class="pill p-bad">no shelter</span>`:`<span class="pill ${shortP||nb?"p-bad":nw?"p-warn":"p-ok"}">${shortP?"gap":nb+nw?nb+nw+" warning"+(nb+nw>1?"s":""):"OK"}</span>`;
   $("#wxWarn").innerHTML=ws.length?ws.map(([k,m])=>`<li>${ic[k]} ${esc(m)}</li>`).join(""):"<li>✅ Nothing flagged for these conditions.</li>";
   const f=fuelPlan(c);
   $("#fpInputs").querySelectorAll("#fpMeals,#fpDrinks").forEach(el=>el.closest("label").style.display=f.fromMeals?"none":"");
@@ -1395,7 +1399,7 @@ function renderSumbar(){
   const short=(p.rain<NEED.rain(+wx.rain))||(p.wind<NEED.wind(+wx.wind))||(p.bug<NEED.bug(+wx.bugs));
   $("#sumbar").innerHTML=`<span><span class="muted">Pack</span> <b class="big">${kg(w.pack)}</b></span>
    <span class="muted sb-sub">base ${kg(w.base)} · worn ${kg(w.worn)}</span>
-   <span class="pill ${t.cls}">${t.rating.toFixed(0)}°C vs ${wx.low}°C</span>
+   ${classLines(c).some(l=>l.it.kind==="bag")?`<span class="pill ${t.cls}">${t.rating.toFixed(0)}°C vs ${wx.low}°C</span>`:`<span class="pill p-warn">no bag</span>`}
    <span class="pill ${short?"p-bad":"p-ok"}">${short?"Weather gap":"Weather OK"}</span>
    ${+wx.stealth?(()=>{const s=stealth(c);return `<span class="pill ${s.ok?"p-ok":"p-warn"}">🥷 ${s.score}</span>`;})():""}
    ${(()=>{const g=packCount()?essentialGaps(c):0;return g?`<span class="pill p-bad">${g} essential${g>1?"s":""} missing</span>`:"";})()}`;
@@ -1969,7 +1973,7 @@ function renderStealth(c){
   const s=stealth(c), el=$("#stealthOut");
   if(document.activeElement!==$("#wxStealth")) $("#wxStealth").value=s.target;
   const cl=s.score>=80?"p-ok":s.score>=60?"p-ok":s.score>=40?"p-warn":"p-bad";
-  $("#sumStealth").innerHTML=`<span class="pill ${s.target&&!s.ok?"p-bad":cl}">${s.score} · ${s.label}</span>${s.target?(s.ok?" meets your target":` needs ${s.need}+`):""}`;
+  $("#sumStealth").innerHTML=!classLines(c).length?"no kit in this class":`<span class="pill ${s.target&&!s.ok?"p-bad":cl}">${s.score} · ${s.label}</span>${s.target?(s.ok?" meets your target":` needs ${s.need}+`):""}`;
   if(!classLines(c).length){el.innerHTML=`<p class="small muted">Add kit to this class to see its stealth score.</p>`;return;}
   const fixes=s.rows.filter(r=>r.fix).sort((a,b)=>a.v-b.v);
   el.innerHTML=`<div class="prog" style="margin-top:10px"><div style="width:${s.score}%;background:${s.score>=60?"var(--ok)":s.score>=40?"var(--warn)":"var(--bad)"}"></div></div>

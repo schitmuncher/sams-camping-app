@@ -1,0 +1,11 @@
+Here you go!
+```json
+{"type":"meals","meals":[
+ {"day":1,"type":"lunch","name":"Tortilla wraps with cheese and salami","g":250,"kcal":900,"protein":35,"water":0,"hot":false,"utensils":["knife"]},
+ {"day":1,"type":"dinner","name":"Ainsley Harriott couscous + chorizo","g":200,"kcal":850,"protein":30,"water":250,"hot":true,"cookMin":1,"utensils":["stove","pot","spork"]},
+ {"day":1,"type":"drink","name":"Hot chocolate x2","g":60,"kcal":240,"water":500,"hot":true,"utensils":["mug","stove"]},
+ {"day":1,"type":"snack","name":"Trail mix + Snickers","g":180,"kcal":900},
+ {"day":2,"type":"breakfast","name":"Instant porridge pots x2 + coffee","g":150,"kcal":600,"protein":15,"water":600,"hot":true,"cookMin":3,"utensils":["stove","pot","spork","lighter"]},
+ {"day":2,"type":"lunch","name":"Peanut butter bagels","g":220,"kcal":800,"water":0,"hot":false,"utensils":["knife"]}
+]}
+```
