@@ -2,7 +2,7 @@
 
 *A button-based text survival game played with your real camping kit, built into Camp Kit Planner as a **Play** mode.*
 
-Status: design draft v1 (Nov 2026). Nothing built yet.
+Status: design draft v2 (Nov 2026), with Gemini's creative input merged in (full notes in `docs/game-content/gemini-creative-notes.md`). Nothing built yet.
 
 ---
 
@@ -16,6 +16,59 @@ One night wild camping in the UK, told in short text scenes with tap-to-choose b
 3. **Tense, not cruel.** Bad nights end in "you bailed and walked home", never death. A failed run still teaches something.
 4. **Every run gives a real-world lesson** that links back to the planner.
 5. **Works offline** in the same installed app.
+
+---
+
+## 1b. Creative direction (v2)
+
+**Title: Pitch Dark.** *One night out, when the lights go off.* Gemini and I both picked it: two plain words, sets the mood, and a nod to pitching in the dark. *Off the Towpath* is kept in reserve as the canal scenario's name.
+
+**Voice: dry and observational.** Calm, second person, slightly wry, never melodramatic. It should read like a real notebook entry, not a novel. The kit and meters carry the tension; the narrator just notices. Reference line:
+> *03:12. The cold has found the seam between your mat and your hip, and your toes feel like old sausages. Your sleeping bag isn't magic; it's just holding onto whatever warmth you brought into it.*
+
+**Emotional arc:** anticipation (dusk, giddy, every rustle) → exposure (pitching, cooling fast, being careful near boats) → the long middle (slow, sensory, every weakness in your kit shows) → **earned quiet** (frost, grey light on the water, you stayed out). A good ending feels *grounding, not triumphant*. A failed ending feels *matter-of-fact and human*: useful data, not a game-over screen.
+
+### The place: Cheshire canal, November
+Use these as the palette for ambient lines and storylet text (rotate them so no two nights read the same):
+- **Sounds:** water slapping steel hulls, distant A51/A500 hum, a train across the plain, a rope or chain clinking on a moored boat, a moorhen splash, tawny owls, a church clock.
+- **Smells:** wet clay, dead leaves, diesel and woodsmoke from a boat stove, frost.
+- **Light:** no streetlights past the town edge; a lit porthole, a distant lane, starlight on black water.
+- **Through the night:** dusk (hedges go black first) → deep night (everything narrows to your hood and breath) → pre-dawn (coldest, mist on the water, first boaters stir) → sunrise (frost on reeds, and you see how close the lane really was).
+
+### Locals (recurring characters)
+Five people, each with a **disposition** that persists across runs on this device: be considerate and they warm to you, be careless and they remember.
+
+| Character | Personality | Goes well | Goes badly |
+|---|---|---|---|
+| **The liveaboard boater** | Gruff, practical, cares about noise and rubbish | A nod, a tip about a muddy stretch, maybe a hot water refill (rare) | You rattle pots near their boat → moved on |
+| **The dog walker** | Brisk, local, observant | "Evening." Doesn't care if you're tucked away | Pitching on the towpath edge; the dog finds your snacks |
+| **The farmer** | Protective of stock and gates | Honest, packed early, no trace = shrug | Livestock field, open gate, litter or fire → moved on |
+| **The night angler** | Patient, cold-hardened kindred spirit | Quiet chat, morale ▲ | Torch across their swim |
+| **The Canal & River Trust ranger** | Low-key rule-keeper, rarely out of hours | Zero trace, they barely register you | Blocking the towpath, fire, litter |
+
+### Signature dilemmas (both options cost something)
+1. **The 3am wee:** hold it (lose sleep and morale) or get out into the cold (warmth ▼, noise, cold feet).
+2. **Torch vs night vision:** light up to find the dropped peg (suspicion ▲) or fumble in the dark (time, dryness, morale).
+3. **Vent vs seal:** crack the hood (warmth ▼) or zip tight (condensation, dry ▼ by morning).
+4. **Pitch fast vs hunt for better:** settle before dark, or walk on for better cover and ground while the light goes.
+5. **Bail vs tough it out:** a **"Walk home" button is always available at night**. Using it early with low warmth is *the sensible call* and gets a fair ending ("an early commute"), not a fail screen.
+
+### Set pieces to write first
+Moored-boat stove smoke · late dog walker's torch sweep · frost on the hood · mystery splash · frozen peg · headlights striping the shelter through bare hedges · the condensation drip at 02:20 · badger/fox snuffling at your pack · lock gate creak across still water · the boggy pitch mistake · distant tractor · phone dying in the cold · **mist roll-in** (muffles road noise, turns the torch into a milky wall, suspicion ▼ but navigation ▼) · early runner at 06:45 · the tempting bail-out (a lane back to Nantwich).
+
+**Quiet rewards** (rare, morale ▲): stars through bare branches · first sip from the flask · a robin at first light · frost sparkling on fence wire at sunrise · packing up without a sound.
+
+### Kit with personality, not just stats
+Text should call out each item's quirks: the parka is warm on a bench but bulky in the bivvy · the yellow dry bag is great for organising and terrible left in plain sight · a white-only head torch still works if you **shield it with your hand** (a choice: less light, less suspicion) · the foam mat doubles as a seat · the flask is a 3am promotion.
+
+### Humour (sprinkle, one at a time)
+The cows are judging you. · Ten minutes after you stop walking, your body remembers it's November. · Your sleeping bag doesn't generate heat; it just charges interest on whatever you brought into it. · "Stealth camping" mostly means trying not to cough like a Victorian orphan. · A hot drink at 3am feels like a promotion. · Your toes have officially filed a complaint. · Nobody cares how tactical your camo is if you're rattling a crisp packet at midnight. · Moored boats have windows; keep your voice down like you're in a library. · Walking home in the dark isn't defeat, it's just an early commute. · Turns out "off-grid" in Cheshire is still within earshot of a road.
+
+### Night Notes (the big idea)
+After every run, the debrief writes a short **Night Notes** entry. If you got cold, damp or spotted, it points at the real cause in your real loadout (warmth stack, R-value, pegs, colours) and offers one-tap fixes in the planner. It can also **log the run on the Trips tab as a "practice night"** (kept separate from real nights, so it never skews your warmth calibration). The game becomes a rehearsal before you walk out the door.
+
+### More scenarios (from Gemini, added to §9)
+High Ridge Frost (Pennine edge, winter wind) · Woodland Rain & Midge Dusk (late spring) · Wet Towpath & Heavy Dew (autumn) · Short-Day Micro-Camp (December, ~16 h of dark: patience and morale) · Post-Rain Mud & High Water (soft banks, keep dry layers dry).
 
 ---
 
@@ -175,7 +228,7 @@ Content is a list of **storylets**: small scenes with conditions, a short text, 
 
 | # | Scenario | Feel | Uses |
 |---|---|---|---|
-| 1 (MVP) | **Hurleston canal, November** | Cold, damp, dark at 4pm, stealth-ish | Forecast-style preset (−1°C, 85% humidity) |
+| 1 (MVP) | **Off the Towpath: Hurleston canal, November** | Cold, damp, dark at 4pm, stealth-ish | Forecast-style preset (−1°C, 85% humidity) |
 | 2 | **Summer midge woodland** | Warm, buggy, short night, hammock country | Bug and lightness balance |
 | 3 | **Storm night** | Gusts 35 mph, heavy rain | Shelter ratings and peg choice under stress |
 | 4 | **Dartmoor legal wild camp** | Open moor, no stealth pressure, navigation and exposure | Map & compass, wind |
@@ -238,8 +291,8 @@ Difficulty: **Walk in the park** (meters drain at 0.6×, hints show exact number
 
 ## 13. Open questions (decide during M1)
 
-1. **Tone:** dry British humour ("The cows are judging you.") or straight survival tension? *Leaning:* mostly straight, with humour in small doses.
-2. **Name:** *Pitch Dark* (working title). Alternatives: *Wild Night*, *Leave No Trace*, *Dawn or Bust*.
+1. ~~Tone~~ → decided: dry and observational (§1b).
+2. ~~Name~~ → decided: *Pitch Dark*.
 3. **Death:** keep it non-lethal (bail-out endings)? *Recommended yes*: realistic for UK camping and fits pillar 3.
 4. **How exact are the hints:** Reigns-style arrows by default, exact numbers on the easy setting.
 
