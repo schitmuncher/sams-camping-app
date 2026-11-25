@@ -2,7 +2,7 @@
 
 *A button-based text survival game played with your real camping kit, built into Camp Kit Planner as a **Play** mode.*
 
-Status: design draft v2 (Nov 2026), with Gemini's creative input merged in (full notes in `docs/game-content/gemini-creative-notes.md`). Nothing built yet.
+Status: design draft v2 (Nov 2026), with Gemini's creative input merged in (full notes in `docs/game-content/gemini-creative-notes.md`). **M1 built** (Play tab): engine, five meters, all phases, 50+ scenes (10 walk-in by Gemini), dynamic pitch/food/bed/dawn scenes, six endings, debrief with grades, turning point and Night Notes actions, practice-night logging, save/resume, red night theme, balancing bot.
 
 ---
 

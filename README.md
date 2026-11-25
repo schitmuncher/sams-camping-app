@@ -25,6 +25,17 @@ A single-page camping kit planner: open `index.html` in any browser (phone or de
 - **Reports**: exporting a class (Classes ⋯ menu or Data tab) now includes a full report: conditions and darkness hours; weight breakdown; the warmth stack step by step with ground insulation and the verdict explained; rain/wind/bug protection and which item provides it; stealth factors and fixes; essentials; dead weight; things worth buying; warnings; fuel, food and route. Every item gets its role and justification. There's also a readable Markdown trip report, a richer CSV, and **🤖 Ask an AI to review it**, which copies the report with a review prompt for a second opinion.
 - **Data**: export the kit list, the current class or the trip log (CSV or JSON), make a full backup and import it, and install the app.
 
+## 🌑 Pitch Dark (Play tab)
+
+A button-based text survival game played with a real loadout from the planner. Pick a class, a scenario (*Off the Towpath*: a −1°C November night by the Hurleston canals, or this class's own Plan conditions) and a difficulty. Then walk in, choose a pitch, race the sunset, and get through the night hour by hour.
+
+- **Five meters:** 🔥 warmth, ⚡ energy, 💧 dry, 🙂 morale, 👁️ suspicion. Warmth drains each hour using the planner's own warmth maths (layers you've actually put on, mats, shelter, wind, damp) against the overnight temperature. Starting suspicion comes from the class's stealth score, and energy drain from pack weight.
+- **Kit matters:** choices you can't make show 🔒 and what's missing (head torch, flask, metal pegs, lighter…). Wrong pegs on frozen ground, a flask at 3am, the parka laid over the bag rather than worn inside it: it all plays out.
+- **No death:** nights end with dawn, walking home (always available at night), bailing out, being moved on, calling it, or exhaustion.
+- **Debrief:** grades (warmth, sleep, stealth, Leave No Trace, weight), the turning point of the night, and **Night Notes** with one-tap fixes back in the planner (+ Pack, + Wishlist). You can log the run as a practice night (shown on Trips, never used for calibration), replay the same night, or copy the story.
+- Red night theme during night scenes. Progress autosaves.
+- `tests/game_bot.py` plays hundreds of nights per loadout to check balance: the Winter Tent reaches dawn ~94% with sensible play, the Stealth Bivvy ~75%, the Summer Hammock never at −1°C (by design).
+
 ## Layout
 
 Sections and categories fold away and remember whether you left them open. Each section header shows a one-line status (e.g. *Warmth: 2°C vs −1°C, too cold*), so you can see everything at a glance and open only what you need. In the kit check, tap any item to see what it is, why it matters and what to look for.

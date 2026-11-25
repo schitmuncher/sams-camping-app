@@ -191,6 +191,20 @@ with sync_playwright() as p:
     ok("every item has a justification",all(len(i["role"])>0 or i["notes"] for i in R["items"]))
     ok("markdown report",E("reportMarkdown(cls())").startswith("# "))
 
+    section("Game: Pitch Dark")
+    tab("play"); ok("start screen",pg.is_visible("#gGo"))
+    pg.select_option("#gClass","cls_winter"); pg.click("#gGo"); ok("intro scene",pg.is_visible(".gscene"))
+    for i in range(60):
+        if pg.query_selector("[data-gagain]"): break
+        bs=pg.query_selector_all(".gch:not(.locked)")
+        if not bs: break
+        bs[0].click()
+    ok("night reaches an ending",pg.is_visible("[data-gagain]"))
+    ok("grades shown",len(pg.query_selector_all(".gg"))==5)
+    ok("bot: 50 nights, no dead ends",E("""(()=>{let st=0;for(let r=0;r<50;r++){gStart('cls_bivvy','towpath','normal',r);let n=0;while(!G.ended&&n<120){n++;const ok=G.scene.choices.map((c,i)=>[c,i]).filter(([c])=>gChoiceState(c).ok);if(!ok.length){st++;break;}gChoose(ok[Math.floor(Math.random()*ok.length)][1]);}if(!G.ended)st++;}return st})()""")==0)
+    pg.click("[data-gagain]") if pg.query_selector("[data-gagain]") else None
+    E("G=null;delete S.game;save()")
+
     section("Export / import / reset")
     tab("data")
     E("document.querySelector('details[data-sec=exportMore]').open=true")
@@ -228,7 +242,7 @@ with sync_playwright() as p:
     pg.set_viewport_size({"width":1280,"height":900}); tab("weather"); pg.screenshot(path="desktop.png")
     ok("no horizontal overflow (desktop)",E("document.documentElement.scrollWidth<=window.innerWidth+1"))
     pg.set_viewport_size({"width":360,"height":740})
-    for v in ["kit","classes","pack","weather","food","trips","data"]:
+    for v in ["kit","classes","pack","weather","food","play","trips","data"]:
         tab(v); ok(f"no horizontal overflow 360px: {v}",E("document.documentElement.scrollWidth<=window.innerWidth+1"),E("document.documentElement.scrollWidth"))
     b.close()
 
