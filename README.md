@@ -4,6 +4,9 @@ A single-page camping kit planner: open `index.html` in any browser (phone or de
 
 ## What it does
 
+- **🤖 Add with AI** (Kit tab): copy a ready-made prompt into ChatGPT, Claude, Gemini or any AI chat, then tell it what you own. It looks up weights, sleeping-bag temperatures and mat R-values, rates rain/wind/bug protection on the app's scales, and sorts everything into the app's categories. The prompt lists the kit already in the app, so the AI won't add duplicates and can send *updates* (e.g. a weight you've measured). Paste its reply back in; you see a preview, likely duplicates are unticked, and nothing is added until you confirm (with undo).
+- **Your own kit**: first-time visitors choose between exploring the example kit (Sam's) or starting empty. **Data → Start fresh** clears everything on that device. Auto-suggest, warnings and the fuel planner work from item types and names, so they work with anyone's gear.
+
 - **Kit**: every item you own, sorted into categories, with quantity, weight each, seasons, rain/wind/bug ratings, R-values and research notes. Tap an item to edit it. **+ Add item** has quick-fill templates (jacket, beanie, boots…). Each item can be marked *weighed*, *worn*, *needs repair*, or put on the **wishlist** (with price and which item it replaces, so you can see the weight you'd save).
 - **Classes**: build loadouts with how many of each item you take. Mark items as **Worn** so they don't count toward pack weight. It comes with three presets (Winter Tent, Stealth Bivvy, Summer Hammock).
 - **Pack**: a tick-off checklist for the active class, with a progress bar. You can print it or copy it as text.

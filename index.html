@@ -115,6 +115,7 @@ details summary{cursor:pointer;color:var(--muted);font-size:13px}
 <main>
 <!-- KIT -->
 <section class="view on" id="v-kit">
+  <div id="welcome"></div>
   <div class="card">
     <div class="row">
       <input id="kitSearch" class="grow" placeholder="Search kit…">
@@ -128,6 +129,7 @@ details summary{cursor:pointer;color:var(--muted);font-size:13px}
         <option value="custom">My added items</option>
       </select>
       <button class="pri" id="addItemBtn">+ Add item</button>
+      <button id="aiBtn">🤖 Add with AI</button>
     </div>
     <div class="small muted" id="kitTotals" style="margin-top:8px"></div>
   </div>
@@ -300,8 +302,12 @@ details summary{cursor:pointer;color:var(--muted);font-size:13px}
   </div>
   <div class="card">
     <h2>Reset</h2>
-    <div class="row"><button class="danger" id="resetAll">Restore original kit &amp; preset classes</button></div>
-    <p class="small muted">Your data is saved on this device only (trip log included). Make a backup before clearing browser data or switching phones.</p>
+    <div class="row">
+      <button class="danger" id="resetEmpty">Start fresh — empty kit</button>
+      <button id="resetAll">Load example kit (Sam's)</button>
+    </div>
+    <p class="small muted"><b>Start fresh</b> removes every item, class and trip so you can add your own gear (try 🤖 Add with AI on the Kit tab). <b>Load example kit</b> brings back Sam's researched gear list and three preset classes. Both replace what's here — make a backup first if you want to keep it.</p>
+    <p class="small muted">Your data is saved on this device only. Back up before clearing browser data or switching phones.</p>
   </div>
 </section>
 </main>
@@ -318,6 +324,25 @@ details summary{cursor:pointer;color:var(--muted);font-size:13px}
       <button value="ok" class="pri" id="askOk">OK</button>
     </div>
   </form>
+</dialog>
+
+<dialog id="aiDlg">
+  <h2>🤖 Add gear with your AI</h2>
+  <p class="small muted" style="margin-top:0">Works with ChatGPT, Claude, Gemini, Copilot… The AI looks up weights, temperature ratings and R-values, then gives you a block of text to paste back here.</p>
+  <h3>1 · Copy the prompt</h3>
+  <label class="inl"><input type="checkbox" id="aiIncl" checked> Include my current kit so the AI doesn't add duplicates</label>
+  <div class="row" style="margin-top:8px"><button class="pri" id="aiCopy">Copy prompt</button><button id="aiDl">Download as .txt</button><span class="small muted" id="aiLen"></span></div>
+  <details style="margin-top:6px"><summary>Show the prompt</summary><textarea id="aiPrompt" rows="8" readonly style="width:100%;margin-top:6px;font-size:12px"></textarea></details>
+  <h3>2 · Chat with your AI</h3>
+  <p class="small muted" style="margin:0">Paste the prompt into a new chat, then tell it what you own. You can paste a shopping list, receipts or links, or just describe things. Say <b>"done"</b> when finished and it will reply with a JSON block.</p>
+  <h3>3 · Paste its reply here</h3>
+  <textarea id="aiReply" rows="5" style="width:100%" placeholder="Paste the AI's whole reply (or just the JSON block)…"></textarea>
+  <div class="row" style="margin-top:8px"><button id="aiCheck" class="pri">Check items</button><input type="file" id="aiFile" accept=".json,.txt,application/json,text/plain" style="max-width:60%"></div>
+  <div id="aiPreview"></div>
+  <div class="row" style="margin-top:12px;justify-content:flex-end">
+    <button id="aiClose">Close</button>
+    <button class="pri" id="aiAdd" hidden>Add selected</button>
+  </div>
 </dialog>
 
 <dialog id="itemDlg">
@@ -496,10 +521,13 @@ const KEY="sams-camp-planner-v1";
 const clone=o=>JSON.parse(JSON.stringify(o));
 const WX_DEFAULT={low:5,high:12,rain:0,wind:0,windAvg:5,humid:80,bugs:0,ground:"normal",nights:1,water:2,food:0.7,meals:2,drinks:3,hwb:true,gasLeft:230};
 let S;
-function freshState(){return {ver:2,inv:clone(DEFAULT_INV),classes:clone(DEFAULT_CLASSES),active:"cls_winter",trips:[],calibOn:true,loc:null};}
+function freshState(){return {ver:2,inv:clone(DEFAULT_INV),classes:clone(DEFAULT_CLASSES),active:"cls_winter",trips:[],calibOn:true,loc:null,welcomed:true};}
+function emptyState(){const c=newClassObj("My first class");return {ver:2,inv:[],classes:[c],active:c.id,trips:[],calibOn:true,loc:null,welcomed:true};}
 function load(){
-  try{const raw=localStorage.getItem(KEY); if(raw){S=JSON.parse(raw);}}catch(e){S=null;}
-  if(!S||!S.inv||!S.classes) S=freshState();
+  let stored=false;
+  try{const raw=localStorage.getItem(KEY); if(raw){S=JSON.parse(raw);stored=true;}}catch(e){S=null;}
+  if(!S||!S.inv||!S.classes){S=freshState();S.welcomed=false;stored=false;}
+  if(stored&&S.welcomed===undefined) S.welcomed=true;
   S.trips=S.trips||[]; if(S.calibOn===undefined) S.calibOn=true; S.ver=2;
 }
 function save(){try{localStorage.setItem(KEY,JSON.stringify(S));}catch(e){}}
@@ -538,7 +566,7 @@ function ask(msg,{input=null,ok="OK",danger=false}={}){
 /* ============================================================
    CALCULATIONS
    ============================================================ */
-function itemW(it,c){ if(it.id==="gas"&&c&&c.wx.gasLeft!=null&&c.wx.gasLeft!=="") return 160+Math.max(0,Math.min(230,+c.wx.gasLeft)); return it.g; }
+function itemW(it,c){ if(isGas(it)&&c&&c.wx.gasLeft!=null&&c.wx.gasLeft!=="") return 160+Math.max(0,Math.min(230,+c.wx.gasLeft)); return it.g; }
 function classLines(c){return Object.entries(c.items).map(([id,q])=>({it:item(id),q})).filter(x=>x.it&&x.q>0);}
 function weights(c){
   let base=0,worn=0,cons=0,byCat={};
@@ -606,116 +634,160 @@ function thermal(c,opts={}){
   else {verdict="Too warm — you could leave warmth (and weight) at home";cls_="p-hot";}
   return {rows,rating,margin,limitRating,verdict,cls:cls_,pos:Math.max(0,Math.min(100,50+margin*4)),R,need,pads,hammock,onGround,low};
 }
+/* ---- name matchers so suggestions/warnings work with anyone's gear ---- */
+const RX={
+  footprint:/footprint|ground ?sheet/i, ypeg:/\by-?pegs?\b|\bv-?pegs?\b|(alloy|alumin(i)?um|titanium|steel|nail|metal)\b.{0,12}\b(pegs?|stakes?)\b|groundhog/i, spiral:/spiral|screw peg|plastic peg/i,
+  peg:/\bpegs?\b|\bstakes?\b|y-?peg|spiral/i, cord:/paracord|\bcord\b|guy ?line/i, poles:/trekking pole|walking pole|hiking pole/i,
+  knot:/knot/i, hook:/s-?hook|carabiner|karabiner/i, pillow:/pillow/i, seat:/seat|sit ?pad/i,
+  pack:/rucksack|backpack|\bpack\b/i, drybag:/dry ?bag|dry ?sack|pack liner/i, rubble:/rubble|bin bag|bin liner/i, towel:/towel/i,
+  mess:/mess kit|\bpot\b|\bpan\b|cook ?set|cookware|\bmug\b|\bcup\b/i, stove:/stove|burner|jetboil|cooker|cook system|pocket ?rocket/i, gas:/gas|canister|cartridge|fuel/i,
+  cutlery:/cutlery|spork|spoon/i, bottle:/bottle|bladder|flask|water container|hydration/i,
+  headlamp:/head ?lamp|head ?torch/i, torch:/torch|flashlight/i, lantern:/lantern/i, power:/power ?bank|battery pack/i,
+  headnet:/head ?(mesh )?net|mosquito|midge net|bug net/i, hat:/\bhat\b/i, optic:/monocular|binocular/i,
+  firstaid:/first ?aid/i, trowel:/trowel|shovel/i, tooth:/tooth/i, bidet:/bidet/i
+};
+const isGas=it=>it.kind==="consumable"&&RX.gas.test(it.name);
+const findAll=(key,f)=>S.inv.filter(it=>usable(it)&&RX[key].test(it.name)&&(!f||f(it)));
+const inClass=(c,key,f)=>classLines(c).some(l=>RX[key].test(l.it.name)&&(!f||f(l.it)));
+const notHead=it=>!RX.headlamp.test(it.name);
+
 function fuelPlan(c){
   const wx=c.wx,n=Math.max(1,+wx.nights||1),low=+wx.low;
   const hwb=wx.hwb&&low<5;
   const litres=n*((+wx.meals||0)*0.5+(+wx.drinks||0)*0.3)+(hwb?n*0.75:0);
   const gpl=Math.round(12*([1,1.25,1.5][+wx.wind]||1)*(low<5?1.2:1)*10)/10;
   const need=litres*gpl, needR=need*1.15;
-  const cans=(c.items.gas||0), left=Math.max(0,Math.min(230,+wx.gasLeft||0));
+  const cans=classLines(c).filter(l=>isGas(l.it)).reduce((s,l)=>s+l.q,0), left=Math.max(0,Math.min(230,+wx.gasLeft||0));
   const have=cans*left;
   return {litres,gpl,need,needR,have,cans,hwb,ok:have>=needR};
 }
 function warnings(c){
-  const w=[],wx=c.wx,lines=classLines(c),ids=new Set(lines.map(l=>l.it.id));
+  const w=[],wx=c.wx,lines=classLines(c);
   const has=s=>lines.some(l=>l.it.shelter===s);
-  const p=protection(c),low=+wx.low;
+  const p=protection(c),low=+wx.low, pc=packCount();
+  if(!lines.length){ w.push(["info",pc?"This class is empty — add items in Classes, or tap ✨ Suggest a class.":"Your kit is empty — add your gear on the Kit tab (🤖 Add with AI is quickest)."]); return w; }
   if(!lines.some(l=>l.it.kind==="shelter")) w.push(["bad","No shelter in this class."]);
-  if(+wx.rain===2&&p.rain<2) w.push(["bad","Heavy rain forecast but your shelter rain rating is low. Take the tent, bivvy, or tarp."]);
-  if(+wx.rain>=1&&!ids.has("drybag")&&!lines.some(l=>/dry bag/i.test(l.it.name))) w.push(["warn","Rain expected — pack a dry bag for your sleeping bag and thermals."]);
+  if(+wx.rain===2&&p.rain<2) w.push(["bad","Heavy rain forecast but your shelter's rain rating is low. Take something rated 2/3 or better."]);
+  if(+wx.rain>=1&&!inClass(c,"drybag")) w.push(["warn","Rain expected — pack a dry bag for your sleeping bag and dry clothes."]);
   if(+wx.wind===2){
-    if(p.wind<2) w.push(["bad","Gale-force gusts: your shelter is weak in wind. The bivvy or a low-pitched tent is safer."]);
+    if(p.wind<2) w.push(["bad","Gale-force gusts: your shelter is weak in wind. A bivvy or a low-pitched tent is safer."]);
     if(has("tarp")) w.push(["warn","Tarp in gusts: pitch it low and tight, never high on an exposed ridge."]);
     if(has("hammock")) w.push(["warn","Hammock in strong wind = a lot of cooling underneath."]);
-    if(ids.has("stove")) w.push(["warn","Gas stove above ~15–20 mph needs a windbreak — cook in the porch or behind the tarp, with ventilation."]);
+    if(inClass(c,"stove",it=>!isGas(it))) w.push(["warn","Gas stove above ~15–20 mph needs a windbreak — cook in the porch or behind the tarp, with ventilation."]);
   }
-  if(+wx.bugs>=1&&p.bug<2) w.push([+wx.bugs===2?"bad":"warn","Midges expected but no bug defence packed — add a head net or the bucket hat mesh."]);
+  if(+wx.bugs>=1&&p.bug<2) w.push([+wx.bugs===2?"bad":"warn","Midges expected but no bug defence packed — add a head net or bug-net hat."]);
   if(has("tent")||has("tarp")||has("poncho")){
-    if((wx.ground==="frozen"||wx.ground==="hard")&&!ids.has("ypeg")) w.push(["bad","Hard/frozen ground — take the aluminium Y-pegs; spirals won't go in."]);
-    if(wx.ground==="soft"&&!ids.has("spiral")) w.push(["warn","Soft peat/mud — the spiral pegs hold far better than Y-pegs."]);
-    if(!ids.has("ypeg")&&!ids.has("spiral")) w.push(["warn","Tent/tarp selected but no pegs."]);
+    const hasY=inClass(c,"ypeg"), hasS=inClass(c,"spiral"), anyPeg=inClass(c,"peg");
+    if(!anyPeg) w.push(["warn","Tent/tarp selected but no pegs."]);
+    else if((wx.ground==="frozen"||wx.ground==="hard")&&hasS&&!hasY) w.push(["bad","Hard/frozen ground — spiral pegs won't go in. Take rigid metal pegs."]);
+    else if(wx.ground==="soft"&&hasY&&!hasS&&findAll("spiral").length) w.push(["warn","Soft peat/mud — your spiral pegs hold far better than Y-pegs."]);
   }
-  if(+wx.humid>=90&&has("tent")) w.push(["info","Very humid night — expect condensation inside the tent. Vent the door and bring the towel."]);
-  if(wx.ground==="frozen"&&ids.has("trowel")) w.push(["info","Frozen ground: the trowel will struggle — plan where you'll go."]);
-  if(ids.has("gas")&&low<=0) w.push(["warn","Below 0°C a butane/propane canister loses pressure. Sleep with it in your bag, or use 4-season (isobutane) gas."]);
-  if(ids.has("powerbank")&&low<=0) w.push(["info","Keep the power bank and phone in your sleeping bag overnight."]);
-  if(ids.has("stove")){const f=fuelPlan(c); if(!f.cans) w.push(["warn","Stove packed but no gas canister."]); else if(!f.ok) w.push(["warn",`Fuel short: need ~${Math.round(f.needR)} g of gas (with reserve), you're carrying ~${Math.round(f.have)} g.`]);}
+  if(+wx.humid>=90&&has("tent")) w.push(["info","Very humid night — expect condensation inside the tent. Vent the door and bring a towel."]);
+  if(wx.ground==="frozen"&&inClass(c,"trowel")) w.push(["info","Frozen ground: the trowel will struggle — plan where you'll go."]);
+  if(lines.some(l=>isGas(l.it))&&low<=0) w.push(["warn","Below 0°C a butane/propane canister loses pressure. Sleep with it in your bag, or use 4-season (isobutane) gas."]);
+  if(inClass(c,"power")&&low<=0) w.push(["info","Keep the power bank and phone in your sleeping bag overnight."]);
+  if(inClass(c,"stove",it=>!isGas(it))){const f=fuelPlan(c); if(!f.cans) w.push(["warn","Stove packed but no gas canister."]); else if(!f.ok) w.push(["warn",`Fuel short: need ~${Math.round(f.needR)} g of gas (with reserve), you're carrying ~${Math.round(f.have)} g.`]);}
   const broken=lines.filter(l=>l.it.condition==="repair"); if(broken.length) w.push(["bad","Needs repair: "+broken.map(l=>l.it.name).join(", ")+"."]);
   const worn=lines.filter(l=>l.it.condition==="worn"); if(worn.length) w.push(["info","Check before you go (marked worn): "+worn.map(l=>l.it.name).join(", ")+"."]);
-  if(has("tarp")&&!ids.has("poles")&&!has("hammock")) w.push(["info","Ground-pitched tarp usually needs trekking poles."]);
-  if(+wx.high>=20&&!ids.has("towel")) w.push(["info","Warm day — the cooling towel earns its 60 g."]);
-  if(!ids.has("headlamp")) w.push(["warn","No headlamp packed."]);
-  if(!ids.has("firstaid")) w.push(["warn","No first aid kit packed."]);
+  if(has("tarp")&&!has("hammock")&&!inClass(c,"poles")&&findAll("poles").length) w.push(["info","Ground-pitched tarp usually needs trekking poles."]);
+  if(+wx.high>=20&&!inClass(c,"towel")&&findAll("towel").length) w.push(["info","Warm day — a cooling towel helps."]);
+  if(!inClass(c,"headlamp")&&!inClass(c,"torch")) w.push(["warn","No head torch or torch packed."]);
+  if(!inClass(c,"firstaid")) w.push(["warn","No first aid kit packed."]);
   const t=thermal(c);
   if(t.limitRating!=null&&low<t.limitRating) w.push(["bad",`${low}°C is below your sleep system's limit (~${t.limitRating.toFixed(1)}°C). Don't go with this setup — add serious insulation or pick a milder night.`]);
-  else if(t.margin<-2) w.push(["bad",`Sleep system rated ~${t.rating.toFixed(0)}°C vs a ${low}°C low. Add thermals, the foam/foil mats, or wear the gaiter and gloves.`]);
-  if(t.margin>8) w.push(["info","Lots of spare warmth — leave the thermals or foil mat behind, or use the bag unzipped as a quilt."]);
-  if(t.hammock&&!t.onGround&&t.R<2) w.push(["bad","Hammock with little underneath: put the foam mat in the hammock (or use an underquilt)."]);
+  else if(t.margin<-2) w.push(["bad",`Sleep system rated ~${t.rating.toFixed(0)}°C vs a ${low}°C low. Add warm layers or another mat (see Cheapest warmth to add).`]);
+  if(t.margin>8) w.push(["info","Lots of spare warmth — leave some layers behind, or use the bag unzipped as a quilt."]);
+  if(t.hammock&&!t.onGround&&t.R<2) w.push(["bad","Hammock with little underneath: put a foam mat in the hammock (or use an underquilt)."]);
   const nd=wx.nightsData||[];
   if(nd.length>1){const bad=nd.map((n,i)=>({n,i,t:thermal(withNight(c,n))})).filter(x=>x.t.margin<-2);
     if(bad.length) w.push(["warn",`Cold nights on this trip: ${bad.map(x=>`night ${x.i+1} (${x.n.name}, ${x.n.low}°C)`).join(", ")}.`]);}
-  if(c.route){const legs=routeLegs(c);const long=legs.filter(l=>l.night&&l.latest&&l.latest<"08:00");
-    long.forEach(l=>w.push(["warn",`Day ${l.day}: ~${fmtH(l.time)} of walking — you'd need to leave by ${l.latest} to pitch before sunset.`]));}
+  if(c.route){const legs=routeLegs(c);legs.filter(l=>l.night&&l.latest&&l.latest<"08:00")
+    .forEach(l=>w.push(["warn",`Day ${l.day}: ~${fmtH(l.time)} of walking — you'd need to leave by ${l.latest} to pitch before sunset.`]));}
   const wt=weights(c);
-  if(wt.pack>15000) w.push(["warn",`Pack weight ${kg(wt.pack)} is above the ~15 kg comfortable limit for the Orkney.`]);
+  if(wt.pack>15000) w.push(["warn",`Pack weight ${kg(wt.pack)} is over 15 kg — heavy for most people on multi-day walks.`]);
   return w;
 }
+const packCount=()=>S.inv.filter(usable).length;
 
 /* ============================================================
-   AUTO-SUGGEST A CLASS
+   AUTO-SUGGEST A CLASS (works from item types & names)
    ============================================================ */
 function suggestClass(){
+  if(!packCount()) return toast("Add some gear first");
   const src=cls(), wx=clone(src.wx);
   const label=wx.src?wx.src.split(" · ")[0]:`${wx.low}°C`;
-  const c=newClassObj(`Suggested · ${label}`.trim()); c.wx=wx;
+  const c=newClassObj(`Suggested · ${label}`.trim()); c.wx=wx; if(src.route) c.route=src.route;
   const R=[]; const low=+wx.low,wind=+wx.wind,rain=+wx.rain,bugs=+wx.bugs,high=+wx.high;
-  const add=(id,q=1)=>{const it=item(id); if(!usable(it)) return false; c.items[id]=Math.min(q,it.qty); return true;};
-  const ok=id=>usable(item(id));
-  // shelter
-  let mode = (wind===2||low<4||rain===2)?"tent" : (low>=10&&bugs>=1&&wind===0)?"hammock" : "bivvy";
-  if(mode==="tent"&&!ok("tent_eiger")) mode=ok("bivvy")?"bivvy":"hammock";
-  if(mode==="hammock"&&!ok("hammock")) mode=ok("bivvy")?"bivvy":"tent";
-  if(mode==="bivvy"&&!ok("bivvy")) mode=ok("tent_eiger")?"tent":"hammock";
-  const why={tent:wind===2?"gusts of 25+ mph":rain===2?"heavy rain":"a cold night",hammock:"a mild, still, buggy night",bivvy:"a mild night — low profile"};
-  if(mode==="tent"){add("tent_eiger");add("footprint");R.push(`🏕️ Tent — chosen for ${why.tent}. Footprint added for wet or frozen ground.`);}
-  if(mode==="hammock"){add("hammock");add("tarp");add("shook",6);R.push(`🌳 Hammock + tarp — chosen for ${why.hammock}. Gets you off midge-heavy ground.`);}
-  if(mode==="bivvy"){add("bivvy"); if(rain>=1&&add("tarp")) R.push("🌧️ Bivvy + tarp — showers expected, so the tarp gives you somewhere dry to cook and get in/out."); else {add("poncho"); R.push(`🪖 Bivvy + poncho awning — ${why.bivvy}.`);}}
+  const add=(it,q=1)=>{if(!usable(it)) return false; c.items[it.id]=Math.min(Math.max(1,q),it.qty); return true;};
+  const first=(key,f)=>findAll(key,f)[0];
+  const shelters=t=>S.inv.filter(it=>usable(it)&&it.kind==="shelter"&&it.shelter===t).sort((a,b)=>((+b.rain||0)+(+b.wind||0))-((+a.rain||0)+(+a.wind||0))||a.g-b.g);
+  const T=shelters("tent")[0],B=shelters("bivvy")[0],H=shelters("hammock")[0],TP=shelters("tarp")[0],PO=shelters("poncho")[0];
+  let mode=(wind===2||low<4||rain===2)?"tent":(low>=10&&bugs>=1&&wind===0)?"hammock":"bivvy";
+  const avail={tent:!!T,hammock:!!H,bivvy:!!B};
+  if(!avail[mode]) mode=["tent","bivvy","hammock"].find(m=>avail[m])||(TP?"tarp":"none");
+  const why={tent:wind===2?"gusts of 25+ mph":rain===2?"heavy rain":low<4?"a cold night":"the conditions",hammock:"a mild, still, buggy night",bivvy:"a mild night — low profile"};
+  if(mode==="tent"){add(T);const fp=first("footprint");if(fp)add(fp);R.push(`🏕️ ${T.name} — chosen for ${why.tent}.${fp?" Footprint added.":""}`);}
+  if(mode==="hammock"){add(H);if(TP)add(TP);const hk=first("hook");if(hk)add(hk,6);R.push(`🌳 ${H.name}${TP?" + tarp":""} — chosen for ${why.hammock}.`);}
+  if(mode==="bivvy"){add(B); if(rain>=1&&TP){add(TP);R.push(`🌧️ ${B.name} + tarp — showers expected, so the tarp gives you a dry spot to cook and get in/out.`);} else {if(PO)add(PO);R.push(`🪖 ${B.name}${PO?" + poncho awning":""} — ${why.bivvy}.`);}}
+  if(mode==="tarp"){add(TP);R.push("⛺ Tarp only — it's the only shelter in your kit.");}
+  if(mode==="none") R.push("⚠️ No shelter in your kit — add one on the Kit tab.");
   // pegs
-  const tarpOrTent=mode==="tent"||c.items.tarp||c.items.poncho;
-  if(tarpOrTent){
+  const pitched=mode==="tent"||classLines(c).some(l=>["tarp","poncho"].includes(l.it.shelter));
+  if(pitched){
+    const n=mode==="tent"?10:6, Y=first("ypeg"), Sp=first("spiral"), anyPeg=first("peg",it=>it!==Y&&it!==Sp);
     const g=wx.ground;
-    if(g==="frozen"||g==="hard"){add("ypeg",mode==="tent"?12:6);R.push("📌 Y-pegs only — the ground will be too hard for spirals.");}
-    else if(g==="soft"){add("spiral",mode==="tent"?10:6);add("ypeg",2);R.push("📌 Spiral pegs for soft peat/mud, plus 2 Y-pegs for any firm patches.");}
-    else {add("ypeg",mode==="tent"?8:6);if(mode==="tent")add("spiral",4);R.push("📌 Mixed pegs for normal turf.");}
+    if((g==="frozen"||g==="hard")&&Y){add(Y,n);R.push("📌 Rigid metal pegs — the ground will be too hard for spirals.");}
+    else if(g==="soft"&&Sp){add(Sp,n);if(Y)add(Y,2);R.push("📌 Spiral pegs for soft ground"+(Y?", plus 2 rigid pegs for firm patches.":"."));}
+    else if((g==="frozen"||g==="hard")&&(Sp||anyPeg)){const pk=anyPeg||Sp;add(pk,n);R.push(`📌 ${pk.name} — hard ground, so check they're rigid metal pegs (spirals and plastic won't go in).`);}
+    else if(Y||Sp||anyPeg){if(Y)add(Y,Sp?n-4:n);if(Sp)add(Sp,Y?4:n);if(!Y&&!Sp)add(anyPeg,n);R.push("📌 Pegs for normal turf.");}
+    else R.push("⚠️ No pegs found in your kit.");
   }
-  if(c.items.tarp||c.items.poncho||mode==="tent"||wind>=1) add("paracord");
-  if(add("poles")) c.worn.poles=1;
-  if(c.items.tarp||c.items.poncho) add("knotcard");
-  // sleep
-  add("bag"); add("pillow");
-  const t0=thermal(c,{}); const needed=t0.need;
-  const padOrder=mode==="hammock"?["foam","foil","aksoul"]:["aksoul","foam","foil"];
+  if(pitched||wind>=1){const cd=first("cord");if(cd)add(cd);}
+  const pl=first("poles"); if(pl&&add(pl)) c.worn[pl.id]=1;
+  if(classLines(c).some(l=>["tarp","poncho"].includes(l.it.shelter))){const k=first("knot");if(k)add(k);}
+  // sleep: bag
+  const bags=S.inv.filter(it=>usable(it)&&it.kind==="bag").sort((a,b)=>(a.comfort??15)-(b.comfort??15));
+  if(bags.length){const bag=low<8?bags[0]:(bags.filter(b=>(b.comfort??15)<=low+2).pop()||bags[0]);add(bag);R.push(`🛌 ${bag.name} (comfort ${bag.comfort??"?"}°C).`);}
+  else R.push("⚠️ No sleeping bag in your kit.");
+  const pw=first("pillow"); if(pw) add(pw);
+  // mats until R is enough
+  const need=thermal(c,{noCalib:true}).need;
+  const pads=S.inv.filter(it=>usable(it)&&it.kind==="pad");
+  const comfy=it=>/inflat|air|self/i.test(it.name);
+  pads.sort(mode==="hammock"?(a,b)=>(/foam/i.test(b.name)-/foam/i.test(a.name))||(+b.r||0)-(+a.r||0):(a,b)=>(comfy(b)-comfy(a))||(+b.r||0)-(+a.r||0));
   let Rsum=0;
-  for(const id of padOrder){ if(Rsum>=needed&&!(id==="aksoul"&&mode!=="hammock")) break; if(add(id)) Rsum+=(+item(id).r||0); }
-  R.push(`🛏️ Mats stacked to R${Rsum.toFixed(1)} (about R${needed} needed for ${low}°C${mode==="hammock"?" in a hammock":""}).`);
-  if(low<8||rain>=1) add("seat");
-  const layersAdded=[];
-  for(const id of ["bltop","blbot","gaiter","gloves"]){ if(thermal(c).margin>=1) break; if(add(id)) layersAdded.push(item(id).name); }
-  if(layersAdded.length) R.push("🧥 Warm layers added to close the gap: "+layersAdded.join(", ")+".");
+  pads.forEach((p,i)=>{ if(Rsum>=need&&!(i===0&&mode!=="hammock")) return; add(p); Rsum+=(+p.r||0); });
+  if(pads.length) R.push(`🛏️ Mats stacked to R${Rsum.toFixed(1)} (about R${need} needed for ${low}°C${mode==="hammock"?" in a hammock":""}).`);
+  if(low<8||rain>=1){const st=first("seat");if(st)add(st);}
+  // layers by warmth per gram until warm enough
+  const layers=S.inv.filter(it=>usable(it)&&it.kind==="layer"&&(+it.warmth||0)>0).sort((a,b)=>(b.warmth/b.g)-(a.warmth/a.g));
+  const added=[];
+  for(const l of layers){ if(thermal(c).margin>=1) break; if(add(l)) added.push(l.name); }
+  if(added.length) R.push("🧥 Warm layers added to close the gap: "+added.join(", ")+".");
   const tf=thermal(c);
-  if(tf.margin<-2) R.push(`⚠️ Still about ${Math.abs(tf.margin).toFixed(0)}°C short — wear every layer, sleep in your jacket, or swap in a warmer bag.`);
+  if(tf.margin<-2) R.push(`⚠️ Still about ${Math.abs(tf.margin).toFixed(0)}°C short — wear every layer, or take a warmer bag or another mat.`);
   else if(tf.margin>8) R.push("☀️ Plenty of warmth — use the bag unzipped as a quilt.");
-  // packs & kitchen
-  add("pack"); add("drybag"); if(rain>=1) add("rubble",2); if(high>=18||mode==="tent") add("towel");
-  ["mess","stove","cutlery","bottle"].forEach(id=>add(id));
-  if(ok("gas")){ c.items.gas=1; const f=fuelPlan(c); const n=Math.min(item("gas").qty,Math.max(1,Math.ceil(f.needR/Math.max(1,+wx.gasLeft||230)))); c.items.gas=n;
-    R.push(`🔥 ${n} gas canister${n>1?"s":""} — about ${Math.round(f.needR)} g of gas needed incl. reserve.`+(n*(+wx.gasLeft||230)<f.needR?" You'll need to buy more.":"")); }
+  // packs, kitchen
+  const packs=findAll("pack",it=>it.cat==="Packs & Storage"&&!RX.drybag.test(it.name)&&!RX.rubble.test(it.name)).sort((a,b)=>b.g-a.g);
+  if(packs[0]) add(packs[0]);
+  const db=first("drybag"); if(db) add(db);
+  if(rain>=1){const rb=first("rubble");if(rb)add(rb,2);}
+  if(high>=18||mode==="tent"){const tw=first("towel");if(tw)add(tw);}
+  const stove=first("stove",it=>!isGas(it));
+  if(stove){add(stove);["mess","cutlery"].forEach(k=>{const it=first(k,x=>!isGas(x)&&x!==stove);if(it)add(it);});
+    const gas=S.inv.filter(it=>usable(it)&&isGas(it))[0];
+    if(gas){c.items[gas.id]=1;const f=fuelPlan(c);const n=Math.min(gas.qty,Math.max(1,Math.ceil(f.needR/Math.max(1,+wx.gasLeft||230))));c.items[gas.id]=n;
+      R.push(`🔥 ${n} gas canister${n>1?"s":""} — about ${Math.round(f.needR)} g of gas needed incl. reserve.`+(n*(+wx.gasLeft||230)<f.needR?" You'll need to buy more.":""));}
+    else R.push("⚠️ Stove packed but no gas in your kit.");}
+  const bt=first("bottle"); if(bt) add(bt);
   // lights, bugs, recon, hygiene
-  ["headlamp","torch","powerbank"].forEach(id=>add(id)); if(mode!=="bivvy") add("lantern");
-  if(bugs>=1){add("headnet",1);R.push("🦟 Head net — midges likely.");}
-  if((bugs>=1||high>=18)&&add("buckethat")) c.worn.buckethat=1;
-  if(mode==="bivvy") add("monocular");
-  add("bidet",1); add("trowel"); add("firstaid"); add("toothbrush",1);
+  const hl=first("headlamp"); if(hl) add(hl); const tc=first("torch",notHead); if(tc) add(tc);
+  const pb=first("power"); if(pb) add(pb);
+  if(mode!=="bivvy"){const ln=first("lantern");if(ln)add(ln);}
+  if(bugs>=1){const hn=first("headnet");if(hn){add(hn,1);R.push("🦟 Head net — midges likely.");}}
+  if(bugs>=1||high>=18){const ht=first("hat",it=>(+it.bug||0)>=1)||null;if(ht&&add(ht))c.worn[ht.id]=1;}
+  if(mode==="bivvy"){const op=first("optic");if(op)add(op);}
+  ["firstaid","trowel","tooth","bidet"].forEach(k=>{const it=first(k);if(it)add(it,1);});
   c.reasons=R;
   S.classes.push(c); S.active=c.id; save();
   showView("classes"); toast("Suggested class created");
@@ -945,7 +1017,7 @@ function renderKit(){
   $("#kitList").innerHTML=groupByCat(list).map(([c,l])=>`<div class="card"><h3 style="margin-top:0">${esc(c)} <span class="muted small">${kg(sum(l))}</span></h3>
     ${l.map(i=>`<div class="item ${i.status&&i.status!=="active"?"dim":""}" data-edit="${i.id}" style="cursor:pointer">
       <div class="nm"><b>${esc(i.name)}${i.qty>1?` ×${i.qty}`:""}</b><span class="small muted">${esc(i.notes||"")}</span>${chipsFor(i)}</div>
-      <div class="w">${fmtW(i.g)}${i.qty>1?` each<br>${fmtW(i.g*i.qty)}`:""}</div></div>`).join("")}</div>`).join("")||'<div class="card muted">Nothing matches.</div>';
+      <div class="w">${fmtW(i.g)}${i.qty>1?` each<br>${fmtW(i.g*i.qty)}`:""}</div></div>`).join("")}</div>`).join("")||(S.inv.length?'<div class="card muted">Nothing matches.</div>':`<div class="card"><h2>Your kit is empty</h2><p class="small muted">Add items one at a time with <b>+ Add item</b>, or tap <b>🤖 Add with AI</b>. You get a ready-made prompt for ChatGPT, Claude or Gemini that looks up weights and ratings for you, then you paste its answer back here.</p><div class="row"><button class="pri" onclick="openAI()">🤖 Add with AI</button></div></div>`);
 }
 function renderClassSel(){
   const opts=S.classes.map(c=>`<option value="${c.id}" ${c.id===S.active?"selected":""}>${esc(c.name)}</option>`).join("");
@@ -1035,7 +1107,8 @@ function renderWeather(){
   const ws=warnings(c), ic={bad:"⛔",warn:"⚠️",info:"💡"};
   $("#wxWarn").innerHTML=ws.length?ws.map(([k,m])=>`<li>${ic[k]} ${esc(m)}</li>`).join(""):"<li>✅ Nothing flagged for these conditions.</li>";
   const f=fuelPlan(c);
-  $("#fpOut").innerHTML=`<table>
+  if(!classLines(c).some(l=>RX.stove.test(l.it.name)&&!isGas(l.it))){$("#fpOut").innerHTML=`<div class="small muted">No stove in this class — add one to plan fuel.</div>`;}
+  else $("#fpOut").innerHTML=`<table>
     <tr><td>Water to boil (${wx.nights} night${wx.nights>1?"s":""}${f.hwb?", incl. hot-water bottle":""})</td><td class="n">${f.litres.toFixed(1)} L</td></tr>
     <tr><td>Stove burn rate (${["calm","breezy","gusty"][+wx.wind]||"calm"}${+wx.low<5?", cold":""})</td><td class="n">~${f.gpl} g/L</td></tr>
     <tr><td>Gas needed (+15% reserve)</td><td class="n"><b>${Math.round(f.needR)} g</b></td></tr>
@@ -1087,7 +1160,7 @@ function renderSumbar(){
 }
 let currentView="kit";
 function render(){
-  renderSumbar(); renderClassSel();
+  renderSumbar(); renderClassSel(); renderWelcome();
   ({kit:renderKit,classes:renderClasses,pack:renderPack,weather:renderWeather,trips:renderTrips}[currentView]||(()=>{}))();
 }
 function showView(v){
@@ -1247,8 +1320,154 @@ $("#impFile").onchange=async e=>{
   }catch(err){toast("Couldn't read that file");}
   e.target.value="";
 };
-$("#resetAll").onclick=async()=>{if(!await ask("Restore the original kit list and preset classes? Your kit edits, classes and trip log will be lost.",{ok:"Restore",danger:true}))return;
+$("#resetAll").onclick=async()=>{if(!await ask("Load Sam's example kit and preset classes? This replaces your current kit, classes and trip log.",{ok:"Load example",danger:true}))return;
   const old=S;S=freshState();save();render();toast("Restored",()=>{S=old;save();render();});};
+
+/* ============================================================
+   AI HELPER — prompt out, JSON back in
+   ============================================================ */
+function buildPrompt(includeKit){
+  const kit=S.inv.filter(i=>i.status!=="wishlist"||true);
+  const lines=[
+"You are helping me log my camping equipment into my \"Camp Kit Planner\" app.",
+"",
+"HOW TO WORK WITH ME",
+"- Ask what gear I want to add. I might paste a shopping list, receipts or product links, or just describe things. Ask short follow-up questions only when something important is unknown (e.g. the exact model or size).",
+"- Look up real specs where you can: weight in grams, sleeping bag comfort/limit temperatures (EN/ISO 23537 if available), sleeping mat R-value (ASTM F3340), tent/tarp hydrostatic head. If there's no official figure, estimate sensibly and say \"est.\" in research.",
+"- Multiples: 10 pegs = ONE item with qty 10 and g = the weight of ONE peg. A pair of poles or gloves = one item.",
+"- Weights are per single item, in grams, without packaging.",
+includeKit&&kit.length?"- Do NOT add anything that is already in MY EXISTING KIT below — match by meaning, not exact wording (e.g. \"MSR stove\" vs \"MSR PocketRocket 2\"). If I mention something I already have, tell me instead of adding it. If I give new info about an existing item (e.g. I weighed it, or I own more), put it in \"updates\".":"- If I mention the same thing twice, only add it once.",
+"- Keep chatting until I say \"done\" (or ask for the JSON). Then reply with ONE json code block only, in exactly this format:",
+"",
+"```json",
+"{",
+'  "type": "kit",',
+'  "inv": [',
+'    {"name":"MSR PocketRocket 2","cat":"Kitchen & Hydration","qty":1,"g":73,"kind":"other","seasons":["Spring","Summer","Autumn","Winter"],"notes":"Fast boils; needs a windshield in gusts.","research":"MSR spec 73 g"}',
+"  ],",
+'  "updates": [',
+'    {"name":"<existing item name exactly as in my list>","g":540,"qty":1,"measured":true,"notes":"optional new notes"}',
+"  ]",
+"}",
+"```",
+"",
+"FIELDS FOR EACH ITEM",
+"- name: brand + model (string)",
+`- cat: one of ${JSON.stringify(CATS)}`,
+"- qty: how many I own (integer); g: grams per ONE item (number)",
+"- kind: \"shelter\" | \"bag\" (sleeping bag/quilt) | \"pad\" (sleeping mat) | \"layer\" (clothing that adds warmth at night) | \"consumable\" (gas, fuel, food) | \"other\"",
+"- shelter (only when kind is shelter): \"tent\" | \"bivvy\" | \"tarp\" | \"hammock\" | \"poncho\"",
+"- rain, wind, bug: protection 0–3, only where relevant. 0 none, 1 light, 2 good, 3 storm-proof / full protection.",
+"    Rain: tent 1500–2000 mm HH ≈ 2, 3000 mm+ well-built ≈ 3; Gore-Tex bivvy 3; tarp 2; poncho 1.",
+"    Wind: low tunnel/geodesic tent 2–3, bivvy 3, tarp 1, hammock 0.",
+"    Bug: full mesh inner or bug net 3, head net or bug-net hat 2.",
+"- warmth: °C the item adds when sleeping. Layers: thermal top ≈ 2, thermal bottoms ≈ 1.5, beanie ≈ 1, fleece ≈ 2, puffy jacket ≈ 3, gloves ≈ 0.5, neck gaiter ≈ 1. Shelters: tent 3, bivvy 2, tarp 1, hammock/poncho 0.",
+"- r: sleeping mat R-value (they stack). Uninsulated air mat ≈ 1, closed-cell foam ≈ 2, foil mat ≈ 0.5, insulated air mat 3–7.",
+"- comfort, limit: sleeping bag temperatures in °C (use the official rating; budget bags without one: estimate conservatively).",
+"- seasons: any of [\"Spring\",\"Summer\",\"Autumn\",\"Winter\"]",
+"- notes: one or two sentences on weather/terrain suitability (UK conditions)",
+"- research: where the specs came from, or \"est.\"",
+"- status: \"active\" (default), \"retired\" (spare/broken) or \"wishlist\" (don't own yet)",
+"- condition: \"good\" (default), \"worn\" or \"repair\"",
+"- measured: true only if I tell you I weighed it myself",
+"Leave out any field that doesn't apply. Use plain numbers (no units) for qty, g, r, comfort, limit, warmth, rain, wind, bug."
+  ];
+  if(includeKit&&kit.length){
+    lines.push("","MY EXISTING KIT (don't duplicate) — name | category | qty | grams each");
+    kit.forEach(i=>lines.push(`- ${i.name} | ${i.cat} | ${i.qty} | ${i.g}${i.status&&i.status!=="active"?" | "+i.status:""}`));
+  } else if(includeKit) lines.push("","MY EXISTING KIT: (empty — this is a fresh start)");
+  lines.push("","Start by asking me what I'd like to add.");
+  return lines.join("\n");
+}
+const normName=s=>String(s||"").toLowerCase().replace(/[^a-z0-9 ]+/g," ").replace(/\s+/g," ").trim();
+function similar(a,b){
+  const A=normName(a),B=normName(b); if(!A||!B) return 0; if(A===B) return 1;
+  if(A.length>5&&B.length>5&&(A.includes(B)||B.includes(A))) return .9;
+  const ta=new Set(A.split(" ").filter(w=>w.length>1)),tb=new Set(B.split(" ").filter(w=>w.length>1));
+  const inter=[...ta].filter(w=>tb.has(w)).length; return inter/Math.max(1,new Set([...ta,...tb]).size);
+}
+function findDup(name){let best=null,score=0;S.inv.forEach(i=>{const s=similar(name,i.name);if(s>score){score=s;best=i;}});return score>=0.6?{it:best,score}:null;}
+const KINDS=["shelter","bag","pad","layer","consumable","other"], SHELTERS=["tent","bivvy","tarp","hammock","poncho"];
+function cleanItem(o){
+  if(!o||typeof o!=="object"||!String(o.name||"").trim()) return null;
+  const n=v=>v===undefined||v===null||v===""||isNaN(+v)?undefined:+v, cl=(v,a,b)=>v===undefined?undefined:Math.max(a,Math.min(b,v));
+  const it={name:String(o.name).trim().slice(0,120),cat:String(o.cat||"Other").trim()||"Other",qty:Math.max(0,Math.round(n(o.qty)??1)),g:Math.max(0,n(o.g??o.grams??o.weight)??0),
+    kind:KINDS.includes(o.kind)?o.kind:"other",shelter:SHELTERS.includes(o.shelter)?o.shelter:undefined,
+    rain:cl(n(o.rain),0,3),wind:cl(n(o.wind),0,3),bug:cl(n(o.bug),0,3),warmth:cl(n(o.warmth),-5,10),r:cl(n(o.r),0,15),comfort:cl(n(o.comfort),-40,30),limit:cl(n(o.limit),-50,30),
+    seasons:Array.isArray(o.seasons)?o.seasons.filter(s=>ALL4.includes(s)):[],notes:String(o.notes||"").slice(0,400),research:String(o.research||"").slice(0,400),
+    status:["active","retired","wishlist"].includes(o.status)?o.status:"active",condition:["good","worn","repair"].includes(o.condition)?o.condition:"good",measured:o.measured===true};
+  if(it.kind==="shelter"&&!it.shelter) it.kind="other";
+  if(it.kind==="bag"&&it.comfort===undefined) it.comfort=10;
+  Object.keys(it).forEach(k=>it[k]===undefined&&delete it[k]);
+  return it;
+}
+function parseAIReply(text){
+  let t=String(text||"").trim(); if(!t) throw new Error("Paste the AI's reply first");
+  const fence=t.match(/```(?:json)?\s*([\s\S]*?)```/i); if(fence) t=fence[1];
+  const a=t.indexOf("{"),a2=t.indexOf("["),start=(a<0?a2:(a2<0?a:Math.min(a,a2)));
+  const end=Math.max(t.lastIndexOf("}"),t.lastIndexOf("]"));
+  if(start<0||end<start) throw new Error("Couldn't find the JSON in that reply — ask the AI to output the JSON block");
+  let d; try{d=JSON.parse(t.slice(start,end+1));}catch(e){throw new Error("The JSON looks broken — ask the AI to resend just the JSON block");}
+  const inv=(Array.isArray(d)?d:d.inv||d.items||[]).map(cleanItem).filter(Boolean);
+  const updates=(Array.isArray(d)?[]:d.updates||[]).filter(u=>u&&u.name);
+  return {inv,updates};
+}
+let aiParsed=null;
+function renderAIPreview(){
+  const box=$("#aiPreview"); if(!aiParsed){box.innerHTML="";$("#aiAdd").hidden=true;return;}
+  const {inv,updates}=aiParsed;
+  // duplicates inside the reply itself too
+  const seen=[];
+  const rows=inv.map((it,i)=>{const dup=findDup(it.name)||(seen.find(s=>similar(s,it.name)>=0.8)?{it:{name:"another item in this reply"}}:null);seen.push(it.name);
+    return `<label class="item" style="flex-direction:row;color:var(--text)"><input type="checkbox" class="ck" data-ai="${i}" ${dup?"":"checked"}>
+      <div class="nm"><b>${esc(it.name)}${it.qty>1?` ×${it.qty}`:""}</b><span class="small muted">${esc(it.cat)} · ${fmtW(it.g)} each${it.status!=="active"?" · "+it.status:""}</span>
+      ${dup?`<div class="small" style="color:var(--warn)">⚠️ Looks like a duplicate of “${esc(dup.it.name)}” — unticked</div>`:""}${chipsFor(it)}</div></label>`;}).join("");
+  const ups=updates.map((u,i)=>{const m=S.inv.find(x=>normName(x.name)===normName(u.name))||findDup(u.name)?.it;
+    const ch=[u.g!=null&&`weight ${m?fmtW(m.g)+" → ":""}${fmtW(+u.g)}`,u.qty!=null&&`qty ${m?m.qty+" → ":""}${u.qty}`,u.measured&&"weighed ✓",u.notes&&"new notes"].filter(Boolean).join(", ");
+    return `<label class="item" style="flex-direction:row;color:var(--text)"><input type="checkbox" class="ck" data-aiu="${i}" ${m?"checked":"disabled"}>
+      <div class="nm"><b>${esc(m?m.name:u.name)}</b><span class="small muted">${m?esc(ch||"no changes"):"Not found in your kit — skipped"}</span></div></label>`;}).join("");
+  box.innerHTML=(inv.length?`<h3>New items (${inv.length})</h3>${rows}`:"<p class='small muted'>No new items in that reply.</p>")+(updates.length?`<h3>Updates to existing items</h3>${ups}`:"");
+  $("#aiAdd").hidden=!(inv.length||updates.length);
+}
+function openAI(){
+  const p=buildPrompt($("#aiIncl").checked); $("#aiPrompt").value=p; $("#aiLen").textContent=`${S.inv.length} items listed · ${Math.round(p.length/1000)}k characters`;
+  if(!$("#aiIncl").checked) $("#aiLen").textContent="kit not included";
+  renderAIPreview(); $("#aiDlg").showModal();
+}
+$("#aiBtn").onclick=openAI;
+$("#aiIncl").onchange=openAI;
+$("#aiClose").onclick=()=>$("#aiDlg").close();
+$("#aiCopy").onclick=()=>{const p=$("#aiPrompt").value;
+  (navigator.clipboard?navigator.clipboard.writeText(p):Promise.reject()).then(()=>toast("Prompt copied — paste it into your AI"),()=>{$("#aiPrompt").closest("details").open=true;$("#aiPrompt").select();toast("Select all and copy the prompt");});};
+$("#aiDl").onclick=()=>download("camp-kit-ai-prompt.txt",$("#aiPrompt").value,"text/plain");
+$("#aiCheck").onclick=()=>{try{aiParsed=parseAIReply($("#aiReply").value);renderAIPreview();if(!aiParsed.inv.length&&!aiParsed.updates.length)toast("No items found");}catch(e){aiParsed=null;renderAIPreview();toast(e.message);}};
+$("#aiFile").onchange=async e=>{const f=e.target.files[0];if(!f)return;$("#aiReply").value=await f.text();$("#aiCheck").click();e.target.value="";};
+$("#aiAdd").onclick=()=>{
+  if(!aiParsed) return;
+  const before=clone(S.inv); let added=0,updated=0;
+  document.querySelectorAll("#aiPreview [data-ai]").forEach(cb=>{if(!cb.checked)return;const it=aiParsed.inv[+cb.dataset.ai];
+    S.inv.push(Object.assign({id:"c_"+Date.now().toString(36)+Math.random().toString(36).slice(2,6),custom:true},it));added++;});
+  document.querySelectorAll("#aiPreview [data-aiu]").forEach(cb=>{if(!cb.checked)return;const u=aiParsed.updates[+cb.dataset.aiu];
+    const m=S.inv.find(x=>normName(x.name)===normName(u.name))||findDup(u.name)?.it;if(!m)return;
+    if(u.g!=null&&!isNaN(+u.g)) m.g=+u.g; if(u.qty!=null&&!isNaN(+u.qty)) m.qty=Math.max(0,Math.round(+u.qty)); if(u.measured===true) m.measured=true; if(u.notes) m.notes=String(u.notes).slice(0,400); updated++;});
+  aiParsed=null;$("#aiReply").value="";$("#aiDlg").close();S.welcomed=true;save();showView("kit");
+  toast(`${added} added${updated?`, ${updated} updated`:""}`,()=>{S.inv=before;save();render();});
+};
+
+/* ---- welcome (first visit) & resets ---- */
+function renderWelcome(){
+  $("#welcome").innerHTML=S.welcomed?"":`<div class="card" style="border-color:var(--accent)">
+    <h2>👋 Welcome to Camp Kit Planner</h2>
+    <p class="small muted" style="margin-top:0">This is loaded with an example kit (Sam's gear, researched with weights and ratings). Want to explore that, or start with your own?</p>
+    <div class="row"><button class="pri" id="wEmpty">Start with my own gear</button><button id="wKeep">Explore the example kit</button></div></div>`;
+  if(!S.welcomed&&!S.inv.length) $("#welcome").innerHTML="";
+}
+$("#welcome").onclick=e=>{
+  if(e.target.id==="wKeep"){S.welcomed=true;save();render();}
+  if(e.target.id==="wEmpty"){S=emptyState();save();render();toast("Fresh start — add your gear");openAI();}
+};
+$("#resetEmpty").onclick=async()=>{if(!await ask("Start fresh? This removes every item, class and trip on this device so you can add your own gear.",{ok:"Start fresh",danger:true}))return;
+  const old=S;S=emptyState();save();showView("kit");toast("Everything cleared",()=>{S=old;save();render();});};
 
 /* ---- install as app (PWA) ---- */
 let deferredPrompt=null;
