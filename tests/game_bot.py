@@ -14,7 +14,7 @@ BOT="""(args)=>{
      if(strategy==="random") pick=ok[Math.floor(Math.random()*ok.length)][1];
      else if(strategy==="smart"){
        const m=G.meters; const score=c=>{const e=c.effects||{};if(e.ending)return -999;
-         let v=(e.warmth||0)*(m.warmth<60?2.5:1)+(e.energy||0)*(m.energy<40?1.5:0.5)+(e.dry||0)*0.8+(e.morale||0)*(m.morale<35?1.5:0.4)-(e.suspicion||0)*(m.suspicion>50?1.5:0.5)+(e.wear?(e.wear==="all"?14:9):0)+(e.sleep?2:0)+(e.lnt||0)*3;
+         let v=(e.warmth||0)*(m.warmth<60?2.5:1)+(e.energy||0)*(m.energy<40?1.5:0.5)+(e.dry||0)*0.8+(e.morale||0)*(m.morale<35?1.5:0.4)-(e.suspicion||0)*(m.suspicion>50?1.5:0.5)+(e.wear?(e.wear==="all"?14:9):0)+(e.sleep?2:0)+(e.sleepBlock?(m.warmth>45?6:-2):0)+(e.lnt||0)*3;
          if(e.pitch==="woodland"||e.pitch==="hedge") v+=10; if(e.pitch==="hilltop") v-=10; if(e.setFlag==="awning"||e.setFlag==="quilted") v+=6; return v;};
        pick=ok.sort((a,b)=>score(b[0])-score(a[0]))[0][1]; }
      else { // greedy: best weighted sum for current weakest meter

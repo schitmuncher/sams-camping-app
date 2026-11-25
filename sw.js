@@ -1,5 +1,5 @@
 // Offline cache for the Camp Kit Planner. Bump VERSION when app files change.
-const VERSION = "camp-kit-v16";
+const VERSION = "camp-kit-v17";
 const SHELL = ["./", "./index.html", "./manifest.webmanifest", "./icon-192.png", "./icon-512.png"];
 self.addEventListener("install", e => {
   e.waitUntil(caches.open(VERSION).then(c => c.addAll(SHELL)).then(() => self.skipWaiting()));

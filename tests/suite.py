@@ -202,8 +202,14 @@ with sync_playwright() as p:
     ok("night reaches an ending",pg.is_visible("[data-gagain]"))
     ok("grades shown",len(pg.query_selector_all(".gg"))==5)
     ok("bot: 50 nights, no dead ends",E("""(()=>{let st=0;for(let r=0;r<50;r++){gStart('cls_bivvy','towpath','normal',r);let n=0;while(!G.ended&&n<120){n++;const ok=G.scene.choices.map((c,i)=>[c,i]).filter(([c])=>gChoiceState(c).ok);if(!ok.length){st++;break;}gChoose(ok[Math.floor(Math.random()*ok.length)][1]);}if(!G.ended)st++;}return st})()""")==0)
+    ok("all scenarios, no dead ends",E("""(()=>{let st=0;for(const sc of ['storm','midsummer','dartmoor','plan'])for(let r=0;r<15;r++){gStart('cls_winter',sc,'normal',r);let n=0;while(!G.ended&&n<120){n++;const ok=G.scene.choices.map((c,i)=>[c,i]).filter(([c])=>gChoiceState(c).ok);if(!ok.length){st++;break;}gChoose(ok[Math.floor(Math.random()*ok.length)][1]);}if(!G.ended)st++;}return st})()""")==0)
+    ok("flask cools over the night",E("(()=>{gStart('cls_winter','towpath','normal',5);const a=gFlaskHeat();G.time+=12*60;return a>0.9&&gFlaskHeat()<0.55})()"))
+    ok("sleep block skips hours",E("(()=>{gStart('cls_winter','towpath','normal',9);G.phase='night';G.time=21*60;G.scene=gDynamic('night_hub');const t=G.time;gChoose(0);return G.time-t>=60})()"))
+    ok("false alarm hides its outcome",E("(()=>{gStart('cls_winter','towpath','normal',3);return gDynamic('night_sound').choices.every(c=>c.hide)})()"))
+    ok("skipping the wee comes back later",E("(()=>{gStart('cls_winter','towpath','normal',4);G.scene=gDynamic('camp_wee');gChoose(1);return G.pending.some(p=>p.id==='night_wee')})()"))
+    ok("ending has a night story",E("(()=>{gStart('cls_winter','towpath','normal',2);let n=0;while(!G.ended&&n<120){n++;gChoose(G.scene.choices.findIndex(c=>gChoiceState(c).ok));}return !!(G.result&&G.result.story!=null)})()"))
     pg.click("[data-gagain]") if pg.query_selector("[data-gagain]") else None
-    E("G=null;delete S.game;save()")
+    E("G=null;delete S.game;S.gameStats=null;S.gameLocals=null;save()")
 
     section("Export / import / reset")
     tab("data")
