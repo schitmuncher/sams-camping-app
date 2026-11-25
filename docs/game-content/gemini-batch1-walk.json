@@ -1,0 +1,225 @@
+[
+  {
+    "id": "walk_canal_mud",
+    "phase": "walk",
+    "when": { "pitch": "canal" },
+    "weight": 4,
+    "once": false,
+    "text": "The towpath turns to churned black mud beside {place}. Your boots sink and squelch with every step under {pack}.",
+    "choices": [
+      {
+        "label": "Pick a high line along the verge",
+        "effects": { "energy": -6, "suspicion": 4, "time": 30 },
+        "result": "Slower going through nettles and roots, and you sit slightly higher in view."
+      },
+      {
+        "label": "Plough straight through the ruts",
+        "effects": { "dry": -8, "morale": -4, "time": 30 },
+        "result": "Cold sludge coats your cuffs and lowers and your ankles chill."
+      }
+    ]
+  },
+  {
+    "id": "walk_heavy_stile",
+    "phase": "walk",
+    "when": {},
+    "weight": 4,
+    "once": false,
+    "text": "A narrow wooden stile blocks the field edge ahead of {place}. Swinging {pack} over the top rail pulls hard on your lower back.",
+    "choices": [
+      {
+        "label": "Unclip and lift {pack} over first",
+        "requires": { "hasItem": ["paracord"] },
+        "effects": { "energy": -5, "morale": 3, "time": 30 },
+        "result": "Careful and steady, keeping your balance on slick timber."
+      },
+      {
+        "label": "Heave straight over with it on",
+        "effects": { "energy": -10, "morale": -5, "time": 30 },
+        "result": "Your shoulder straps bite deep as you drop onto the far side."
+      }
+    ]
+  },
+  {
+    "id": "walk_sudden_shower",
+    "phase": "walk",
+    "when": { "rainAtLeast": 1 },
+    "weight": 4,
+    "once": true,
+    "text": "A sharp shower sweeps across {place}, drumming on your hood at {hour}. Water beads off some fabric and darkens the rest.",
+    "choices": [
+      {
+        "label": "Throw on the {warmestLayer}",
+        "requires": { "hasItem": ["parka"] },
+        "effects": { "dry": 6, "warmth": 4, "energy": -3, "time": 30 },
+        "result": "Heavy and warm, though the outer face takes the brunt of the rain."
+      },
+      {
+        "label": "Drape the poncho over {pack}",
+        "requires": { "hasItem": ["poncho"] },
+        "effects": { "dry": 5, "suspicion": 3, "time": 30 },
+        "result": "Your kit stays drier, though the poncho flaps in the breeze."
+      },
+      {
+        "label": "Keep walking and let it pass",
+        "effects": { "dry": -10, "warmth": -6, "morale": -5, "time": 30 },
+        "result": "The squall passes, leaving your sleeves damp and clammy."
+      }
+    ]
+  },
+  {
+    "id": "walk_dog_walker",
+    "phase": "walk",
+    "when": { "hourBetween": [15, 19] },
+    "weight": 4,
+    "once": true,
+    "text": "A dog walker rounds the bend near {place} with a spaniel trotting ahead. They offer a brief nod as they pass.",
+    "choices": [
+      {
+        "label": "Say evening and keep moving",
+        "effects": { "morale": 4, "suspicion": 5, "time": 30 },
+        "result": "Polite and unhurried, though they now know someone is out."
+      },
+      {
+        "label": "Step off the path till they pass",
+        "effects": { "energy": -3, "suspicion": -4, "time": 30 },
+        "result": "You stay out of their line of sight while the dog sniffs the grass."
+      }
+    ]
+  },
+  {
+    "id": "walk_cows_field",
+    "phase": "walk",
+    "when": { "ground": "normal" },
+    "weight": 3,
+    "once": true,
+    "text": "A herd of heifers blocks the pasture near {place}, heavy and curious. The cows are judging you from ten paces away.",
+    "choices": [
+      {
+        "label": "Give them a wide berth round the edge",
+        "effects": { "energy": -7, "morale": 3, "time": 30 },
+        "result": "Extra steps along the hedge, with no hoofprints near your heels."
+      },
+      {
+        "label": "Walk steadily through without stopping",
+        "effects": { "morale": -4, "suspicion": 6, "time": 30 },
+        "result": "A few shift sideways, watching you all the way to the gate."
+      }
+    ]
+  },
+  {
+    "id": "walk_swing_bridge",
+    "phase": "walk",
+    "when": { "pitch": "canal" },
+    "weight": 3,
+    "once": true,
+    "text": "At {place}, a cast-iron swing bridge sits unlatched across the cut. Dark canal water laps against the timber.",
+    "choices": [
+      {
+        "label": "Swing it across quietly and cross",
+        "effects": { "energy": -6, "suspicion": 5, "time": 30 },
+        "result": "The iron groans softly before you pull it back into place."
+      },
+      {
+        "label": "Take the longer footpath round",
+        "effects": { "energy": -8, "suspicion": -3, "time": 30 },
+        "result": "Quiet and unhurried, adding miles to your legs."
+      }
+    ]
+  },
+  {
+    "id": "walk_pub_dusk",
+    "phase": "walk",
+    "when": { "hourBetween": [16, 20] },
+    "weight": 3,
+    "once": true,
+    "text": "Warm light spills from a canal-side pub window near {place} at {hour}. Inside looks dry, bright, and very warm.",
+    "choices": [
+      {
+        "label": "Push past into the cold dusk",
+        "effects": { "morale": -5, "warmth": -4, "suspicion": -4, "time": 30 },
+        "result": "The cold hits harder once the warm glow fades behind you."
+      },
+      {
+        "label": "Stop for one quick drink at the bar",
+        "effects": { "warmth": 8, "morale": 10, "suspicion": 8, "time": 30 },
+        "result": "Your fingers thaw out, though you set off later in the dark."
+      }
+    ]
+  },
+  {
+    "id": "walk_failing_light",
+    "phase": "walk",
+    "when": { "hourBetween": [16, 18] },
+    "weight": 5,
+    "once": true,
+    "text": "Dusk settles fast over {place} at {hour}, turning hedges into flat grey shapes. Ruts and roots are hard to read.",
+    "choices": [
+      {
+        "label": "Switch on {torch} on low",
+        "requires": { "hasItem": ["headtorch"] },
+        "effects": { "energy": -3, "suspicion": 5, "time": 30 },
+        "result": "You see every step clearly, though a beam travels across open ground."
+      },
+      {
+        "label": "Walk by twilight and night eyes",
+        "effects": { "energy": -5, "morale": -3, "suspicion": -3, "time": 30 },
+        "result": "Slow work, but your eyes adjust to the gloom."
+      }
+    ]
+  },
+  {
+    "id": "walk_refill_water",
+    "phase": "walk",
+    "when": {},
+    "weight": 3,
+    "once": true,
+    "text": "You pass a tap near {place} with {temp} air and water running cold. Carrying extra water adds weight at once.",
+    "choices": [
+      {
+        "label": "Top up the flask with hot or cold",
+        "requires": { "hasItem": ["flask"] },
+        "effects": { "energy": -4, "morale": 6, "time": 30 },
+        "result": "The extra weight pulls on {pack}, but a warm sip waits later."
+      },
+      {
+        "label": "Top up a spare bottle",
+        "requires": { "hasItem": ["filter"] },
+        "effects": { "energy": -4, "dry": 4, "time": 30 },
+        "result": "Clean water secured for camp without relying on a canal."
+      },
+      {
+        "label": "Carry on light and travel faster",
+        "effects": { "energy": 3, "morale": -3, "time": 30 },
+        "result": "Easier on the legs now, though supplies are tighter later."
+      }
+    ]
+  },
+  {
+    "id": "walk_blister_twinge",
+    "phase": "walk",
+    "when": {},
+    "weight": 3,
+    "once": true,
+    "text": "A sharp rub starts on your heel on the approach to {place}. Ignore it now and every step after dark will hurt.",
+    "choices": [
+      {
+        "label": "Patch it cleanly from the kit",
+        "requires": { "hasItem": ["firstaid"] },
+        "effects": { "energy": -2, "morale": 5, "time": 30 },
+        "result": "A few minutes kneeling by the path saves a ruined morning."
+      },
+      {
+        "label": "Adjust your sock and press on",
+        "requires": { "hasItem": ["socks"] },
+        "effects": { "energy": -4, "morale": 2, "time": 30 },
+        "result": "Dry wool helps ease the friction for now."
+      },
+      {
+        "label": "Grimace and keep marching",
+        "effects": { "energy": -6, "morale": -7, "time": 30 },
+        "result": "The hot spot stings harder with each half-hour."
+      }
+    ]
+  }
+]

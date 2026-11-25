@@ -1,0 +1,38 @@
+I'm adding a text survival game, "Pitch Dark" (working title), as a "Play" mode in my Camp Kit Planner app (the one we've talked about). You play one night wild camping in the UK with one of your saved loadouts. Your real kit, the app's warmth/stealth/weight ratings and the real forecast decide what happens. It's tap-the-button choices, short scenes, five meters (warmth, energy, dry, morale, suspicion), no death — bad nights end with bailing out and walking home. The first scenario is a November night by the canals near Hurleston and Nantwich.
+
+This time I DON'T want code or JSON. I want you as a creative collaborator: ideas, atmosphere, voice and surprises. Write in normal prose and bullet points. Be specific and vivid, and be honest about which ideas you think are strongest.
+
+1. THE FEEL
+   - What should a night in this game feel like, in a few sentences? What's the emotional arc from setting off to sunrise?
+   - Suggest a narrator voice and write the same short moment (waking cold at 3am) in three different voices so I can pick one.
+
+2. THE PLACE
+   - What makes a Cheshire canal at night in November distinctive? Sounds, smells, textures, light, wildlife, weather, the little human traces (moored narrowboats, lock gear, farm lanes, distant A-roads, church bells).
+   - Ideas for how the location changes through the night (dusk, deep night, pre-dawn, sunrise).
+
+3. MEMORABLE MOMENTS
+   - 15 set pieces or encounters that would make someone tell a mate about their run. Mix tense, funny, eerie and beautiful. Keep them believable for real UK wild camping (no monsters).
+   - 5 small "quiet" moments that reward the player just for being out there.
+
+4. PEOPLE YOU MIGHT MEET
+   - 5–6 recurring characters (e.g. a narrowboat owner, a farmer, a night fisherman, a dog walker) with a one-line personality, how they react to a camper, and how meeting them could go well or badly.
+
+5. TENSION & CHOICES
+   - What are the most interesting real dilemmas a wild camper faces at night? (e.g. getting out of a warm bag for a wee, using the torch vs staying hidden, moving pitch at midnight)
+   - Ideas for making kit choices feel meaningful and personal, not just stat checks.
+
+6. HUMOUR
+   - 15 dry, British, one-line observations the game could drop in ("The cows are judging you.").
+
+7. ENDINGS & REPLAY
+   - How should a good night and a failed night each feel at the end?
+   - Ideas that make people want to play again (secrets, rare events, achievements, different seasons, unlocks tied to real kit).
+
+8. BEYOND THE FIRST NIGHT
+   - 5 other scenario ideas with a one-line hook each (season, place, twist).
+   - Any bigger idea that would make this game special or different from other survival games.
+
+9. NAMES
+   - 8 title ideas with a tagline each, and your top pick and why.
+
+Finish with your top 5 ideas overall, ranked.
