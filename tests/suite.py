@@ -185,6 +185,12 @@ with sync_playwright() as p:
     ok("trip saved",E("S.trips.length")==1); ok("calibration shown",'°C' in pg.inner_text("#calibCard"))
     pg.click("[data-deltrip]"); pg.click("#toastBtn"); ok("trip delete undo",E("S.trips.length")==1)
 
+    section("Class report")
+    R=E("buildReport(cls())")
+    ok("report has all sections",all(k in R for k in ["conditions","weight","warmth","protection","stealth","kitCheck","warnings","fuel","items"]))
+    ok("every item has a justification",all(len(i["role"])>0 or i["notes"] for i in R["items"]))
+    ok("markdown report",E("reportMarkdown(cls())").startswith("# "))
+
     section("Export / import / reset")
     tab("data")
     E("document.querySelector('details[data-sec=exportMore]').open=true")

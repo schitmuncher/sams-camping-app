@@ -22,6 +22,7 @@ A single-page camping kit planner: open `index.html` in any browser (phone or de
   - **Rain, wind and midge protection** compared against the conditions, plus warnings and tips.
   - **Fuel & water planner**: litres to boil and grams of gas needed (adjusted for wind and cold), compared with the gas you're carrying.
 - **Trips**: log each night out with the actual low and how warm you slept. The app works out whether you sleep warmer or colder than its maths and applies that offset (you can turn it off).
+- **Reports**: exporting a class (Classes ⋯ menu or Data tab) now includes a full report: conditions and darkness hours; weight breakdown; the warmth stack step by step with ground insulation and the verdict explained; rain/wind/bug protection and which item provides it; stealth factors and fixes; essentials; dead weight; things worth buying; warnings; fuel, food and route. Every item gets its role and justification. There's also a readable Markdown trip report, a richer CSV, and **🤖 Ask an AI to review it**, which copies the report with a review prompt for a second opinion.
 - **Data**: export the kit list, the current class or the trip log (CSV or JSON), make a full backup and import it, and install the app.
 
 ## Layout

@@ -174,7 +174,9 @@ details.sub>summary{font-size:13px;color:var(--accent);font-weight:600}
           <button id="newClass">➕ New empty class</button>
           <button id="dupClass">📄 Save as a copy…</button>
           <button id="renClass">✏️ Rename</button>
-          <button id="expClass2">⬇️ Export this class</button>
+          <button id="expClass2">⬇️ Export this class (full report)</button>
+          <button id="expReport2">📄 Trip report (readable)</button>
+          <button id="aiReview2">🤖 Ask an AI to review it</button>
           <button class="danger" id="delClass">🗑️ Delete</button>
         </div>
       </details>
@@ -243,6 +245,7 @@ details.sub>summary{font-size:13px;color:var(--accent);font-weight:600}
     </div>
     <div class="row" style="margin-top:10px">
       <button class="pri" id="suggestBtn">✨ Suggest a class for these conditions</button>
+      <button id="aiReview3">🤖 Second opinion</button>
     </div>
   </details>
 
@@ -275,7 +278,8 @@ details.sub>summary{font-size:13px;color:var(--accent);font-weight:600}
         <p><b>Your calibration</b>: once you log trips on the Trips tab, the app learns whether you sleep warmer or colder than the maths says.</p>
         <p><b>Limit</b>: below the bag's comfort rating but above its limit, you'll get through the night curled up but sleep badly. Below the limit is dangerous.</p>
         <p><b>Camp height</b>: with a route loaded, each camp's forecast uses its GPX elevation (air cools ~0.65°C per 100 m).</p>
-        <p><b>Verdict</b>: rating above the low = cold. More than 8°C below the low = more warmth (and weight) than needed.</p>
+        <p><b>Layers</b>: the first ~4°C of layers count in full, the rest at half (more layers squash the bag's filling), up to 8°C in total.</p>
+        <p><b>Verdict</b>: margin = low minus your effective comfort. +2 to +8 good, 0 to +2 tight, −2 to 0 borderline, below −2 cold, above +8 more warmth (and weight) than needed.</p>
       </div>
     </details>
   </details>
@@ -366,7 +370,9 @@ details.sub>summary{font-size:13px;color:var(--accent);font-weight:600}
       <div class="row" style="margin-top:8px">
         <button id="expInvCsv">Kit list (CSV)</button>
         <button id="expInvJson">Kit list (JSON)</button>
-        <button id="expClass">Current class (JSON)</button>
+        <button id="expClass">Current class + full report (JSON)</button>
+        <button id="expReport">Trip report (Markdown)</button>
+        <button id="aiReview">🤖 Copy report for AI review</button>
         <button id="expClassCsv">Current class (CSV)</button>
         <button id="expTrips">Trip log (CSV)</button>
       </div>
@@ -820,7 +826,12 @@ function thermal(c,opts={}){
     rating=(b.it.comfort??15); rows.push({n:b.it.name+" (comfort)",v:rating,abs:true});
     bags.filter(x=>x!==b).forEach(x=>{rows.push({n:x.it.name+" (as extra quilt)",v:-5});rating-=5;});
   } else { rating=20; rows.push({n:"No sleeping bag selected",v:20,abs:true}); }
-  lines.filter(l=>l.it.kind==="layer"&&(+l.it.warmth||0)).forEach(l=>{rows.push({n:l.it.name,v:-(+l.it.warmth)});rating-=+l.it.warmth;});
+  // layers: full value for the first ~4°C, then half (more layers compress the bag's loft), capped at 8°C
+  const layerEff={}; let lt=0;
+  lines.filter(l=>l.it.kind==="layer"&&(+l.it.warmth||0)>0).sort((a,b)=>(+b.it.warmth)-(+a.it.warmth)).forEach(l=>{
+    const w=+l.it.warmth, full=Math.max(0,Math.min(w,4-lt)), half=Math.max(0,w-full)*0.5;
+    let eff=Math.min(full+half,Math.max(0,8-lt)); eff=Math.round(eff*10)/10; lt+=eff; layerEff[l.it.id]=eff;
+    rows.push({n:l.it.name+(eff<w?` (${w}°C, counted ${eff}°C — extra layers compress the bag)`:""),v:-eff}); rating-=eff;});
   const shelters=lines.filter(l=>l.it.kind==="shelter");
   let sb=Math.min(5,shelters.reduce((s,l)=>s+(+l.it.warmth||0),0));
   if(sb){rows.push({n:"Shelter ("+shelters.map(s=>s.it.shelter).join(" + ")+")",v:-sb});rating-=sb;}
@@ -842,9 +853,10 @@ function thermal(c,opts={}){
   if(limitRating!=null&&low<limitRating){verdict="Below your bag's limit — risky, add insulation";cls_="p-bad";}
   else if(margin< -2){verdict=limitRating!=null?"Cold — below comfort but above the limit (survivable, poor sleep)":"Too cold — add insulation";cls_="p-cold";}
   else if(margin<0){verdict="Borderline — expect a chilly night";cls_="p-warn";}
+  else if(margin<2){verdict="Just warm enough — little margin for error";cls_="p-warn";}
   else if(margin<=8){verdict="Good — warm enough without excess";cls_="p-ok";}
   else {verdict="Too warm — you could leave warmth (and weight) at home";cls_="p-hot";}
-  return {rows,rating,margin,limitRating,verdict,cls:cls_,pos:Math.max(0,Math.min(100,50+margin*4)),R,need,pads,hammock,onGround,low};
+  return {rows,layerEff,layerTotal:lt,rating,margin,limitRating,verdict,cls:cls_,pos:Math.max(0,Math.min(100,50+margin*4)),R,need,pads,hammock,onGround,low};
 }
 /* ---- name matchers so suggestions/warnings work with anyone's gear ---- */
 const RX={
@@ -874,6 +886,15 @@ function fuelPlan(c){
   const have=cans*left;
   return {litres,gpl,need,needR,have,cans,hwb,fromMeals,ok:have>=needR};
 }
+function darkHours(c){
+  const n=(c.wx.nightsData||[])[0];
+  if(n&&n.sunset&&n.sunrise) return {h:(new Date(n.sunrise)-new Date(n.sunset))/36e5,src:"forecast"};
+  const lat=(c.route&&c.route.pts&&c.route.pts[0]?c.route.pts[0][0]:(S.loc&&S.loc.lat))||53.07;
+  const d=c.wx.date?new Date(c.wx.date+"T12:00:00Z"):new Date(), N=Math.floor((d-new Date(Date.UTC(d.getUTCFullYear(),0,0)))/864e5);
+  const dec=23.44*Math.sin(2*Math.PI*(284+N)/365)*Math.PI/180, x=-Math.tan(lat*Math.PI/180)*Math.tan(dec);
+  const day=Math.abs(x)>=1?(x>0?0:24):2*Math.acos(x)*180/Math.PI/15;
+  return {h:24-day,src:"estimated for latitude "+lat.toFixed(1)};
+}
 function warnings(c){
   const w=[],wx=c.wx,lines=classLines(c);
   const has=s=>lines.some(l=>l.it.shelter===s);
@@ -896,6 +917,13 @@ function warnings(c){
     else if(wx.ground==="soft"&&hasY&&!hasS&&findAll("spiral").length) w.push(["warn","Soft peat/mud — your spiral pegs hold far better than Y-pegs."]);
   }
   if(+wx.humid>=90&&has("tent")) w.push(["info","Very humid night — expect condensation inside the tent. Vent the door and bring a towel."]);
+  if(has("bivvy")&&(+wx.humid>=85||low<=2)) w.push(["warn","Condensation risk in the bivvy: on a humid or frosty night your breath turns to damp/frost inside. Keep the hood open around your face (a low awning keeps frost off) and bring a towel."]);
+  const pk=lines.find(l=>RX.pack.test(l.it.name)&&l.it.cat==="Packs & Storage"&&!RX.drybag.test(l.it.name)&&!RX.rubble.test(l.it.name));
+  if(pk&&c.worn[pk.it.id]) w.push(["warn",`${pk.it.name} is marked Worn, so its ${fmtW(pk.it.g)} isn't counted in your pack weight. Untick Worn on the rucksack.`]);
+  const dk=darkHours(c);
+  if(dk.h>=14&&has("bivvy")&&!has("tent")&&!has("tarp")) w.push(["info",`About ${Math.round(dk.h)} hours of darkness — a long time lying flat in a bivvy. A tarp over it lets you sit up, cook and read.`]);
+  const bulky=lines.find(l=>l.it.kind==="layer"&&(+l.it.warmth||0)>=3&&l.it.g>=800);
+  if(bulky&&lines.some(l=>l.it.kind==="bag")) w.push(["info",`Lay the ${bulky.it.name} over your sleeping bag like a quilt rather than wearing it inside, where it squashes the bag's filling.`]);
   if(wx.ground==="frozen"&&inClass(c,"trowel")) w.push(["info","Frozen ground: the trowel will struggle — plan where you'll go."]);
   if(lines.some(l=>isGas(l.it))&&low<=0) w.push(["warn","Below 0°C a butane/propane canister loses pressure. Sleep with it in your bag, or use 4-season (isobutane) gas."]);
   if(inClass(c,"power")&&low<=0) w.push(["info","Keep the power bank and phone in your sleeping bag overnight."]);
@@ -1334,7 +1362,7 @@ function renderWeather(){
     <span class="small muted">Sleep system ≈ <b style="color:var(--text)">${t.rating.toFixed(1)}°C</b> comfort${t.limitRating!=null?`, ${t.limitRating.toFixed(1)}°C limit`:""} vs ${t.low}°C ${wx.nightsData&&wx.nightsData.length>1?"coldest night":"forecast low"} (margin ${t.margin>=0?"+":""}${t.margin.toFixed(1)}°C)</span></div>`;
   $("#needle").style.left=`calc(${t.pos}% - 2px)`;
   const hasBag=classLines(c).some(l=>l.it.kind==="bag");
-  $("#sumHeat").innerHTML=hasBag?`<span class="pill ${t.cls}">${t.rating.toFixed(0)}°C vs ${t.low}°C</span> ${t.margin<-2?"too cold":t.margin<0?"borderline":t.margin<=8?"good":"too warm"}`:`<span class="pill p-warn">no sleeping bag in this class</span>`;
+  $("#sumHeat").innerHTML=hasBag?`<span class="pill ${t.cls}">${t.rating.toFixed(0)}°C vs ${t.low}°C</span> ${t.margin<-2?"too cold":t.margin<0?"borderline":t.margin<2?"tight":t.margin<=8?"good":"too warm"}`:`<span class="pill p-warn">no sleeping bag in this class</span>`;
   if(!hasBag) $("#thermVerdict").innerHTML=`<div class="small muted">Add a sleeping bag to this class (Classes tab) to get a warmth rating.${packCount()?"":" Your kit is empty — start on the Kit tab."}</div>`;
   $("#nightChart").innerHTML=nightChartSVG(c);
   const nd=wx.nightsData||[];
@@ -1560,9 +1588,13 @@ $("#expInvCsv").onclick=()=>{
   const h=["Name","Category","Qty owned","Weight each (g)","Total (g)","Weighed","Status","Condition","Price £","Type","Shelter","Rain","Wind","Bugs","Warmth °C","R-value","Comfort °C","Limit °C","Seasons","Notes","Research"];
   download("camp-kit.csv",toCsv([h,...S.inv.map(i=>[i.name,i.cat,i.qty,i.g,i.g*i.qty,i.measured?"yes":"",i.status||"active",i.condition||"good",i.price,i.kind,i.shelter,i.rain,i.wind,i.bug,i.warmth,i.r,i.comfort,i.limit,(i.seasons||[]).join("; "),i.notes,i.research])]),"text/csv");};
 $("#expInvJson").onclick=()=>download("camp-kit.json",JSON.stringify({type:"kit",inv:S.inv},null,2),"application/json");
-$("#expClass").onclick=()=>{const c=cls();download(`class-${slug(c.name)}.json`,JSON.stringify({type:"class",class:c,items:classLines(c).map(l=>l.it)},null,2),"application/json");};
-$("#expClassCsv").onclick=()=>{const c=cls();const h=["Name","Category","Qty","Weight each (g)","Total (g)","Worn","Packed"];
-  const rows=classLines(c).map(({it,q})=>[it.name,it.cat,q,itemW(it,c),itemW(it,c)*q,c.worn[it.id]?"yes":"",c.packed[it.id]?"yes":""]);
+$("#expClass").onclick=()=>{const c=cls();download(`class-${slug(c.name)}.json`,JSON.stringify({type:"class",report:buildReport(c),class:c,items:classLines(c).map(l=>l.it)},null,2),"application/json");};
+$("#expReport").onclick=$("#expReport2").onclick=()=>{const c=cls();download(`trip-report-${slug(c.name)}.md`,reportMarkdown(c),"text/markdown");};
+$("#aiReview").onclick=$("#aiReview2").onclick=$("#aiReview3").onclick=()=>{const t=aiReviewPrompt(cls());
+  (navigator.clipboard?navigator.clipboard.writeText(t):Promise.reject()).then(()=>toast("Report + review prompt copied — paste into your AI"),()=>download(`ai-review-${slug(cls().name)}.txt`,t,"text/plain"));};
+$("#expClassCsv").onclick=()=>{const c=cls(),R=buildReport(c);const h=["Name","Category","Qty","Weight each (g)","Total (g)","Worn","Packed","Colour","Stealth colour","Rain","Wind","Bugs","Warmth °C","R-value","Comfort °C","Limit °C","Role / justification","Notes"];
+  const rows=R.items.map(i=>[i.name,i.category,i.qty,i.gEach,i.gTotal,i.worn?"yes":"",i.packed?"yes":"",i.colour||"",i.stealthColour||"",i.ratings.rain??"",i.ratings.wind??"",i.ratings.bug??"",i.ratings.warmth??"",i.ratings.r??"",i.ratings.comfort??"",i.ratings.limit??"",i.role.join(" "),i.notes]);
+  rows.push([],["Warmth",R.warmth.verdict,`effective comfort ${R.warmth.effectiveComfortC}°C`,`margin ${R.warmth.marginC}°C`],["Stealth",`${R.stealth.score}/100 ${R.stealth.label}`],["Ground R",R.warmth.groundInsulation.totalR,`need ${R.warmth.groundInsulation.neededR}`]);
   const w=weights(c);rows.push([],["Water","",c.wx.water+" L","",w.water],["Food","","","",w.food],["Pack weight (g)","","","",w.pack]);
   download(`class-${slug(c.name)}.csv`,toCsv([h,...rows]),"text/csv");};
 $("#expTrips").onclick=()=>download("camp-trips.csv",toCsv([["Date","Location","Class","Actual low °C","Predicted comfort °C","Felt (-2..2)","Pack (g)","Notes"],
@@ -1999,6 +2031,107 @@ function renderStealth(c){
     </ul></details>`;
 }
 document.addEventListener("click",e=>{const b=e.target.closest("[data-edititem]");if(b) openItem(b.dataset.edititem);});
+/* ============================================================
+   CLASS REPORT — every rating with its reasoning
+   ============================================================ */
+const r1=v=>Math.round(v*10)/10;
+function itemRoles(c,it,q,t,ess,dead){
+  const roles=[];
+  if(c.worn[it.id]) roles.push("Worn — not counted in pack weight.");
+  if(it.kind==="shelter") roles.push(`Shelter (${it.shelter}): rain ${+it.rain||0}/3, wind ${+it.wind||0}/3, bugs ${+it.bug||0}/3, adds +${+it.warmth||0}°C to the warmth stack; profile ${["flat","low","tent height","raised"][profileOf(it)]}.`);
+  if(it.kind==="bag") roles.push(`Sleeping bag: comfort ${it.comfort??"?"}°C${it.limit!=null?`, limit ${it.limit}°C`:""} — the starting point of the warmth stack.`);
+  if(it.kind==="pad") roles.push(`Ground insulation R${it.r||0}${q>1?` ×${q}`:""} — stack total R${r1(t.R)} vs about R${t.need} needed.`);
+  if(it.kind==="layer"&&(+it.warmth||0)>0){const e=t.layerEff[it.id]??0; roles.push(`Warm layer: ${+it.warmth}°C nominal, counted ${e}°C${e<+it.warmth?" (diminishing returns — extra layers compress the bag)":""}.`);}
+  if(isGas(it)) roles.push(`Fuel: ${Math.round(itemW(it,c)-160)} g of gas per canister.`);
+  if(+it.bug>=2&&it.kind!=="shelter") roles.push(`Bug protection ${it.bug}/3.`);
+  const v=visOf(it);
+  if(it.kind==="shelter"||it.cat==="Packs & Storage"||it.cat==="Clothing") roles.push(`Stealth colour: ${it.colour?it.colour+" — ":""}${v==null?"unknown":VIS_LABEL[v]}.`);
+  if(isLight(it)) roles.push(redOf(it)?"Light with red mode (good for stealth).":"White light only (no red mode).");
+  const e=ess.find(x=>x.status==="packed"&&x.it&&x.it.id===it.id); if(e) roles.push(`Covers essential: ${e.label}.`);
+  const d=dead.find(x=>x.it.id===it.id); if(d) roles.push(`Probably not needed: ${d.why}`);
+  if(it.condition&&it.condition!=="good") roles.push(`Condition: ${it.condition}.`);
+  return roles;
+}
+function buildReport(c){
+  const wx=c.wx, lines=classLines(c), w=weights(c), t=thermal(c), p=protection(c), st=stealth(c), kc=kitCheck(c), f=fuelPlan(c), mt=mealTotals(c), dk=darkHours(c);
+  const need={rain:NEED.rain(+wx.rain),wind:NEED.wind(+wx.wind),bugs:NEED.bug(+wx.bugs)};
+  const prov=k=>{const best=lines.filter(l=>(+l.it[k]||0)===p[k==="bugs"?"bug":k]&&(k==="bug"||l.it.kind==="shelter")).map(l=>l.it.name);return best.join(", ")||"nothing";};
+  const verdictWhy=`Bag comfort ${t.rows[0]?.v}°C, minus ${r1(t.layerTotal)}°C of layers and up to 5°C for shelter, plus any penalties (ground, wind, damp) = ${r1(t.rating)}°C effective comfort, against a ${wx.low}°C low. Margin ${t.margin>=0?"+":""}${r1(t.margin)}°C: +2 to +8 comfortable, 0 to +2 tight, −2 to 0 borderline, below −2 cold, more than +8 too warm.${S.inv.some(i=>i.kind==="bag"&&/est/i.test(i.research||""))?" Some bag ratings are estimates, so treat tight margins with care.":""}`;
+  return {
+    app:"Camp Kit Planner", reportVersion:1, generated:new Date().toISOString(),
+    class:{name:c.name,savedAt:c.savedAt?new Date(c.savedAt).toISOString():null,draft:!!c.draft,itemCount:lines.length},
+    conditions:{lowC:+wx.low,highC:+wx.high,rain:["dry","showers","heavy"][+wx.rain],gusts:["calm <15 mph","breezy 15–25 mph","gusty 25+ mph"][+wx.wind],avgNightWindMph:+wx.windAvg,humidityPct:+wx.humid,
+      midges:["none","some","swarming"][+wx.bugs],ground:wx.ground,nights:+wx.nights,stealthNeeded:["not important","some","high"][+wx.stealth||0],
+      source:wx.src||"entered by hand",detail:wx.detail||null,darknessHours:r1(dk.h),darknessSource:dk.src,
+      nights_detail:(wx.nightsData||[]).map((n,i)=>({night:i+1,date:n.date,camp:n.name,elevationM:n.ele,lowC:n.low,highC:n.high,gustMph:n.gmax,rainMm:n.rsum,humidityPct:n.humid,sunset:n.sunset,sunrise:n.sunrise,
+        verdict:thermal(withNight(c,n)).verdict}))},
+    weight:{packKg:r1(w.pack/1000),baseKg:r1(w.base/1000),consumablesKg:r1(w.cons/1000),wornKg:r1(w.worn/1000),totalKg:r1(w.total/1000),
+      waterKg:r1(w.water/1000),foodKg:r1(w.food/1000),foodSource:c.meals&&c.meals.length?"meal plan":`${wx.food} kg/day × ${wx.nights}`,
+      byCategoryKg:Object.fromEntries(Object.entries(w.byCat).map(([k,v])=>[k,r1(v/1000)])),
+      heaviest:lines.filter(l=>!c.worn[l.it.id]).map(l=>({item:l.it.name,g:Math.round(itemW(l.it,c)*l.q)})).sort((a,b)=>b.g-a.g).slice(0,5),
+      worn:lines.filter(l=>c.worn[l.it.id]).map(l=>l.it.name),
+      why:"Pack = base kit + consumables (water, food, gas). Worn items are on your body and not carried in the pack."},
+    warmth:{verdict:t.verdict,effectiveComfortC:r1(t.rating),limitC:t.limitRating!=null?r1(t.limitRating):null,lowC:+wx.low,marginC:r1(t.margin),
+      breakdown:t.rows.map(r=>({factor:r.n,effectC:r.v,start:!!r.abs})),
+      groundInsulation:{totalR:r1(t.R),neededR:t.need,mats:t.pads.map(l=>({item:l.it.name,r:+l.it.r})),ok:t.R>=t.need},
+      calibrationC:S.calibOn?calibration().offset:0, why:verdictWhy},
+    protection:{rain:{have:p.rain,need:need.rain,from:prov("rain")},wind:{have:p.wind,need:need.wind,from:prov("wind")},bugs:{have:p.bug,need:need.bugs,from:prov("bug")},
+      why:"Ratings 0–3. Rain and wind come from your best shelter (a tarp over a bivvy or hammock counts as 3 for rain). Needed: showers 1, heavy rain 2; breezy 1, gusty 2; any midges 2."},
+    stealth:{score:st.score,label:st.label,target:st.need,meetsTarget:st.ok,factors:st.rows.map(r=>({factor:r.n,points:r.v,fix:r.fix||null})),unknownColours:st.unknown.map(i=>i.name),
+      why:"Starts at 100. Points come off for shelter shape and colour, rucksack and clothing colour, lanterns, white-only head torches, reflective trim and stove noise. 80+ Ghost, 60+ Low profile, 40+ Noticeable."},
+    kitCheck:{essentials:kc.ess.map(e=>({essential:e.label,level:{bad:"essential",warn:"recommended",info:"nice to have"}[e.lvl],status:e.status==="food"?"missing":e.status,item:e.it?e.it.name:null,why:(ESS_INFO[e.label]||[e.why||""])[0]})),
+      notNeeded:kc.dead.map(d=>({item:d.it.name,g:Math.round(itemW(d.it,c)*d.q),why:d.why})),
+      worthGetting:kc.upgrades.map(u=>({item:u.tpl.name,typicalG:u.tpl.g,why:u.why}))},
+    warnings:warnings(c).map(([lvl,msg])=>({level:{bad:"serious",warn:"warning",info:"tip"}[lvl],message:msg})),
+    fuel:{hasStove:lines.some(l=>COOK_RX.test(l.it.name)&&!isGas(l.it)),litresToBoil:r1(f.litres),gasNeededG:Math.round(f.needR),gasCarriedG:Math.round(f.have),enough:f.ok},
+    food:c.meals&&c.meals.length?{items:c.meals.length,kcalTotal:Math.round(mt.kcal),kcalPerDayTarget:+wx.kcal,weightKg:r1(mt.g/1000),kcalPer100g:Math.round(mt.dens),
+      byDay:Object.fromEntries(Object.entries(mt.byDay).map(([d,v])=>[d,{kcal:Math.round(v.kcal),g:Math.round(v.g)}]))}:null,
+    route:c.route?{name:c.route.name,distanceKm:r1(c.route.distKm),ascentM:c.route.up,descentM:c.route.down,
+      camps:routeCamps(c).map((cp,i)=>({night:i+1,name:cp.name,atKm:r1(cp.km),elevationM:cp.ele})),
+      days:routeLegs(c).map(l=>({day:l.day,km:r1(l.km),climbM:l.up,walkingHours:r1(l.time),drinkL:l.drink,leaveBy:l.latest}))}:null,
+    items:lines.map(({it,q})=>({name:it.name,category:it.cat,qty:q,gEach:Math.round(itemW(it,c)),gTotal:Math.round(itemW(it,c)*q),worn:!!c.worn[it.id],packed:!!c.packed[it.id],
+      colour:it.colour||null,stealthColour:visOf(it)==null?null:VIS_LABEL[visOf(it)],weighed:!!it.measured,
+      ratings:Object.fromEntries(["rain","wind","bug","warmth","r","comfort","limit"].filter(k=>it[k]!=null&&it[k]!=="").map(k=>[k,+it[k]])),
+      role:itemRoles(c,it,q,t,kc.ess,kc.dead),notes:it.notes||"",research:it.research||""}))
+  };
+}
+function reportMarkdown(c){
+  const R=buildReport(c), L=[], b=s=>L.push("- "+s);
+  L.push(`# ${R.class.name} — trip report`,`_Camp Kit Planner · ${new Date(R.generated).toLocaleString("en-GB")}_`,"");
+  const k=R.conditions;
+  L.push("## Conditions"); b(`${k.lowC}°C low / ${k.highC}°C high · ${k.rain} · ${k.gusts} (avg ${k.avgNightWindMph} mph) · ${k.humidityPct}% humidity · midges: ${k.midges} · ground: ${k.ground}`);
+  b(`${k.nights} night(s) · stealth needed: ${k.stealthNeeded} · ~${k.darknessHours} h of darkness (${k.darknessSource})`); b(`Source: ${k.source}${k.detail?" — "+k.detail:""}`);
+  k.nights_detail.forEach(n=>b(`Night ${n.night} (${n.date}) ${n.camp}${n.elevationM!=null?` ${n.elevationM} m`:""}: ${n.lowC}°C, gusts ${n.gustMph} mph, ${n.rainMm} mm — ${n.verdict}`));
+  const W=R.weight; L.push("","## Weight"); b(`Pack ${W.packKg} kg = base ${W.baseKg} kg + consumables ${W.consumablesKg} kg (water ${W.waterKg}, food ${W.foodKg} from ${W.foodSource}). Worn ${W.wornKg} kg. Total ${W.totalKg} kg.`);
+  b("By category: "+Object.entries(W.byCategoryKg).map(([a,v])=>`${a} ${v} kg`).join(", ")); b("Heaviest: "+W.heaviest.map(h=>`${h.item} (${h.g} g)`).join(", "));
+  if(W.worn.length) b("Worn: "+W.worn.join(", "));
+  const T=R.warmth; L.push("","## Warmth",`**${T.verdict}** — effective comfort ${T.effectiveComfortC}°C${T.limitC!=null?`, limit ${T.limitC}°C`:""} vs ${T.lowC}°C (margin ${T.marginC>=0?"+":""}${T.marginC}°C)`);
+  T.breakdown.forEach(r=>b(`${r.factor}: ${r.start?r.effectC+"°C (start)":(r.effectC>0?"+":"")+r.effectC+"°C"}`));
+  b(`Ground: R${T.groundInsulation.totalR} vs R${T.groundInsulation.neededR} needed (${T.groundInsulation.mats.map(m=>`${m.item} R${m.r}`).join(" + ")||"no mats"})`); b(`Why: ${T.why}`);
+  const P=R.protection; L.push("","## Weather protection"); ["rain","wind","bugs"].forEach(x=>b(`${x}: ${P[x].have}/3 (need ${P[x].need}) — from ${P[x].from}`));
+  const St=R.stealth; L.push("","## Stealth",`**${St.score}/100 — ${St.label}**${St.target?` (target ${St.target}, ${St.meetsTarget?"met":"not met"})`:""}`);
+  St.factors.forEach(f=>b(`${f.factor}: ${f.points}${f.fix?` → ${f.fix}`:""}`)); if(St.unknownColours.length) b("Colour unknown: "+St.unknownColours.join(", "));
+  const K=R.kitCheck; L.push("","## Kit check");
+  K.essentials.forEach(e=>b(`${e.status==="packed"?"✅":e.status==="owned"?"🎒 own it, not packed":"⛔ missing"} ${e.essential} (${e.level})${e.item?` — ${e.item}`:""}`));
+  K.notNeeded.forEach(d=>b(`🪨 Not needed: ${d.item} (${d.g} g) — ${d.why}`)); K.worthGetting.forEach(u=>b(`🛒 Worth getting: ${u.item} (~${u.typicalG} g) — ${u.why}`));
+  if(R.warnings.length){L.push("","## Warnings & tips"); R.warnings.forEach(x=>b(`[${x.level}] ${x.message}`));}
+  L.push("","## Fuel & food"); b(R.fuel.hasStove?`Gas needed ~${R.fuel.gasNeededG} g, carrying ${R.fuel.gasCarriedG} g — ${R.fuel.enough?"enough":"short"}`:"No stove in this class.");
+  if(R.food) b(`${R.food.items} meal items, ${R.food.kcalTotal} kcal, ${R.food.weightKg} kg, ${R.food.kcalPer100g} kcal/100 g (target ${R.food.kcalPerDayTarget}/day)`);
+  if(R.route){L.push("","## Route",`${R.route.name}: ${R.route.distanceKm} km, +${R.route.ascentM} m`); R.route.days.forEach(d=>b(`Day ${d.day}: ${d.km} km, +${d.climbM} m, ~${d.walkingHours} h walking${d.leaveBy?`, leave by ${d.leaveBy}`:""}`));}
+  L.push("","## Items");
+  R.items.forEach(i=>{L.push(`- **${i.name}**${i.qty>1?` ×${i.qty}`:""} — ${i.gTotal} g${i.worn?" (worn)":""}${i.weighed?" (weighed)":""}`); i.role.forEach(r=>L.push(`  - ${r}`));});
+  return L.join("\n");
+}
+function aiReviewPrompt(c){
+  return ["I'm planning a UK wild camp. Below is the full report from my Camp Kit Planner app for the loadout I'm taking, with every rating and how it was worked out.",
+    "Please review it like an experienced wild camper:",
+    "1. Is this setup safe and comfortable for the conditions? Give a clear verdict.",
+    "2. What works well?",
+    "3. The weak spots, in order of importance, each with a concrete fix using kit I already own where possible (it's all listed).",
+    "4. Anything the app's maths may have got wrong (e.g. ratings that look optimistic).",
+    "5. If something important is missing, say what to buy and roughly what it weighs.",
+    "Keep it practical and short.","",reportMarkdown(c)].join("\n");
+}
 /* ============================================================
    FOOD — meal plans (from an AI or by hand)
    ============================================================ */
