@@ -4,6 +4,11 @@
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
 <meta name="theme-color" content="#1d2b22">
+<meta name="apple-mobile-web-app-capable" content="yes">
+<meta name="apple-mobile-web-app-title" content="Camp Kit">
+<link rel="manifest" href="manifest.webmanifest">
+<link rel="icon" href="icon-192.png">
+<link rel="apple-touch-icon" href="icon-192.png">
 <title>Sam's Camp Kit Planner</title>
 <style>
 :root{
@@ -14,13 +19,13 @@
 }
 *{box-sizing:border-box}
 html,body{margin:0;background:var(--bg);color:var(--text);font:15px/1.45 system-ui,-apple-system,Segoe UI,Roboto,sans-serif}
-header{position:sticky;top:0;z-index:20;background:var(--panel);border-bottom:1px solid var(--line);padding:10px 14px 0}
-h1{font-size:18px;margin:0 0 8px;display:flex;align-items:center;gap:8px}
-h1 small{font-weight:400;color:var(--muted);font-size:12px}
-nav{display:flex;gap:4px;overflow-x:auto;scrollbar-width:none}
-nav button{flex:1 0 auto;background:none;border:0;color:var(--muted);padding:9px 12px;font-size:14px;border-bottom:3px solid transparent;cursor:pointer}
+header{position:sticky;top:0;z-index:20;background:var(--panel);border-bottom:1px solid var(--line);padding:10px 10px 0;padding-top:calc(10px + env(safe-area-inset-top))}
+h1{font-size:18px;margin:0}
+nav{display:flex;margin-top:8px}
+nav button{flex:1 1 0;min-width:0;background:none;border:0;border-radius:0;color:var(--muted);padding:5px 1px 6px;font-size:11px;border-bottom:3px solid transparent;cursor:pointer;display:flex;flex-direction:column;align-items:center;gap:1px;white-space:nowrap}
+nav button .ic{font-size:18px;line-height:1.1}
 nav button.on{color:var(--text);border-color:var(--accent)}
-main{max-width:980px;margin:0 auto;padding:14px 12px 120px}
+main{max-width:980px;margin:0 auto;padding:14px 12px 130px}
 .view{display:none}.view.on{display:block}
 .card{background:var(--panel);border:1px solid var(--line);border-radius:var(--r);padding:12px;margin-bottom:12px}
 .row{display:flex;gap:8px;align-items:center;flex-wrap:wrap}
@@ -33,8 +38,9 @@ button.pri{background:var(--accent);color:#14210f;border-color:var(--accent);fon
 button.danger{border-color:#7a3b3b;color:#ffb3b3}
 button:disabled{opacity:.4}
 input,select,textarea{background:#101712;color:var(--text);border:1px solid var(--line);border-radius:8px;padding:7px 9px;font-size:14px;max-width:100%}
-input[type=number]{width:80px}
+input[type=number]{width:90px}
 label{font-size:13px;color:var(--muted);display:flex;flex-direction:column;gap:3px}
+label.inl{flex-direction:row;align-items:center;gap:6px}
 .grid2{display:grid;grid-template-columns:repeat(auto-fit,minmax(150px,1fr));gap:8px}
 .item{display:flex;gap:10px;align-items:center;padding:9px 4px;border-bottom:1px solid var(--line)}
 .item:last-child{border-bottom:0}
@@ -44,6 +50,7 @@ label{font-size:13px;color:var(--muted);display:flex;flex-direction:column;gap:3
 .chips{display:flex;gap:4px;flex-wrap:wrap;margin-top:3px}
 .chip{font-size:11px;padding:1px 7px;border-radius:20px;background:#2e4335;color:#cfe3d3}
 .chip.rain{background:#203a52}.chip.wind{background:#3a3a52}.chip.bug{background:#4a3d22}.chip.r{background:#3d2f4f}.chip.warm{background:#523126}.chip.ret{background:#552}
+.chip.rep{background:#6b2a2a;color:#ffd0d0}.chip.wish{background:#2a4a6b;color:#d0e6ff}.chip.ok{background:#2e5631}
 .step{display:flex;align-items:center;gap:4px}
 .step button{width:32px;height:32px;padding:0;font-size:18px;line-height:1}
 .step span{min-width:34px;text-align:center;font-weight:600}
@@ -51,9 +58,9 @@ label{font-size:13px;color:var(--muted);display:flex;flex-direction:column;gap:3
 .tog{font-size:12px;padding:4px 8px}
 .tog.on{background:#3b4e2a;border-color:var(--accent)}
 .sumbar{position:fixed;left:0;right:0;bottom:0;z-index:30;background:var(--panel);border-top:1px solid var(--line);padding:8px 12px calc(8px + env(safe-area-inset-bottom))}
-.sumbar .in{max-width:980px;margin:0 auto;display:flex;gap:12px;align-items:center;flex-wrap:wrap;font-size:13px}
+.sumbar .in{max-width:980px;margin:0 auto;display:flex;gap:10px;align-items:center;flex-wrap:wrap;font-size:13px}
 .big{font-size:20px;font-weight:700}
-.pill{padding:3px 9px;border-radius:20px;font-weight:600;font-size:12px}
+.pill{padding:3px 9px;border-radius:20px;font-weight:600;font-size:12px;display:inline-block}
 .p-ok{background:#2e5631;color:#c8f0ca}.p-warn{background:#5a4c18;color:#ffe9a3}.p-bad{background:#5b2626;color:#ffc4c4}.p-cold{background:#1f3e5c;color:#cfe6ff}.p-hot{background:#5c2c1f;color:#ffd5c7}
 .bars{display:flex;height:12px;border-radius:6px;overflow:hidden;background:#101712;margin:6px 0}
 .bars div{height:100%}
@@ -65,17 +72,22 @@ label{font-size:13px;color:var(--muted);display:flex;flex-direction:column;gap:3
 table{width:100%;border-collapse:collapse;font-size:13px}
 td,th{padding:5px 4px;border-bottom:1px solid var(--line);text-align:left}
 td.n,th.n{text-align:right}
-.warnings li{margin:4px 0}
+.warnings{padding-left:18px}.warnings li{margin:4px 0}
 .ck{width:22px;height:22px;accent-color:var(--accent);flex:none}
 .done .nm b{text-decoration:line-through;color:var(--muted)}
 .prog{height:10px;background:#101712;border-radius:5px;overflow:hidden}
 .prog div{height:100%;background:var(--accent);transition:width .3s}
-dialog{background:var(--panel);color:var(--text);border:1px solid var(--line);border-radius:14px;width:min(560px,94vw);padding:14px}
+dialog{background:var(--panel);color:var(--text);border:1px solid var(--line);border-radius:14px;width:min(560px,94vw);padding:14px;max-height:90vh}
 dialog::backdrop{background:#000a}
-.toast{position:fixed;left:50%;bottom:90px;transform:translateX(-50%);background:#000d;color:#fff;padding:8px 14px;border-radius:20px;font-size:13px;z-index:99;opacity:0;transition:opacity .3s;pointer-events:none}
-.toast.on{opacity:1}
+.toast{position:fixed;left:50%;bottom:96px;transform:translateX(-50%);background:#000e;color:#fff;padding:8px 14px;border-radius:20px;font-size:13px;z-index:99;opacity:0;transition:opacity .3s;pointer-events:none;display:flex;gap:10px;align-items:center;max-width:92vw}
+.toast.on{opacity:1}.toast.on.act{pointer-events:auto}
+.toast button{padding:3px 10px;font-size:13px;background:var(--accent);color:#14210f;border:0}
 details summary{cursor:pointer;color:var(--muted);font-size:13px}
 .research{font-size:12px;color:var(--muted);margin-top:4px;border-left:2px solid var(--line);padding-left:8px}
+.tpl{display:flex;gap:6px;flex-wrap:wrap;margin:6px 0 10px}
+.tpl button{font-size:12px;padding:4px 8px}
+.reasons{margin:0;padding-left:18px;font-size:13px}
+.src{font-size:12px;color:var(--muted);margin-top:6px}
 @media print{
   header,.sumbar,nav,.noprint{display:none!important}
   body{background:#fff;color:#000}
@@ -87,26 +99,30 @@ details summary{cursor:pointer;color:var(--muted);font-size:13px}
 </head>
 <body>
 <header>
-  <div class="row" style="margin-bottom:8px"><h1 class="grow" style="margin:0">🏕️ Camp Kit Planner</h1><select id="hdrSel" title="Active class" style="max-width:55vw"></select></div>
+  <div class="row"><h1 class="grow">🏕️ Camp Kit Planner</h1><select id="hdrSel" title="Active class" style="max-width:55vw"></select></div>
   <nav id="tabs">
-    <button data-v="kit" class="on">Kit</button>
-    <button data-v="classes">Class builder</button>
-    <button data-v="pack">Checklist</button>
-    <button data-v="weather">Weather stack</button>
-    <button data-v="data">Export</button>
+    <button data-v="kit" class="on"><span class="ic">🎒</span>Kit</button>
+    <button data-v="classes"><span class="ic">🧩</span>Classes</button>
+    <button data-v="pack"><span class="ic">✅</span>Pack</button>
+    <button data-v="weather"><span class="ic">🌦️</span>Weather</button>
+    <button data-v="trips"><span class="ic">📓</span>Trips</button>
+    <button data-v="data"><span class="ic">💾</span>Data</button>
   </nav>
 </header>
 
 <main>
-<!-- KIT / INVENTORY -->
+<!-- KIT -->
 <section class="view on" id="v-kit">
   <div class="card">
     <div class="row">
       <input id="kitSearch" class="grow" placeholder="Search kit…">
       <select id="kitFilter">
         <option value="active">Active kit</option>
-        <option value="all">All (incl. retired)</option>
+        <option value="all">Everything</option>
         <option value="retired">Retired / spares</option>
+        <option value="wishlist">Wishlist</option>
+        <option value="repair">Needs repair / worn</option>
+        <option value="unweighed">Not weighed yet</option>
         <option value="custom">My added items</option>
       </select>
       <button class="pri" id="addItemBtn">+ Add item</button>
@@ -116,7 +132,7 @@ details summary{cursor:pointer;color:var(--muted);font-size:13px}
   <div id="kitList"></div>
 </section>
 
-<!-- CLASS BUILDER -->
+<!-- CLASSES -->
 <section class="view" id="v-classes">
   <div class="card">
     <div class="row">
@@ -126,14 +142,13 @@ details summary{cursor:pointer;color:var(--muted);font-size:13px}
       <button id="renClass">Rename</button>
       <button class="danger" id="delClass">Delete</button>
     </div>
-    <div class="row small muted" style="margin-top:8px">
-      <span>Set how many of each item this class takes. Tap <b>Worn</b> for things on your body (not counted in pack weight).</span>
-    </div>
+    <div class="small muted" style="margin-top:8px">Set how many of each item this class takes. Tap <b>Worn</b> for things on your body (not counted in pack weight). Or let the Weather tab <b>suggest a class</b> from the forecast.</div>
     <div class="row" style="margin-top:8px">
       <input id="clsSearch" class="grow" placeholder="Filter items…">
-      <label class="row" style="flex-direction:row;gap:6px"><input type="checkbox" id="clsOnlySel"> only selected</label>
+      <label class="inl"><input type="checkbox" id="clsOnlySel"> only selected</label>
     </div>
   </div>
+  <div id="clsReasons"></div>
   <div id="clsWeights" class="card"></div>
   <div id="clsList"></div>
 </section>
@@ -152,22 +167,36 @@ details summary{cursor:pointer;color:var(--muted);font-size:13px}
   <div id="packList"></div>
 </section>
 
-<!-- WEATHER STACK -->
+<!-- WEATHER -->
 <section class="view" id="v-weather">
+  <div class="card">
+    <h2>🌍 Live forecast</h2>
+    <div class="row">
+      <input id="fcLoc" class="grow" placeholder="Town, village or postcode area">
+      <input type="date" id="fcDate">
+      <button class="pri" id="fcGo">Get forecast</button>
+    </div>
+    <div class="src" id="fcSrc">Fills in the conditions below for the night you pick (up to 16 days ahead). Free data from Open-Meteo.</div>
+  </div>
   <div class="card">
     <h2>Expected conditions <span class="small muted" id="wxClassName"></span></h2>
     <div class="grid2">
       <label>Overnight low (°C)<input type="number" id="wxLow" step="1"></label>
       <label>Daytime high (°C)<input type="number" id="wxHigh" step="1"></label>
       <label>Rain<select id="wxRain"><option value="0">Dry</option><option value="1">Showers / drizzle</option><option value="2">Heavy / persistent</option></select></label>
-      <label>Wind<select id="wxWind"><option value="0">Calm (&lt;10 mph)</option><option value="1">Breezy (10–20 mph)</option><option value="2">Gusty / gale (25+ mph)</option></select></label>
+      <label>Gusts<select id="wxWind"><option value="0">Calm (&lt;15 mph)</option><option value="1">Breezy (15–25 mph)</option><option value="2">Gusty / gale (25+ mph)</option></select></label>
+      <label>Avg night wind (mph)<input type="number" id="wxWindAvg" min="0" step="1"></label>
+      <label>Night humidity (%)<input type="number" id="wxHumid" min="0" max="100" step="5"></label>
       <label>Midges / mozzies<select id="wxBugs"><option value="0">None</option><option value="1">Some</option><option value="2">Swarming (canal, still water)</option></select></label>
       <label>Ground<select id="wxGround"><option value="normal">Normal turf</option><option value="soft">Soft peat / mud</option><option value="hard">Rock-hard dry soil</option><option value="frozen">Frozen</option></select></label>
       <label>Nights<input type="number" id="wxNights" min="1" step="1"></label>
       <label>Water carried (L)<input type="number" id="wxWater" min="0" step="0.5"></label>
       <label>Food per day (kg)<input type="number" id="wxFood" min="0" step="0.1"></label>
     </div>
-    <p class="small muted" style="margin:8px 0 0">Conditions are saved with the current class. You can check the Met Office forecast and type the numbers in.</p>
+    <div class="row" style="margin-top:10px">
+      <button class="pri" id="suggestBtn">✨ Suggest a class for these conditions</button>
+    </div>
+    <p class="small muted" style="margin:8px 0 0">Conditions are saved with the current class.</p>
   </div>
   <div class="card">
     <h2>Heat retention stack</h2>
@@ -185,18 +214,56 @@ details summary{cursor:pointer;color:var(--muted);font-size:13px}
     <h3>Warnings &amp; tips</h3>
     <ul class="warnings" id="wxWarn"></ul>
   </div>
+  <div class="card">
+    <h2>🔥 Fuel &amp; water planner</h2>
+    <div class="grid2">
+      <label>Hot meals per day<input type="number" id="fpMeals" min="0" step="1"></label>
+      <label>Hot drinks per day<input type="number" id="fpDrinks" min="0" step="1"></label>
+      <label>Gas left per canister (g)<input type="number" id="fpGasLeft" min="0" max="230" step="10"></label>
+      <label class="inl" style="align-self:end"><input type="checkbox" id="fpHwb"> Hot-water bottle on cold nights</label>
+    </div>
+    <div id="fpOut" style="margin-top:10px"></div>
+  </div>
   <details class="card"><summary>How the stacking maths works</summary>
     <div class="small muted" style="margin-top:8px">
-      <p><b>Sleep rating</b> starts at your sleeping bag's comfort temperature. Each extra layer (thermals, gaiter, gloves) lowers it by its warmth bonus. Shelters add a little: tent +3°C, bivvy +2°C, tarp +1°C (capped at +5°C combined).</p>
-      <p><b>Ground R-value</b>: sleeping-mat R-values add together when stacked. Target R for the night: ≥10°C → R1, 5–10°C → R2, 0–5°C → R3, −5–0°C → R4, below −5°C → R5. Each point you're short adds about 3°C to your sleep rating (you'll feel the cold from below). Hammocks need R2+ underneath or you lose a lot of heat.</p>
-      <p><b>Verdict</b>: if your rating is above the overnight low, you'll be cold. If it's more than 8°C below the low you're carrying more warmth (and weight) than needed.</p>
-      <p>Ratings marked "est." are estimates — budget gear rarely has official EN/ISO ratings. Edit any item to put in your own numbers.</p>
+      <p><b>Sleep rating</b> starts at your sleeping bag's comfort temperature. Each extra layer lowers it by its warmth bonus (each item counted once). Shelters add a little: tent +3°C, bivvy +2°C, tarp +1°C (max +5°C).</p>
+      <p><b>Ground R-value</b>: mat R-values add when stacked. Target: ≥10°C → R1, 5–10°C → R2, 0–5°C → R3, −5–0°C → R4, below −5°C → R5 (hammocks at least R2). Each point short adds ~3°C.</p>
+      <p><b>Wind chill</b>: the average night wind is reduced by your best shelter's wind rating (3/3 blocks it all). What gets through costs about 1°C per 4 mph, up to 5°C.</p>
+      <p><b>Damp</b>: humidity of 90%+ or rain costs 1°C (synthetic fill loses a little loft). Rain your shelter can't handle costs another 2°C.</p>
+      <p><b>Your calibration</b>: once you log trips on the Trips tab, the app learns whether you sleep warmer or colder than the maths says and adjusts.</p>
+      <p><b>Verdict</b>: rating above the low = cold. More than 8°C below the low = you're carrying more warmth (and weight) than needed.</p>
     </div>
   </details>
 </section>
 
-<!-- DATA / EXPORT -->
+<!-- TRIPS -->
+<section class="view" id="v-trips">
+  <div class="card">
+    <h2>📓 Log a night out</h2>
+    <p class="small muted" style="margin-top:0">After a trip, record how warm you actually slept. The app compares it with what it predicted and learns your personal offset.</p>
+    <div class="grid2">
+      <label>Date<input type="date" id="trDate"></label>
+      <label>Location<input id="trLoc" placeholder="e.g. Shropshire Union canal"></label>
+      <label>Class used<select id="trClass"></select></label>
+      <label>Actual overnight low (°C)<input type="number" id="trLow" step="1"></label>
+      <label>How did you sleep?<select id="trFelt">
+        <option value="-2">🥶 Freezing — barely slept</option><option value="-1">Cold</option>
+        <option value="0" selected>Comfortable</option><option value="1">Warm</option><option value="2">🥵 Too hot</option></select></label>
+      <label style="grid-column:1/-1">Notes<textarea id="trNotes" rows="2" placeholder="Condensation, wind direction, what you'd change…"></textarea></label>
+    </div>
+    <div class="row" style="margin-top:10px"><button class="pri" id="trSave">Save trip</button></div>
+  </div>
+  <div class="card" id="calibCard"></div>
+  <div id="tripList"></div>
+</section>
+
+<!-- DATA -->
 <section class="view" id="v-data">
+  <div class="card" id="installCard">
+    <h2>📲 Install on your phone</h2>
+    <div class="row"><button class="pri" id="installBtn" hidden>Install app</button></div>
+    <p class="small muted" id="installHelp">Open the GitHub Pages link in your phone browser. On Android Chrome, tap ⋮ → <b>Add to Home screen</b> (or the Install button here when it appears). On iPhone Safari, tap Share → <b>Add to Home Screen</b>. After that it works offline, though the forecast needs signal.</p>
+  </div>
   <div class="card">
     <h2>Export</h2>
     <div class="row">
@@ -204,6 +271,7 @@ details summary{cursor:pointer;color:var(--muted);font-size:13px}
       <button id="expInvJson">Kit list (JSON)</button>
       <button id="expClass">Current class (JSON)</button>
       <button id="expClassCsv">Current class (CSV)</button>
+      <button id="expTrips">Trip log (CSV)</button>
       <button class="pri" id="expAll">Full backup (JSON)</button>
     </div>
     <p class="small muted">CSV opens in Excel / Google Sheets. JSON can be imported back into this app on any device.</p>
@@ -216,23 +284,39 @@ details summary{cursor:pointer;color:var(--muted);font-size:13px}
   <div class="card">
     <h2>Reset</h2>
     <div class="row"><button class="danger" id="resetAll">Restore original kit &amp; preset classes</button></div>
-    <p class="small muted">Your data is saved in this browser only. Make a backup before clearing browser data or switching phones.</p>
+    <p class="small muted">Your data is saved on this device only (trip log included). Make a backup before clearing browser data or switching phones.</p>
   </div>
 </section>
 </main>
 
 <div class="sumbar"><div class="in" id="sumbar"></div></div>
-<div class="toast" id="toast"></div>
+<div class="toast" id="toast"><span id="toastMsg"></span><button id="toastBtn" hidden>Undo</button></div>
+
+<dialog id="askDlg">
+  <form method="dialog">
+    <p id="askMsg" style="margin-top:0"></p>
+    <input id="askInput" style="width:100%;margin-bottom:12px">
+    <div class="row" style="justify-content:flex-end">
+      <button value="cancel" formnovalidate>Cancel</button>
+      <button value="ok" class="pri" id="askOk">OK</button>
+    </div>
+  </form>
+</dialog>
 
 <dialog id="itemDlg">
   <form method="dialog" id="itemForm">
     <h2 id="dlgTitle">Item</h2>
+    <div id="tplBox"><div class="small muted">Quick-fill a common item (typical weights, then adjust):</div><div class="tpl" id="tplBtns"></div></div>
     <div class="grid2">
       <label style="grid-column:1/-1">Name<input name="name" required></label>
       <label>Category<select name="cat" id="dlgCat"></select></label>
       <label>Quantity owned<input type="number" name="qty" min="0" step="1"></label>
       <label>Weight each (g)<input type="number" name="g" min="0" step="1"></label>
-      <label>Status<select name="status"><option value="active">Active</option><option value="retired">Retired / spare</option></select></label>
+      <label class="inl" style="align-self:end"><input type="checkbox" name="measured"> I've weighed it</label>
+      <label>Status<select name="status"><option value="active">Active</option><option value="retired">Retired / spare</option><option value="wishlist">Wishlist (don't own yet)</option></select></label>
+      <label>Condition<select name="condition"><option value="good">Good</option><option value="worn">Worn — keep an eye on it</option><option value="repair">Needs repair</option></select></label>
+      <label>Wishlist: replaces…<select name="replaces" id="dlgReplaces"></select></label>
+      <label>Price (£)<input type="number" name="price" min="0" step="0.01"></label>
       <label>Item type<select name="kind">
         <option value="other">General</option><option value="shelter">Shelter</option><option value="bag">Sleeping bag / quilt</option>
         <option value="pad">Sleeping mat / pad</option><option value="layer">Warm layer</option><option value="consumable">Consumable (fuel/food)</option></select></label>
@@ -258,11 +342,6 @@ details summary{cursor:pointer;color:var(--muted);font-size:13px}
 </dialog>
 
 <script>
-/* ============================================================
-   DEFAULT KIT — Sam's notebook inventory, checked against
-   retailer / manufacturer specs (Nov 2026). Weights in grams,
-   per single unit. "est." = no official figure found.
-   ============================================================ */
 const CATS = [
   "Shelter & Rigging","Sleep & Thermal","Clothing","Packs & Storage",
   "Kitchen & Hydration","Lighting & Power","Bugs & Recon","Hygiene & First Aid","Other"
@@ -381,16 +460,30 @@ const DEFAULT_CLASSES = [
   worn:{buckethat:1}, packed:{}, wx:{low:11,high:21,rain:1,wind:0,bugs:2,ground:"normal",nights:1,water:2,food:0.7}}
 ];
 
+
+/* Quick-fill templates for common items not in the original notebook */
+const TEMPLATES = [
+ {name:"Waterproof jacket",cat:"Clothing",g:400,kind:"other",seasons:ALL4,notes:"Shell layer for rain and wind."},
+ {name:"Insulated / puffy jacket",cat:"Clothing",g:450,kind:"layer",warmth:3,seasons:["Autumn","Winter","Spring"],notes:"Camp warmth; wear it in the bag on cold nights."},
+ {name:"Beanie",cat:"Clothing",g:60,kind:"layer",warmth:1,seasons:["Autumn","Winter"],notes:"Big heat saver at night."},
+ {name:"Walking boots (pair)",cat:"Clothing",g:1300,kind:"other",seasons:ALL4,notes:"Usually worn — tick Worn in a class."},
+ {name:"Spare socks",cat:"Clothing",g:80,kind:"other",seasons:ALL4,notes:"Dry pair kept for sleeping."},
+ {name:"Lightweight 30 L dry bag",cat:"Packs & Storage",g:75,kind:"other",status:"wishlist",replaces:"drybag",seasons:ALL4,notes:"Silnylon roll-top liner."},
+ {name:"4-season gas 230 g",cat:"Kitchen & Hydration",g:360,kind:"consumable",status:"wishlist",replaces:"gas",seasons:ALL4,notes:"High-isobutane mix for sub-zero mornings."}
+];
+
 /* ============================================================
    STATE
    ============================================================ */
 const KEY="sams-camp-planner-v1";
 const clone=o=>JSON.parse(JSON.stringify(o));
+const WX_DEFAULT={low:5,high:12,rain:0,wind:0,windAvg:5,humid:80,bugs:0,ground:"normal",nights:1,water:2,food:0.7,meals:2,drinks:3,hwb:true,gasLeft:230};
 let S;
-function freshState(){return {ver:1,inv:clone(DEFAULT_INV),classes:clone(DEFAULT_CLASSES),active:"cls_winter"};}
+function freshState(){return {ver:2,inv:clone(DEFAULT_INV),classes:clone(DEFAULT_CLASSES),active:"cls_winter",trips:[],calibOn:true,loc:null};}
 function load(){
-  try{const raw=localStorage.getItem(KEY); if(raw){S=JSON.parse(raw); if(S&&S.inv&&S.classes) return;}}catch(e){}
-  S=freshState();
+  try{const raw=localStorage.getItem(KEY); if(raw){S=JSON.parse(raw);}}catch(e){S=null;}
+  if(!S||!S.inv||!S.classes) S=freshState();
+  S.trips=S.trips||[]; if(S.calibOn===undefined) S.calibOn=true; S.ver=2;
 }
 function save(){try{localStorage.setItem(KEY,JSON.stringify(S));}catch(e){}}
 load();
@@ -398,23 +491,42 @@ load();
 const $=s=>document.querySelector(s);
 const esc=s=>String(s??"").replace(/[&<>"']/g,c=>({"&":"&amp;","<":"&lt;",">":"&gt;",'"':"&quot;","'":"&#39;"}[c]));
 const kg=g=>(g/1000).toFixed(2)+" kg";
-const fmtW=g=>g>=1000?kg(g):Math.round(g)+" g";
-function toast(m){const t=$("#toast");t.textContent=m;t.classList.add("on");clearTimeout(t._t);t._t=setTimeout(()=>t.classList.remove("on"),1800);}
+const fmtW=g=>Math.abs(g)>=1000?kg(g):Math.round(g)+" g";
+const todayISO=()=>{const d=new Date();return new Date(d.getTime()-d.getTimezoneOffset()*6e4).toISOString().slice(0,10);};
 const item=id=>S.inv.find(i=>i.id===id);
-function cls(){let c=S.classes.find(c=>c.id===S.active); if(!c){c=S.classes[0]; if(!c){S.classes.push(newClassObj("My class"));c=S.classes[0];} S.active=c.id;} c.items=c.items||{};c.worn=c.worn||{};c.packed=c.packed||{};c.wx=Object.assign({low:5,high:12,rain:0,wind:0,bugs:0,ground:"normal",nights:1,water:2,food:0.7},c.wx||{}); return c;}
-function newClassObj(name){return {id:"cls_"+Date.now().toString(36),name,items:{},worn:{},packed:{},wx:{low:5,high:12,rain:0,wind:0,bugs:0,ground:"normal",nights:1,water:2,food:0.7}};}
+const usable=it=>it&&it.status!=="retired"&&it.status!=="wishlist"&&it.qty>0;
+function cls(){let c=S.classes.find(c=>c.id===S.active); if(!c){c=S.classes[0]; if(!c){S.classes.push(newClassObj("My class"));c=S.classes[0];} S.active=c.id;}
+  c.items=c.items||{};c.worn=c.worn||{};c.packed=c.packed||{};c.wx=Object.assign({},WX_DEFAULT,c.wx||{}); return c;}
+function newClassObj(name){return {id:"cls_"+Date.now().toString(36)+Math.random().toString(36).slice(2,5),name,items:{},worn:{},packed:{},wx:clone(WX_DEFAULT)};}
 const CAT_COLORS=["#9ccc65","#64b5f6","#ba68c8","#ffb74d","#4db6ac","#fff176","#f06292","#a1887f","#90a4ae"];
+
+/* ---- toast with optional undo ---- */
+function toast(m,undo){
+  const t=$("#toast"),b=$("#toastBtn");$("#toastMsg").textContent=m;
+  b.hidden=!undo;t.classList.toggle("act",!!undo);
+  b.onclick=()=>{undo&&undo();t.classList.remove("on");};
+  t.classList.add("on");clearTimeout(t._t);t._t=setTimeout(()=>t.classList.remove("on"),undo?5000:1800);
+}
+/* ---- in-app ask dialog (replaces prompt/confirm) ---- */
+function ask(msg,{input=null,ok="OK",danger=false}={}){
+  return new Promise(res=>{
+    const d=$("#askDlg"),inp=$("#askInput"),okB=$("#askOk");
+    $("#askMsg").textContent=msg; inp.style.display=input===null?"none":""; inp.value=input??"";
+    okB.textContent=ok; okB.className=danger?"danger":"pri"; d.returnValue="";
+    d.onclose=()=>{const r=d.returnValue==="ok"; res(r?(input===null?true:inp.value.trim()||null):null);};
+    d.showModal(); if(input!==null) setTimeout(()=>inp.select(),50);
+  });
+}
 
 /* ============================================================
    CALCULATIONS
    ============================================================ */
-function classLines(c){
-  return Object.entries(c.items).map(([id,q])=>({it:item(id),q})).filter(x=>x.it&&x.q>0);
-}
+function itemW(it,c){ if(it.id==="gas"&&c&&c.wx.gasLeft!=null&&c.wx.gasLeft!=="") return 160+Math.max(0,Math.min(230,+c.wx.gasLeft)); return it.g; }
+function classLines(c){return Object.entries(c.items).map(([id,q])=>({it:item(id),q})).filter(x=>x.it&&x.q>0);}
 function weights(c){
   let base=0,worn=0,cons=0,byCat={};
   for(const {it,q} of classLines(c)){
-    const w=it.g*q;
+    const w=itemW(it,c)*q;
     if(c.worn[it.id]) worn+=w;
     else if(it.kind==="consumable") cons+=w;
     else {base+=w; byCat[it.cat]=(byCat[it.cat]||0)+w;}
@@ -424,38 +536,6 @@ function weights(c){
   return {base,worn,cons,water,food,pack:base+cons,total:base+cons+worn,byCat};
 }
 function needR(low){return low>=10?1:low>=5?2:low>=0?3:low>=-5?4:5;}
-function thermal(c){
-  const lines=classLines(c), wx=c.wx, low=+wx.low;
-  const rows=[]; let rating=null;
-  const bags=lines.filter(l=>l.it.kind==="bag");
-  if(bags.length){
-    const b=bags.slice().sort((a,b)=>(a.it.comfort??15)-(b.it.comfort??15))[0];
-    rating=(b.it.comfort??15);
-    rows.push({n:b.it.name+" (comfort)",v:rating,abs:true});
-    bags.filter(x=>x!==b).forEach(x=>{rows.push({n:x.it.name+" (as extra quilt)",v:-5});rating-=5;});
-  } else {
-    rating=20; rows.push({n:"No sleeping bag selected",v:20,abs:true});
-  }
-  lines.filter(l=>l.it.kind==="layer"&&(+l.it.warmth||0)).forEach(l=>{rows.push({n:l.it.name,v:-(+l.it.warmth)});rating-=+l.it.warmth;});
-  const shelters=lines.filter(l=>l.it.kind==="shelter");
-  let sb=0; shelters.forEach(l=>sb+=(+l.it.warmth||0)); sb=Math.min(sb,5);
-  if(sb){rows.push({n:"Shelter ("+shelters.map(s=>s.it.shelter).join(" + ")+")",v:-sb});rating-=sb;}
-  const pads=lines.filter(l=>l.it.kind==="pad"&&(+l.it.r||0));
-  const R=pads.reduce((s,l)=>s+(+l.it.r)*l.q,0);
-  const hammock=shelters.some(s=>s.it.shelter==="hammock");
-  const onGround=shelters.some(s=>["tent","bivvy","poncho","tarp"].includes(s.it.shelter))||!hammock;
-  const need=hammock&&!onGround?Math.max(2,needR(low)):needR(low);
-  let rPen=0;
-  if(R<need){rPen=(need-R)*3; if(hammock&&!onGround&&R<1) rPen+=3; rows.push({n:`Ground/underside loss: R${R.toFixed(1)} vs R${need} needed`,v:+rPen.toFixed(1)}); rating+=rPen;}
-  const margin=low-rating;
-  let verdict,cls_,pos;
-  if(margin< -2){verdict="Too cold — add insulation";cls_="p-cold";}
-  else if(margin<0){verdict="Borderline — expect a chilly night";cls_="p-warn";}
-  else if(margin<=8){verdict="Good — warm enough without excess";cls_="p-ok";}
-  else {verdict="Too warm — you could leave warmth (and weight) at home";cls_="p-hot";}
-  pos=Math.max(0,Math.min(100,50+margin*4));
-  return {rows,rating,margin,verdict,cls:cls_,pos,R,need,pads,hammock,onGround,low};
-}
 function protection(c){
   const lines=classLines(c);
   const mx=k=>lines.reduce((m,l)=>Math.max(m,+l.it[k]||0),0);
@@ -464,14 +544,64 @@ function protection(c){
   if(has("tarp")&&(has("bivvy")||has("hammock"))) rain=Math.max(rain,3);
   return {rain,wind,bug};
 }
+const NEED={rain:r=>[0,1,2][r]||0,wind:w=>[0,1,2][w]||0,bug:b=>[0,2,2][b]||0};
+function expectedFeel(m){return m<-2?-2:m<0?-1:m<=8?0:m<=12?1:2;}
+function calibration(){
+  const t=S.trips.filter(x=>typeof x.margin==="number");
+  if(!t.length) return {offset:0,n:0};
+  const avg=t.reduce((s,x)=>s+(-(x.felt-expectedFeel(x.margin))*2),0)/t.length;
+  return {offset:Math.max(-6,Math.min(6,Math.round(avg*2)/2)),n:t.length};
+}
+function thermal(c,opts={}){
+  const lines=classLines(c), wx=c.wx, low=+wx.low;
+  const rows=[]; let rating;
+  const bags=lines.filter(l=>l.it.kind==="bag");
+  if(bags.length){
+    const b=bags.slice().sort((a,b)=>(a.it.comfort??15)-(b.it.comfort??15))[0];
+    rating=(b.it.comfort??15); rows.push({n:b.it.name+" (comfort)",v:rating,abs:true});
+    bags.filter(x=>x!==b).forEach(x=>{rows.push({n:x.it.name+" (as extra quilt)",v:-5});rating-=5;});
+  } else { rating=20; rows.push({n:"No sleeping bag selected",v:20,abs:true}); }
+  lines.filter(l=>l.it.kind==="layer"&&(+l.it.warmth||0)).forEach(l=>{rows.push({n:l.it.name,v:-(+l.it.warmth)});rating-=+l.it.warmth;});
+  const shelters=lines.filter(l=>l.it.kind==="shelter");
+  let sb=Math.min(5,shelters.reduce((s,l)=>s+(+l.it.warmth||0),0));
+  if(sb){rows.push({n:"Shelter ("+shelters.map(s=>s.it.shelter).join(" + ")+")",v:-sb});rating-=sb;}
+  const pads=lines.filter(l=>l.it.kind==="pad"&&(+l.it.r||0));
+  const R=pads.reduce((s,l)=>s+(+l.it.r)*l.q,0);
+  const hammock=shelters.some(s=>s.it.shelter==="hammock");
+  const onGround=shelters.some(s=>["tent","bivvy","poncho"].includes(s.it.shelter))||!hammock;
+  const need=hammock&&!onGround?Math.max(2,needR(low)):needR(low);
+  if(R<need){let pen=(need-R)*3; if(hammock&&!onGround&&R<1) pen+=3; rows.push({n:`Ground/underside loss: R${R.toFixed(1)} vs R${need} needed`,v:+pen.toFixed(1)}); rating+=pen;}
+  const p=protection(c);
+  const eff=(+wx.windAvg||0)*(1-Math.min(3,p.wind)/3);
+  if(eff>=3){const pen=Math.min(5,Math.round(eff/4*2)/2); rows.push({n:`Wind chill (~${Math.round(eff)} mph reaching you)`,v:pen}); rating+=pen;}
+  if(+wx.rain>=1||+wx.humid>=90){rows.push({n:"Damp air — synthetic fill loses a little loft",v:1}); rating+=1;}
+  if(+wx.rain>=1&&p.rain<NEED.rain(+wx.rain)){rows.push({n:"Shelter can't keep this rain out — getting wet",v:2}); rating+=2;}
+  if(!opts.noCalib&&S.calibOn){const cb=calibration(); if(cb.n&&cb.offset){rows.push({n:`Your personal offset (from ${cb.n} logged trip${cb.n>1?"s":""})`,v:cb.offset}); rating+=cb.offset;}}
+  const margin=low-rating;
+  let verdict,cls_;
+  if(margin< -2){verdict="Too cold — add insulation";cls_="p-cold";}
+  else if(margin<0){verdict="Borderline — expect a chilly night";cls_="p-warn";}
+  else if(margin<=8){verdict="Good — warm enough without excess";cls_="p-ok";}
+  else {verdict="Too warm — you could leave warmth (and weight) at home";cls_="p-hot";}
+  return {rows,rating,margin,verdict,cls:cls_,pos:Math.max(0,Math.min(100,50+margin*4)),R,need,pads,hammock,onGround,low};
+}
+function fuelPlan(c){
+  const wx=c.wx,n=Math.max(1,+wx.nights||1),low=+wx.low;
+  const hwb=wx.hwb&&low<5;
+  const litres=n*((+wx.meals||0)*0.5+(+wx.drinks||0)*0.3)+(hwb?n*0.75:0);
+  const gpl=Math.round(12*([1,1.25,1.5][+wx.wind]||1)*(low<5?1.2:1)*10)/10;
+  const need=litres*gpl, needR=need*1.15;
+  const cans=(c.items.gas||0), left=Math.max(0,Math.min(230,+wx.gasLeft||0));
+  const have=cans*left;
+  return {litres,gpl,need,needR,have,cans,hwb,ok:have>=needR,cansNeeded:Math.max(1,Math.ceil((needR-(cans>0?0:0))/230))};
+}
 function warnings(c){
   const w=[],wx=c.wx,lines=classLines(c),ids=new Set(lines.map(l=>l.it.id));
   const has=s=>lines.some(l=>l.it.shelter===s);
   const p=protection(c),low=+wx.low;
-  const shelterCount=lines.filter(l=>l.it.kind==="shelter").length;
-  if(!shelterCount) w.push(["bad","No shelter in this class."]);
+  if(!lines.some(l=>l.it.kind==="shelter")) w.push(["bad","No shelter in this class."]);
   if(+wx.rain===2&&p.rain<2) w.push(["bad","Heavy rain forecast but your shelter rain rating is low. Take the tent, bivvy, or tarp."]);
-  if(+wx.rain>=1&&!ids.has("drybag")) w.push(["warn","Rain expected — pack the dry bag for your sleeping bag and thermals."]);
+  if(+wx.rain>=1&&!ids.has("drybag")&&!lines.some(l=>/dry bag/i.test(l.it.name))) w.push(["warn","Rain expected — pack a dry bag for your sleeping bag and thermals."]);
   if(+wx.wind===2){
     if(p.wind<2) w.push(["bad","Gale-force gusts: your shelter is weak in wind. The bivvy or a low-pitched tent is safer."]);
     if(has("tarp")) w.push(["warn","Tarp in gusts: pitch it low and tight, never high on an exposed ridge."]);
@@ -479,17 +609,18 @@ function warnings(c){
     if(ids.has("stove")) w.push(["warn","Gas stove above ~15–20 mph needs a windbreak — cook in the porch or behind the tarp, with ventilation."]);
   }
   if(+wx.bugs>=1&&p.bug<2) w.push([+wx.bugs===2?"bad":"warn","Midges expected but no bug defence packed — add a head net or the bucket hat mesh."]);
-  if(has("bivvy")&&+wx.bugs===2&&!ids.has("headnet")&&!ids.has("buckethat")) w.push(["warn","The bivvy has no mesh — you'll want a head net on swarming nights."]);
-  const pegsNeeded=has("tent")||has("tarp")||has("poncho");
-  if(pegsNeeded){
+  if(has("tent")||has("tarp")||has("poncho")){
     if((wx.ground==="frozen"||wx.ground==="hard")&&!ids.has("ypeg")) w.push(["bad","Hard/frozen ground — take the aluminium Y-pegs; spirals won't go in."]);
     if(wx.ground==="soft"&&!ids.has("spiral")) w.push(["warn","Soft peat/mud — the spiral pegs hold far better than Y-pegs."]);
     if(!ids.has("ypeg")&&!ids.has("spiral")) w.push(["warn","Tent/tarp selected but no pegs."]);
   }
+  if(+wx.humid>=90&&has("tent")) w.push(["info","Very humid night — expect condensation inside the tent. Vent the door and bring the towel."]);
   if(wx.ground==="frozen"&&ids.has("trowel")) w.push(["info","Frozen ground: the trowel will struggle — plan where you'll go."]);
-  if(ids.has("gas")&&low<=0) w.push(["warn","Below 0°C a butane/propane canister loses pressure. Sleep with it in your bag, or buy 4-season (isobutane) gas."]);
+  if(ids.has("gas")&&low<=0) w.push(["warn","Below 0°C a butane/propane canister loses pressure. Sleep with it in your bag, or use 4-season (isobutane) gas."]);
   if(ids.has("powerbank")&&low<=0) w.push(["info","Keep the power bank and phone in your sleeping bag overnight."]);
-  if((ids.has("tent_eiger")||ids.has("tarp"))&&!ids.has("paracord")) w.push(["info","No paracord — handy for extra storm guylines or a ridgeline."]);
+  if(ids.has("stove")){const f=fuelPlan(c); if(!f.cans) w.push(["warn","Stove packed but no gas canister."]); else if(!f.ok) w.push(["warn",`Fuel short: need ~${Math.round(f.needR)} g of gas (with reserve), you're carrying ~${Math.round(f.have)} g.`]);}
+  const broken=lines.filter(l=>l.it.condition==="repair"); if(broken.length) w.push(["bad","Needs repair: "+broken.map(l=>l.it.name).join(", ")+"."]);
+  const worn=lines.filter(l=>l.it.condition==="worn"); if(worn.length) w.push(["info","Check before you go (marked worn): "+worn.map(l=>l.it.name).join(", ")+"."]);
   if(has("tarp")&&!ids.has("poles")&&!has("hammock")) w.push(["info","Ground-pitched tarp usually needs trekking poles."]);
   if(+wx.high>=20&&!ids.has("towel")) w.push(["info","Warm day — the cooling towel earns its 60 g."]);
   if(!ids.has("headlamp")) w.push(["warn","No headlamp packed."]);
@@ -504,17 +635,128 @@ function warnings(c){
 }
 
 /* ============================================================
+   AUTO-SUGGEST A CLASS
+   ============================================================ */
+function suggestClass(){
+  const src=cls(), wx=clone(src.wx);
+  const label=wx.src?wx.src.split(" · ")[0]+" "+(wx.date||""):`${wx.low}°C`;
+  const c=newClassObj(`Suggested · ${label}`.trim()); c.wx=wx;
+  const R=[]; const low=+wx.low,wind=+wx.wind,rain=+wx.rain,bugs=+wx.bugs,high=+wx.high;
+  const add=(id,q=1)=>{const it=item(id); if(!usable(it)) return false; c.items[id]=Math.min(q,it.qty); return true;};
+  const ok=id=>usable(item(id));
+  // shelter
+  let mode = (wind===2||low<4||rain===2)?"tent" : (low>=10&&bugs>=1&&wind===0)?"hammock" : "bivvy";
+  if(mode==="tent"&&!ok("tent_eiger")) mode=ok("bivvy")?"bivvy":"hammock";
+  if(mode==="hammock"&&!ok("hammock")) mode=ok("bivvy")?"bivvy":"tent";
+  if(mode==="bivvy"&&!ok("bivvy")) mode=ok("tent_eiger")?"tent":"hammock";
+  const why={tent:wind===2?"gusts of 25+ mph":rain===2?"heavy rain":"a cold night",hammock:"a mild, still, buggy night",bivvy:"a mild night — low profile"};
+  if(mode==="tent"){add("tent_eiger");add("footprint");R.push(`🏕️ Tent — chosen for ${why.tent}. Footprint added for wet or frozen ground.`);}
+  if(mode==="hammock"){add("hammock");add("tarp");add("shook",6);R.push(`🌳 Hammock + tarp — chosen for ${why.hammock}. Gets you off midge-heavy ground.`);}
+  if(mode==="bivvy"){add("bivvy"); if(rain>=1&&add("tarp")) R.push("🌧️ Bivvy + tarp — showers expected, so the tarp gives you somewhere dry to cook and get in/out."); else {add("poncho"); R.push(`🪖 Bivvy + poncho awning — ${why.bivvy}.`);}}
+  // pegs
+  const tarpOrTent=mode==="tent"||c.items.tarp||c.items.poncho;
+  if(tarpOrTent){
+    const g=wx.ground;
+    if(g==="frozen"||g==="hard"){add("ypeg",mode==="tent"?12:6);R.push("📌 Y-pegs only — the ground will be too hard for spirals.");}
+    else if(g==="soft"){add("spiral",mode==="tent"?10:6);add("ypeg",2);R.push("📌 Spiral pegs for soft peat/mud, plus 2 Y-pegs for any firm patches.");}
+    else {add("ypeg",mode==="tent"?8:6);if(mode==="tent")add("spiral",4);R.push("📌 Mixed pegs for normal turf.");}
+  }
+  if(c.items.tarp||c.items.poncho||mode==="tent"||wind>=1) add("paracord");
+  if(add("poles")) c.worn.poles=1;
+  if(c.items.tarp||c.items.poncho) add("knotcard");
+  // sleep
+  add("bag"); add("pillow");
+  const t0=thermal(c,{}); const needed=t0.need;
+  const padOrder=mode==="hammock"?["foam","foil","aksoul"]:["aksoul","foam","foil"];
+  let Rsum=0;
+  for(const id of padOrder){ if(Rsum>=needed&&!(id==="aksoul"&&mode!=="hammock")) break; if(add(id)) Rsum+=(+item(id).r||0); }
+  R.push(`🛏️ Mats stacked to R${Rsum.toFixed(1)} (about R${needed} needed for ${low}°C${mode==="hammock"?" in a hammock":""}).`);
+  if(low<8||rain>=1) add("seat");
+  const layersAdded=[];
+  for(const id of ["bltop","blbot","gaiter","gloves"]){ if(thermal(c).margin>=1) break; if(add(id)) layersAdded.push(item(id).name); }
+  if(layersAdded.length) R.push("🧥 Warm layers added to close the gap: "+layersAdded.join(", ")+".");
+  const tf=thermal(c);
+  if(tf.margin<-2) R.push(`⚠️ Still about ${Math.abs(tf.margin).toFixed(0)}°C short — wear every layer, sleep in your jacket, or swap in a warmer bag.`);
+  else if(tf.margin>8) R.push("☀️ Plenty of warmth — use the bag unzipped as a quilt.");
+  // packs & kitchen
+  add("pack"); add("drybag"); if(rain>=1) add("rubble",2); if(high>=18||mode==="tent") add("towel");
+  ["mess","stove","cutlery","bottle"].forEach(id=>add(id));
+  if(ok("gas")){ c.items.gas=1; const f=fuelPlan(c); const n=Math.min(item("gas").qty,Math.max(1,Math.ceil(f.needR/Math.max(1,+wx.gasLeft||230)))); c.items.gas=n;
+    R.push(`🔥 ${n} gas canister${n>1?"s":""} — about ${Math.round(f.needR)} g of gas needed incl. reserve.`+(n*(+wx.gasLeft||230)<f.needR?" You'll need to buy more.":"")); }
+  // lights, bugs, recon, hygiene
+  ["headlamp","torch","powerbank"].forEach(id=>add(id)); if(mode!=="bivvy") add("lantern");
+  if(bugs>=1){add("headnet",1);R.push("🦟 Head net — midges likely.");}
+  if((bugs>=1||high>=18)&&add("buckethat")) c.worn.buckethat=1;
+  if(mode==="bivvy") add("monocular");
+  add("bidet",1); add("trowel"); add("firstaid"); add("toothbrush",1);
+  c.reasons=R;
+  S.classes.push(c); S.active=c.id; save();
+  showView("classes"); toast("Suggested class created");
+}
+
+/* ============================================================
+   FORECAST (Open-Meteo, free, no key)
+   ============================================================ */
+async function getForecast(){
+  const q=$("#fcLoc").value.trim(), date=$("#fcDate").value||todayISO();
+  if(!q) return toast("Type a location first");
+  const btn=$("#fcGo"); btn.disabled=true; btn.textContent="Loading…";
+  try{
+    let loc=S.loc&&S.loc.query===q?S.loc:null;
+    if(!loc){
+      const g=await fetch(`https://geocoding-api.open-meteo.com/v1/search?name=${encodeURIComponent(q)}&count=5&language=en&format=json`).then(r=>r.json());
+      const res=(g.results||[]); const pick=res.find(r=>r.country_code==="GB")||res[0];
+      if(!pick) throw new Error("Couldn't find that place");
+      loc={query:q,name:pick.name+(pick.admin2?", "+pick.admin2:pick.admin1?", "+pick.admin1:""),lat:pick.latitude,lon:pick.longitude};
+      S.loc=loc;
+    }
+    const url=`https://api.open-meteo.com/v1/forecast?latitude=${loc.lat}&longitude=${loc.lon}`+
+      `&hourly=temperature_2m,relative_humidity_2m,precipitation,wind_speed_10m,wind_gusts_10m&daily=temperature_2m_max`+
+      `&wind_speed_unit=mph&timezone=Europe%2FLondon&forecast_days=16`;
+    const f=await fetch(url).then(r=>r.json());
+    if(!f.hourly) throw new Error("No forecast returned");
+    const d1=new Date(date+"T12:00:00Z"); d1.setUTCDate(d1.getUTCDate()+1); const next=d1.toISOString().slice(0,10);
+    const H=f.hourly, idx=[], day=[];
+    H.time.forEach((t,i)=>{ if(t>=date+"T18:00"&&t<=next+"T08:00") idx.push(i); if(t>=date+"T09:00"&&t<date+"T18:00") day.push(i); });
+    if(!idx.length) throw new Error("That date is outside the 16-day forecast");
+    const pick=(arr,k)=>arr.map(i=>H[k][i]).filter(v=>v!=null);
+    const temps=pick(idx,"temperature_2m"), hum=pick(idx,"relative_humidity_2m"), wsp=pick(idx,"wind_speed_10m");
+    const gusts=pick([...day,...idx],"wind_gusts_10m"), rainAll=pick([...day,...idx],"precipitation");
+    const low=Math.round(Math.min(...temps));
+    const di=(f.daily?.time||[]).indexOf(date); const high=Math.round(di>=0?f.daily.temperature_2m_max[di]:Math.max(...pick(day,"temperature_2m")));
+    const windAvg=Math.round(wsp.reduce((a,b)=>a+b,0)/wsp.length), humid=Math.round(hum.reduce((a,b)=>a+b,0)/hum.length/5)*5;
+    const gmax=Math.max(...gusts), rsum=rainAll.reduce((a,b)=>a+b,0), rmax=Math.max(...rainAll);
+    const c=cls(), wx=c.wx;
+    wx.low=low; wx.high=high; wx.windAvg=windAvg; wx.humid=humid;
+    wx.rain=(rsum<0.5)?0:(rsum<6&&rmax<2)?1:2;
+    wx.wind=gmax<15?0:gmax<25?1:2;
+    const m=+date.slice(5,7);
+    wx.bugs=(m>=5&&m<=9&&low>=8&&windAvg<=7)?((windAvg<=4&&humid>=80)?2:1):0;
+    if(low<=0) wx.ground="frozen"; else if(wx.ground==="frozen") wx.ground="normal";
+    wx.src=`${loc.name} · night of ${new Date(date+"T12:00:00Z").toLocaleDateString("en-GB",{weekday:"short",day:"numeric",month:"short"})}`;
+    wx.date=date; wx.detail=`low ${low}°C, high ${high}°C, gusts up to ${Math.round(gmax)} mph, ${rsum.toFixed(1)} mm rain, ${humid}% humidity`;
+    save(); render(); toast("Forecast loaded");
+  }catch(e){
+    toast(navigator.onLine===false?"No signal — enter conditions by hand":(e.message||"Forecast failed"));
+  }finally{btn.disabled=false;btn.textContent="Get forecast";}
+}
+
+/* ============================================================
    RENDER
    ============================================================ */
 function chipsFor(it){
   const ch=[];
   if(it.status==="retired") ch.push('<span class="chip ret">retired</span>');
+  if(it.status==="wishlist"){ch.push('<span class="chip wish">wishlist</span>'); const r=item(it.replaces); if(r){const d=it.g-r.g; ch.push(`<span class="chip wish">vs ${esc(r.name.split(" ").slice(0,3).join(" "))}: ${d<0?"saves "+fmtW(-d):"+"+fmtW(d)}</span>`);} if(+it.price) ch.push(`<span class="chip">£${(+it.price).toFixed(2)}</span>`);}
+  if(it.condition==="repair") ch.push('<span class="chip rep">needs repair</span>');
+  if(it.condition==="worn") ch.push('<span class="chip rep" style="background:#5a4c18;color:#ffe9a3">worn</span>');
+  if(it.measured) ch.push('<span class="chip ok">weighed ✓</span>');
   (it.seasons||[]).forEach(s=>ch.push(`<span class="chip">${esc(s)}</span>`));
   if(+it.rain) ch.push(`<span class="chip rain">rain ${it.rain}/3</span>`);
   if(+it.wind) ch.push(`<span class="chip wind">wind ${it.wind}/3</span>`);
   if(+it.bug) ch.push(`<span class="chip bug">bugs ${it.bug}/3</span>`);
   if(+it.r) ch.push(`<span class="chip r">R${it.r}</span>`);
-  if(it.kind==="bag") ch.push(`<span class="chip warm">comfort ${it.comfort}°C / limit ${it.limit}°C</span>`);
+  if(it.kind==="bag") ch.push(`<span class="chip warm">comfort ${it.comfort}°C${it.limit!=null?" / limit "+it.limit+"°C":""}</span>`);
   if(+it.warmth&&it.kind!=="bag") ch.push(`<span class="chip warm">+${it.warmth}°C</span>`);
   if(it.custom) ch.push('<span class="chip">added by you</span>');
   return `<div class="chips">${ch.join("")}</div>`;
@@ -525,55 +767,68 @@ function groupByCat(list){
 }
 function renderKit(){
   const q=$("#kitSearch").value.toLowerCase(), f=$("#kitFilter").value;
-  let list=S.inv.filter(i=>{
-    if(f==="active"&&i.status==="retired") return false;
-    if(f==="retired"&&i.status!=="retired") return false;
+  const list=S.inv.filter(i=>{
+    const st=i.status||"active";
+    if(f==="active"&&st!=="active") return false;
+    if(f==="retired"&&st!=="retired") return false;
+    if(f==="wishlist"&&st!=="wishlist") return false;
+    if(f==="repair"&&!(i.condition==="repair"||i.condition==="worn")) return false;
+    if(f==="unweighed"&&(i.measured||st==="wishlist")) return false;
     if(f==="custom"&&!i.custom) return false;
-    return !q||(i.name+" "+i.notes+" "+i.cat).toLowerCase().includes(q);
+    return !q||(i.name+" "+(i.notes||"")+" "+i.cat).toLowerCase().includes(q);
   });
-  const act=S.inv.filter(i=>i.status!=="retired"), all=S.inv;
+  const act=S.inv.filter(i=>(i.status||"active")==="active"), owned=S.inv.filter(i=>i.status!=="wishlist");
+  const wish=S.inv.filter(i=>i.status==="wishlist");
   const sum=l=>l.reduce((s,i)=>s+i.g*i.qty,0);
-  $("#kitTotals").innerHTML=`${act.length} active items · <b>${kg(sum(act))}</b> if you carried every active item · ${kg(sum(all))} including retired kit`;
+  const weighed=owned.filter(i=>i.measured).length;
+  let t=`${act.length} active items · <b>${kg(sum(act))}</b> if you carried every active item · ${kg(sum(owned))} incl. retired · ${weighed}/${owned.length} weighed`;
+  if(wish.length){const save=wish.reduce((s,i)=>{const r=item(i.replaces);return s+(r?r.g-i.g:0);},0), cost=wish.reduce((s,i)=>s+(+i.price||0),0);
+    t+=`<br>Wishlist: ${wish.length} item${wish.length>1?"s":""}${cost?` · £${cost.toFixed(2)}`:""}${save>0?` · would save ${fmtW(save)}`:""}`;}
+  $("#kitTotals").innerHTML=t;
   $("#kitList").innerHTML=groupByCat(list).map(([c,l])=>`<div class="card"><h3 style="margin-top:0">${esc(c)} <span class="muted small">${kg(sum(l))}</span></h3>
-    ${l.map(i=>`<div class="item ${i.status==="retired"?"dim":""}" data-edit="${i.id}" style="cursor:pointer">
+    ${l.map(i=>`<div class="item ${i.status&&i.status!=="active"?"dim":""}" data-edit="${i.id}" style="cursor:pointer">
       <div class="nm"><b>${esc(i.name)}${i.qty>1?` ×${i.qty}`:""}</b><span class="small muted">${esc(i.notes||"")}</span>${chipsFor(i)}</div>
       <div class="w">${fmtW(i.g)}${i.qty>1?` each<br>${fmtW(i.g*i.qty)}`:""}</div></div>`).join("")}</div>`).join("")||'<div class="card muted">Nothing matches.</div>';
 }
 function renderClassSel(){
-  $("#classSel").innerHTML=S.classes.map(c=>`<option value="${c.id}" ${c.id===S.active?"selected":""}>${esc(c.name)}</option>`).join("");
-  $("#hdrSel").innerHTML=$("#classSel").innerHTML;
+  const opts=S.classes.map(c=>`<option value="${c.id}" ${c.id===S.active?"selected":""}>${esc(c.name)}</option>`).join("");
+  $("#classSel").innerHTML=opts; $("#hdrSel").innerHTML=opts;
 }
 function renderWeightsCard(el,c){
   const w=weights(c);
   const cats=Object.entries(w.byCat).sort((a,b)=>b[1]-a[1]);
-  const top=classLines(c).filter(l=>!c.worn[l.it.id]).map(l=>({n:l.it.name,g:l.it.g*l.q})).sort((a,b)=>b.g-a.g).slice(0,5);
+  const col=k=>CAT_COLORS[(CATS.indexOf(k)+9)%9]||"#888";
+  const top=classLines(c).filter(l=>!c.worn[l.it.id]).map(l=>({n:l.it.name,g:itemW(l.it,c)*l.q})).sort((a,b)=>b.g-a.g).slice(0,5);
   el.innerHTML=`<div class="row" style="justify-content:space-between">
     <div><div class="small muted">Pack weight</div><div class="big">${kg(w.pack)}</div></div>
     <div><div class="small muted">Base (dry)</div><b>${kg(w.base)}</b></div>
     <div><div class="small muted">Consumables</div><b>${kg(w.cons)}</b></div>
     <div><div class="small muted">Worn</div><b>${kg(w.worn)}</b></div>
     <div><div class="small muted">Everything</div><b>${kg(w.total)}</b></div></div>
-    <div class="bars">${cats.map(([k,v])=>`<div title="${esc(k)}" style="width:${w.base?v/w.base*100:0}%;background:${CAT_COLORS[CATS.indexOf(k)%9]||"#888"}"></div>`).join("")}</div>
-    <div class="legend">${cats.map(([k,v])=>`<span><i style="background:${CAT_COLORS[CATS.indexOf(k)%9]||"#888"}"></i>${esc(k)} ${kg(v)}</span>`).join("")}</div>
+    <div class="bars">${cats.map(([k,v])=>`<div title="${esc(k)}" style="width:${w.base?v/w.base*100:0}%;background:${col(k)}"></div>`).join("")}</div>
+    <div class="legend">${cats.map(([k,v])=>`<span><i style="background:${col(k)}"></i>${esc(k)} ${kg(v)}</span>`).join("")}</div>
     <details style="margin-top:8px"><summary>Heaviest items &amp; consumables</summary>
       <table>${top.map(t=>`<tr><td>${esc(t.n)}</td><td class="n">${fmtW(t.g)}</td></tr>`).join("")}
       <tr><td>Water (${c.wx.water} L)</td><td class="n">${fmtW(w.water)}</td></tr>
       <tr><td>Food (${c.wx.food} kg × ${c.wx.nights} day${c.wx.nights>1?"s":""})</td><td class="n">${fmtW(w.food)}</td></tr></table>
-      <div class="small muted">Change water/food/nights on the Weather stack tab.</div></details>`;
+      <div class="small muted">Change water, food and nights on the Weather tab.</div></details>`;
 }
 function renderClasses(){
-  renderClassSel();
   const c=cls(), q=$("#clsSearch").value.toLowerCase(), only=$("#clsOnlySel").checked;
+  $("#clsReasons").innerHTML=c.reasons&&c.reasons.length?`<div class="card"><div class="row"><h2 class="grow">✨ Why this kit</h2><button class="tog" id="hideReasons">Hide</button></div>
+    ${c.wx.src?`<div class="small muted" style="margin-bottom:6px">${esc(c.wx.src)} — ${esc(c.wx.detail||"")}</div>`:""}
+    <ul class="reasons">${c.reasons.map(r=>`<li>${esc(r)}</li>`).join("")}</ul></div>`:"";
   renderWeightsCard($("#clsWeights"),c);
   const list=S.inv.filter(i=>{
     const sel=(c.items[i.id]||0)>0;
+    if(i.status==="wishlist") return false;
     if(only&&!sel) return false;
     if(i.status==="retired"&&!sel&&!q) return false;
     return !q||i.name.toLowerCase().includes(q);
   });
   $("#clsList").innerHTML=groupByCat(list).map(([cat,l])=>`<div class="card"><h3 style="margin-top:0">${esc(cat)}</h3>
    ${l.map(i=>{const n=c.items[i.id]||0;return `<div class="item ${n?"":"dim"}">
-     <div class="nm"><b>${esc(i.name)}</b><span class="small muted">${fmtW(i.g)} each · own ${i.qty}${n?` · <b style="color:var(--text)">${fmtW(i.g*n)}</b>`:""}</span>${chipsFor(i)}</div>
+     <div class="nm"><b>${esc(i.name)}</b><span class="small muted">${fmtW(itemW(i,c))} each · own ${i.qty}${n?` · <b style="color:var(--text)">${fmtW(itemW(i,c)*n)}</b>`:""}</span>${chipsFor(i)}</div>
      <button class="tog ${c.worn[i.id]?"on":""}" data-worn="${i.id}" ${n?"":"disabled"}>Worn</button>
      <div class="step"><button data-dec="${i.id}">−</button><span>${n}</span><button data-inc="${i.id}" ${n>=i.qty?"disabled":""}>+</button></div>
    </div>`}).join("")}</div>`).join("")||'<div class="card muted">No items.</div>';
@@ -588,14 +843,19 @@ function renderPack(){
   $("#packList").innerHTML=groupByCat(lines.map(l=>l.it)).map(([cat,l])=>`<div class="card"><h3 style="margin-top:0">${esc(cat)}</h3>
    ${l.map(i=>{const n=c.items[i.id];return `<label class="item ${c.packed[i.id]?"done":""}" style="flex-direction:row;color:var(--text)">
      <input type="checkbox" class="ck" data-pk="${i.id}" ${c.packed[i.id]?"checked":""}>
-     <div class="nm"><b>${esc(i.name)}${n>1?` ×${n}`:""}</b><span class="small muted">${c.worn[i.id]?"Worn · ":""}${esc(i.notes||"")}</span></div>
-     <div class="w">${fmtW(i.g*n)}</div></label>`}).join("")}</div>`).join("")||'<div class="card muted">This class is empty — add items in the Class builder.</div>';
+     <div class="nm"><b>${esc(i.name)}${n>1?` ×${n}`:""}</b><span class="small muted">${c.worn[i.id]?"Worn · ":""}${i.condition==="repair"?"⚠️ needs repair · ":""}${esc(i.notes||"")}</span></div>
+     <div class="w">${fmtW(itemW(i,c)*n)}</div></label>`}).join("")}</div>`).join("")||'<div class="card muted">This class is empty — add items in Classes, or let the Weather tab suggest one.</div>';
 }
+const WXF={wxLow:"low",wxHigh:"high",wxRain:"rain",wxWind:"wind",wxWindAvg:"windAvg",wxHumid:"humid",wxBugs:"bugs",wxGround:"ground",wxNights:"nights",wxWater:"water",wxFood:"food",fpMeals:"meals",fpDrinks:"drinks",fpGasLeft:"gasLeft"};
 function renderWeather(){
   const c=cls(), wx=c.wx;
   $("#wxClassName").textContent="for "+c.name;
-  [["wxLow","low"],["wxHigh","high"],["wxRain","rain"],["wxWind","wind"],["wxBugs","bugs"],["wxGround","ground"],["wxNights","nights"],["wxWater","water"],["wxFood","food"]]
-    .forEach(([id,k])=>{const el=$("#"+id); if(document.activeElement!==el) el.value=wx[k];});
+  Object.entries(WXF).forEach(([id,k])=>{const el=$("#"+id); if(document.activeElement!==el) el.value=wx[k];});
+  $("#fpHwb").checked=!!wx.hwb;
+  if(document.activeElement!==$("#fcLoc")&&!$("#fcLoc").value) $("#fcLoc").value=S.loc?.query||"";
+  if(!$("#fcDate").value) $("#fcDate").value=wx.date&&wx.date>=todayISO()?wx.date:todayISO();
+  $("#fcSrc").innerHTML=wx.src?`📡 <b>${esc(wx.src)}</b> — ${esc(wx.detail||"")}. Midges are a rough guess from season, temperature and wind.`:
+    "Fills in the conditions below for the night you pick (up to 16 days ahead). Free data from Open-Meteo.";
   const t=thermal(c);
   $("#thermVerdict").innerHTML=`<div class="row"><span class="pill ${t.cls}">${t.verdict}</span>
     <span class="small muted">Sleep system ≈ <b style="color:var(--text)">${t.rating.toFixed(1)}°C</b> comfort vs ${t.low}°C forecast low (margin ${t.margin>=0?"+":""}${t.margin.toFixed(1)}°C)</span></div>`;
@@ -604,98 +864,154 @@ function renderWeather(){
     `<tr><th>Effective comfort</th><th class="n">${t.rating.toFixed(1)}°C</th></tr>`;
   $("#rBox").innerHTML=`<div class="row"><span class="pill ${t.R>=t.need?"p-ok":"p-cold"}">Total R${t.R.toFixed(1)}</span><span class="small muted">Need ~R${t.need} for ${t.low}°C${t.hammock&&!t.onGround?" in a hammock":""}</span></div>
     <div class="small muted" style="margin-top:6px">${t.pads.length?t.pads.map(p=>`${esc(p.it.name)}: R${p.it.r}`).join(" + "):"No sleeping mats selected."}</div>`;
-  const p=protection(c), need={rain:[0,1,2][wx.rain],wind:[0,1,2][wx.wind],bug:[0,2,2][wx.bugs]};
+  const p=protection(c);
   const row=(n,have,req)=>`<tr><td>${n}</td><td class="n">${have}/3</td><td class="n">${req}/3</td><td class="n"><span class="pill ${have>=req?"p-ok":"p-bad"}">${have>=req?"OK":"Short"}</span></td></tr>`;
-  $("#protTable").innerHTML=`<tr><th>Threat</th><th class="n">You have</th><th class="n">Needed</th><th></th></tr>`+row("Rain",p.rain,need.rain)+row("Wind",p.wind,need.wind)+row("Midges",p.bug,need.bug);
+  $("#protTable").innerHTML=`<tr><th>Threat</th><th class="n">You have</th><th class="n">Needed</th><th></th></tr>`+row("Rain",p.rain,NEED.rain(+wx.rain))+row("Wind",p.wind,NEED.wind(+wx.wind))+row("Midges",p.bug,NEED.bug(+wx.bugs));
   const ws=warnings(c), ic={bad:"⛔",warn:"⚠️",info:"💡"};
   $("#wxWarn").innerHTML=ws.length?ws.map(([k,m])=>`<li>${ic[k]} ${esc(m)}</li>`).join(""):"<li>✅ Nothing flagged for these conditions.</li>";
+  const f=fuelPlan(c);
+  $("#fpOut").innerHTML=`<table>
+    <tr><td>Water to boil (${wx.nights} night${wx.nights>1?"s":""}${f.hwb?", incl. hot-water bottle":""})</td><td class="n">${f.litres.toFixed(1)} L</td></tr>
+    <tr><td>Stove burn rate (${["calm","breezy","gusty"][+wx.wind]||"calm"}${+wx.low<5?", cold":""})</td><td class="n">~${f.gpl} g/L</td></tr>
+    <tr><td>Gas needed (+15% reserve)</td><td class="n"><b>${Math.round(f.needR)} g</b></td></tr>
+    <tr><td>Gas carried (${f.cans} canister${f.cans===1?"":"s"} × ${Math.round(+wx.gasLeft||0)} g)</td><td class="n">${Math.round(f.have)} g</td></tr></table>
+    <div style="margin-top:8px"><span class="pill ${f.ok?"p-ok":"p-bad"}">${f.ok?"Enough fuel":"Not enough fuel"}</span>
+    <span class="small muted">${f.ok?"":`Add ${Math.ceil((f.needR-f.have)/230)} more full canister${Math.ceil((f.needR-f.have)/230)>1?"s":""} or cut hot drinks.`} Weigh a used canister and subtract ~160 g to get the gas left.</span></div>`;
+}
+function renderTrips(){
+  $("#trClass").innerHTML=S.classes.map(c=>`<option value="${c.id}" ${c.id===S.active?"selected":""}>${esc(c.name)}</option>`).join("");
+  if(!$("#trDate").value) $("#trDate").value=todayISO();
+  if(!$("#trLoc").value&&S.loc) $("#trLoc").value=S.loc.name;
+  if($("#trLow").value==="") $("#trLow").value=cls().wx.low;
+  const cb=calibration();
+  $("#calibCard").innerHTML=`<h2>🎯 Your sleep calibration</h2>
+    ${cb.n?`<div class="row"><span class="pill ${cb.offset>0?"p-cold":cb.offset<0?"p-hot":"p-ok"}">${cb.offset>0?"+":""}${cb.offset}°C</span>
+      <span class="small muted">${cb.offset>0?"You sleep colder than the maths predicts, so ratings are pushed up.":cb.offset<0?"You sleep warmer than predicted, so ratings are pushed down.":"The model matches how you sleep."} Based on ${cb.n} trip${cb.n>1?"s":""}.</span></div>
+      <label class="inl" style="margin-top:8px"><input type="checkbox" id="calibOn" ${S.calibOn?"checked":""}> Use my calibration in the Weather tab</label>`
+    :`<p class="small muted" style="margin:0">No trips logged yet. After a few nights the app will learn whether you run warm or cold.</p>`}`;
+  const feel={"-2":"🥶 Freezing","-1":"Cold","0":"Comfortable","1":"Warm","2":"🥵 Too hot"};
+  $("#tripList").innerHTML=S.trips.length?`<div class="card"><h2>Trip log</h2>${S.trips.slice().sort((a,b)=>b.date.localeCompare(a.date)).map(t=>`
+    <div class="item"><div class="nm"><b>${esc(t.date)} · ${esc(t.loc||"—")}</b>
+      <span class="small muted">${esc(t.className)} · low ${t.low}°C · predicted comfort ${t.rating.toFixed(1)}°C · felt <b style="color:var(--text)">${feel[t.felt]}</b>${t.weight?` · pack ${kg(t.weight)}`:""}</span>
+      ${t.notes?`<div class="small">${esc(t.notes)}</div>`:""}</div>
+      <button class="tog danger" data-deltrip="${t.id}">✕</button></div>`).join("")}</div>`:"";
 }
 function renderSumbar(){
   const c=cls(), w=weights(c), t=thermal(c), p=protection(c), wx=c.wx;
-  const short=(p.rain<[0,1,2][wx.rain])||(p.wind<[0,1,2][wx.wind])||(p.bug<[0,2,2][wx.bugs]);
+  const short=(p.rain<NEED.rain(+wx.rain))||(p.wind<NEED.wind(+wx.wind))||(p.bug<NEED.bug(+wx.bugs));
   $("#sumbar").innerHTML=`<span><span class="muted">Pack</span> <b class="big">${kg(w.pack)}</b></span>
    <span class="muted">base ${kg(w.base)} · worn ${kg(w.worn)}</span>
    <span class="pill ${t.cls}">${t.rating.toFixed(0)}°C vs ${wx.low}°C</span>
-   <span class="pill ${short?"p-bad":"p-ok"}">${short?"Weather gap":"Weather OK"}</span>
-   <span class="grow"></span><span class="muted small">${esc(c.name)}</span>`;
+   <span class="pill ${short?"p-bad":"p-ok"}">${short?"Weather gap":"Weather OK"}</span>`;
 }
 let currentView="kit";
 function render(){
   renderSumbar(); renderClassSel();
-  if(currentView==="kit") renderKit();
-  if(currentView==="classes") renderClasses();
-  if(currentView==="pack") renderPack();
-  if(currentView==="weather") renderWeather();
+  ({kit:renderKit,classes:renderClasses,pack:renderPack,weather:renderWeather,trips:renderTrips}[currentView]||(()=>{}))();
+}
+function showView(v){
+  currentView=v;
+  document.querySelectorAll("#tabs button").forEach(x=>x.classList.toggle("on",x.dataset.v===v));
+  document.querySelectorAll(".view").forEach(el=>el.classList.toggle("on",el.id==="v-"+v));
+  render(); window.scrollTo(0,0);
 }
 
 /* ============================================================
    EVENTS
    ============================================================ */
-$("#tabs").onclick=e=>{const b=e.target.closest("button");if(!b)return;
-  document.querySelectorAll("#tabs button").forEach(x=>x.classList.toggle("on",x===b));
-  document.querySelectorAll(".view").forEach(v=>v.classList.toggle("on",v.id==="v-"+b.dataset.v));
-  currentView=b.dataset.v; render(); window.scrollTo(0,0);};
+$("#tabs").onclick=e=>{const b=e.target.closest("button");if(b) showView(b.dataset.v);};
 $("#kitSearch").oninput=renderKit; $("#kitFilter").onchange=renderKit;
 $("#clsSearch").oninput=renderClasses; $("#clsOnlySel").onchange=renderClasses;
-$("#classSel").onchange=$("#hdrSel").onchange=e=>{S.active=e.target.value;save();render();};
-$("#newClass").onclick=()=>{const n=prompt("Name for the new class:","My class");if(!n)return;const c=newClassObj(n);S.classes.push(c);S.active=c.id;save();render();};
-$("#dupClass").onclick=()=>{const c=clone(cls());c.id="cls_"+Date.now().toString(36);c.name+=" (copy)";c.packed={};S.classes.push(c);S.active=c.id;save();render();toast("Duplicated");};
-$("#renClass").onclick=()=>{const c=cls();const n=prompt("Rename class:",c.name);if(!n)return;c.name=n;save();render();};
-$("#delClass").onclick=()=>{if(S.classes.length<2)return toast("Keep at least one class");if(!confirm("Delete “"+cls().name+"”?"))return;S.classes=S.classes.filter(c=>c.id!==S.active);S.active=S.classes[0].id;save();render();};
+$("#classSel").onchange=$("#hdrSel").onchange=e=>{S.active=e.target.value;save();$("#trLow").value="";render();};
+$("#newClass").onclick=async()=>{const n=await ask("Name for the new class:",{input:"My class",ok:"Create"});if(!n)return;const c=newClassObj(n);S.classes.push(c);S.active=c.id;save();render();};
+$("#dupClass").onclick=()=>{const c=clone(cls());c.id=newClassObj("").id;c.name+=" (copy)";c.packed={};S.classes.push(c);S.active=c.id;save();render();toast("Duplicated");};
+$("#renClass").onclick=async()=>{const c=cls();const n=await ask("Rename class:",{input:c.name,ok:"Rename"});if(!n)return;c.name=n;save();render();};
+$("#delClass").onclick=()=>{if(S.classes.length<2)return toast("Keep at least one class");
+  const c=cls(),i=S.classes.indexOf(c);S.classes.splice(i,1);S.active=S.classes[0].id;save();render();
+  toast(`Deleted “${c.name}”`,()=>{S.classes.splice(i,0,c);S.active=c.id;save();render();});};
+$("#clsReasons").onclick=e=>{if(e.target.id==="hideReasons"){delete cls().reasons;save();render();}};
 $("#clsList").onclick=e=>{const b=e.target.closest("button");if(!b)return;const c=cls();
   if(b.dataset.inc){const i=item(b.dataset.inc);c.items[i.id]=Math.min(i.qty,(c.items[i.id]||0)+1);}
   if(b.dataset.dec){const id=b.dataset.dec;c.items[id]=Math.max(0,(c.items[id]||0)-1);if(!c.items[id]){delete c.items[id];delete c.worn[id];delete c.packed[id];}}
   if(b.dataset.worn){const id=b.dataset.worn;c.worn[id]?delete c.worn[id]:c.worn[id]=1;}
   save();render();};
 $("#packList").onchange=e=>{const id=e.target.dataset.pk;if(!id)return;const c=cls();e.target.checked?c.packed[id]=1:delete c.packed[id];save();render();};
-$("#packReset").onclick=()=>{cls().packed={};save();render();};
+$("#packReset").onclick=()=>{const c=cls(),old=c.packed;c.packed={};save();render();toast("Unticked all",()=>{c.packed=old;save();render();});};
 $("#packPrint").onclick=()=>window.print();
 $("#packCopy").onclick=()=>{const c=cls();let t=`${c.name}\n`;
-  groupByCat(classLines(c).map(l=>l.it)).forEach(([cat,l])=>{t+=`\n${cat}\n`;l.forEach(i=>t+=`[${c.packed[i.id]?"x":" "}] ${i.name}${c.items[i.id]>1?" x"+c.items[i.id]:""} (${fmtW(i.g*c.items[i.id])})\n`);});
+  groupByCat(classLines(c).map(l=>l.it)).forEach(([cat,l])=>{t+=`\n${cat}\n`;l.forEach(i=>t+=`[${c.packed[i.id]?"x":" "}] ${i.name}${c.items[i.id]>1?" x"+c.items[i.id]:""} (${fmtW(itemW(i,c)*c.items[i.id])})\n`);});
   t+=`\nPack weight: ${kg(weights(c).pack)}`;
   (navigator.clipboard?navigator.clipboard.writeText(t):Promise.reject()).then(()=>toast("Copied"),()=>download(c.name+".txt",t,"text/plain"));};
-["wxLow","wxHigh","wxRain","wxWind","wxBugs","wxGround","wxNights","wxWater","wxFood"].forEach(id=>{
-  $("#"+id).addEventListener("input",e=>{const k={wxLow:"low",wxHigh:"high",wxRain:"rain",wxWind:"wind",wxBugs:"bugs",wxGround:"ground",wxNights:"nights",wxWater:"water",wxFood:"food"}[id];
-    const v=e.target.value; cls().wx[k]=k==="ground"?v:(v===""?0:+v); save(); renderWeather(); renderSumbar();});
+Object.entries(WXF).forEach(([id,k])=>{
+  $("#"+id).addEventListener("input",e=>{const v=e.target.value; cls().wx[k]=k==="ground"?v:(v===""?0:+v); save(); renderWeather(); renderSumbar();});
 });
+$("#fpHwb").onchange=e=>{cls().wx.hwb=e.target.checked;save();renderWeather();};
+$("#fcGo").onclick=getForecast;
+$("#fcLoc").addEventListener("keydown",e=>{if(e.key==="Enter")getForecast();});
+$("#suggestBtn").onclick=suggestClass;
+
+/* ---- trips ---- */
+$("#trSave").onclick=()=>{
+  const c=S.classes.find(x=>x.id===$("#trClass").value)||cls();
+  const low=+$("#trLow").value; if($("#trLow").value==="") return toast("Enter the actual low");
+  const c2=clone(c); c2.wx=Object.assign({},WX_DEFAULT,c2.wx,{low});
+  const t=thermal(c2,{noCalib:true});
+  S.trips.push({id:"t_"+Date.now().toString(36),date:$("#trDate").value||todayISO(),loc:$("#trLoc").value.trim(),classId:c.id,className:c.name,
+    low,felt:+$("#trFelt").value,rating:t.rating,margin:t.margin,notes:$("#trNotes").value.trim(),weight:weights(c).pack});
+  $("#trNotes").value="";save();render();toast("Trip saved");
+};
+$("#v-trips").addEventListener("click",e=>{const id=e.target.dataset.deltrip;if(!id)return;
+  const i=S.trips.findIndex(t=>t.id===id),t=S.trips[i];S.trips.splice(i,1);save();render();
+  toast("Trip deleted",()=>{S.trips.splice(i,0,t);save();render();});});
+$("#v-trips").addEventListener("change",e=>{if(e.target.id==="calibOn"){S.calibOn=e.target.checked;save();render();}});
 
 /* ---- item dialog ---- */
 const dlg=$("#itemDlg"), form=$("#itemForm"); let editing=null;
 $("#dlgCat").innerHTML=CATS.map(c=>`<option>${c}</option>`).join("");
-function openItem(id){
-  editing=id?item(id):null;
-  const it=editing||{name:"",cat:"Other",qty:1,g:100,kind:"other",status:"active",seasons:[],notes:""};
-  $("#dlgTitle").textContent=editing?"Edit item":"Add your own item";
-  if(!CATS.includes(it.cat)) $("#dlgCat").insertAdjacentHTML("beforeend",`<option>${esc(it.cat)}</option>`);
+$("#tplBtns").innerHTML=TEMPLATES.map((t,i)=>`<button type="button" data-tpl="${i}">${esc(t.name)}</button>`).join("");
+function fillForm(it){
   const f=form.elements;
-  f.name.value=it.name;f.cat.value=it.cat;f.qty.value=it.qty;f.g.value=it.g;f.status.value=it.status||"active";f.kind.value=it.kind||"other";
+  if(it.cat&&![...f.cat.options].some(o=>o.value===it.cat)) f.cat.insertAdjacentHTML("beforeend",`<option>${esc(it.cat)}</option>`);
+  f.name.value=it.name||"";f.cat.value=it.cat||"Other";f.qty.value=it.qty??1;f.g.value=it.g??100;f.status.value=it.status||"active";f.kind.value=it.kind||"other";
+  f.condition.value=it.condition||"good";f.measured.checked=!!it.measured;f.price.value=it.price??"";
+  f.replaces.innerHTML=`<option value="">—</option>`+S.inv.filter(x=>x.status!=="wishlist"&&(!editing||x.id!==editing.id)).map(x=>`<option value="${x.id}">${esc(x.name)}</option>`).join("");
+  f.replaces.value=it.replaces||"";
   f.shelter.value=it.shelter||"";f.rain.value=it.rain??"";f.wind.value=it.wind??"";f.bug.value=it.bug??"";f.warmth.value=it.warmth??"";
   f.r.value=it.r??"";f.comfort.value=it.comfort??"";f.limit.value=it.limit??"";f.seasons.value=(it.seasons||[]).join(", ");f.notes.value=it.notes||"";
-  $("#dlgResearch").textContent=it.research?("Research: "+it.research):"";
-  $("#dlgDel").style.display=editing?"":"none";
-  dlg.showModal();
 }
+function openItem(id){
+  editing=id?item(id):null;
+  $("#dlgTitle").textContent=editing?"Edit item":"Add your own item";
+  $("#tplBox").style.display=editing?"none":"";
+  fillForm(editing||{name:"",cat:"Other",qty:1,g:100,kind:"other",status:"active",seasons:[],notes:""});
+  $("#dlgResearch").textContent=editing&&editing.research?("Research: "+editing.research):"";
+  $("#dlgDel").style.display=editing?"":"none";
+  dlg.returnValue=""; dlg.showModal();
+}
+$("#tplBtns").onclick=e=>{const b=e.target.closest("[data-tpl]");if(!b)return;fillForm(Object.assign({qty:1},TEMPLATES[+b.dataset.tpl]));};
 $("#addItemBtn").onclick=()=>openItem(null);
 $("#kitList").onclick=e=>{const r=e.target.closest("[data-edit]");if(r)openItem(r.dataset.edit);};
-dlg.addEventListener("close",()=>{
+dlg.addEventListener("close",async()=>{
   if(dlg.returnValue!=="save") return;
   const f=form.elements, num=v=>v===""?undefined:+v;
   const data={name:f.name.value.trim(),cat:f.cat.value,qty:Math.max(0,Math.round(+f.qty.value||0)),g:Math.max(0,+f.g.value||0),status:f.status.value,kind:f.kind.value,
+    condition:f.condition.value,measured:f.measured.checked,price:num(f.price.value),replaces:f.replaces.value||undefined,
     shelter:f.shelter.value||undefined,rain:num(f.rain.value),wind:num(f.wind.value),bug:num(f.bug.value),warmth:num(f.warmth.value),r:num(f.r.value),
     comfort:num(f.comfort.value),limit:num(f.limit.value),seasons:f.seasons.value.split(",").map(s=>s.trim()).filter(Boolean),notes:f.notes.value.trim()};
   if(!data.name) return;
   if(data.kind==="bag"&&data.comfort===undefined) data.comfort=10;
   if(editing){Object.assign(editing,data);
-    S.classes.forEach(c=>{if((c.items[editing.id]||0)>editing.qty) c.items[editing.id]=editing.qty; if(!c.items[editing.id]) delete c.items[editing.id];});
-    toast("Saved");}
-  else {S.inv.push(Object.assign({id:"c_"+Date.now().toString(36),custom:true},data));
-    const c=cls(); if(confirm(`Also add “${data.name}” to the class “${c.name}”?`)) c.items[S.inv[S.inv.length-1].id]=Math.min(1,data.qty);
-    toast("Item added");}
-  save();render();
+    S.classes.forEach(c=>{const lim=usable(editing)?editing.qty:0; if((c.items[editing.id]||0)>lim) c.items[editing.id]=lim; if(!c.items[editing.id]){delete c.items[editing.id];delete c.worn[editing.id];}});
+    save();render();toast("Saved");}
+  else {const it=Object.assign({id:"c_"+Date.now().toString(36),custom:true},data);S.inv.push(it);save();render();
+    if(usable(it)){const c=cls(); if(await ask(`Also add “${it.name}” to the class “${c.name}”?`,{ok:"Add to class"})){c.items[it.id]=1;save();render();}}
+    toast(it.status==="wishlist"?"Added to wishlist":"Item added");}
 });
-$("#dlgDel").onclick=()=>{if(!editing)return;if(!confirm("Delete “"+editing.name+"” from your kit?"))return;
-  const id=editing.id;S.inv=S.inv.filter(i=>i.id!==id);S.classes.forEach(c=>{delete c.items[id];delete c.worn[id];delete c.packed[id];});
-  editing=null;dlg.close("cancel");save();render();toast("Deleted");};
+$("#dlgDel").onclick=()=>{if(!editing)return;
+  const it=editing,i=S.inv.indexOf(it),snap=S.classes.map(c=>({c,q:c.items[it.id],w:c.worn[it.id],p:c.packed[it.id]}));
+  S.inv.splice(i,1);S.classes.forEach(c=>{delete c.items[it.id];delete c.worn[it.id];delete c.packed[it.id];});
+  editing=null;dlg.close("cancel");save();render();
+  toast(`Deleted “${it.name}”`,()=>{S.inv.splice(i,0,it);snap.forEach(s=>{if(s.q)s.c.items[it.id]=s.q;if(s.w)s.c.worn[it.id]=s.w;if(s.p)s.c.packed[it.id]=s.p;});save();render();});};
 
 /* ---- export / import ---- */
 function download(name,text,type){
@@ -703,18 +1019,19 @@ function download(name,text,type){
   setTimeout(()=>{URL.revokeObjectURL(a.href);a.remove();},500);
 }
 const csvCell=v=>{v=String(v??"");return /[",\n]/.test(v)?`"${v.replace(/"/g,'""')}"`:v;};
+const toCsv=rows=>rows.map(r=>r.map(csvCell).join(",")).join("\n");
 const slug=s=>s.toLowerCase().replace(/[^a-z0-9]+/g,"-").replace(/^-|-$/g,"");
 $("#expInvCsv").onclick=()=>{
-  const h=["Name","Category","Qty owned","Weight each (g)","Total (g)","Status","Type","Shelter","Rain","Wind","Bugs","Warmth °C","R-value","Comfort °C","Limit °C","Seasons","Notes","Research"];
-  const rows=S.inv.map(i=>[i.name,i.cat,i.qty,i.g,i.g*i.qty,i.status||"active",i.kind,i.shelter,i.rain,i.wind,i.bug,i.warmth,i.r,i.comfort,i.limit,(i.seasons||[]).join("; "),i.notes,i.research]);
-  download("camp-kit.csv",[h,...rows].map(r=>r.map(csvCell).join(",")).join("\n"),"text/csv");};
+  const h=["Name","Category","Qty owned","Weight each (g)","Total (g)","Weighed","Status","Condition","Price £","Type","Shelter","Rain","Wind","Bugs","Warmth °C","R-value","Comfort °C","Limit °C","Seasons","Notes","Research"];
+  download("camp-kit.csv",toCsv([h,...S.inv.map(i=>[i.name,i.cat,i.qty,i.g,i.g*i.qty,i.measured?"yes":"",i.status||"active",i.condition||"good",i.price,i.kind,i.shelter,i.rain,i.wind,i.bug,i.warmth,i.r,i.comfort,i.limit,(i.seasons||[]).join("; "),i.notes,i.research])]),"text/csv");};
 $("#expInvJson").onclick=()=>download("camp-kit.json",JSON.stringify({type:"kit",inv:S.inv},null,2),"application/json");
-$("#expClass").onclick=()=>{const c=cls();const used=classLines(c).map(l=>l.it);
-  download(`class-${slug(c.name)}.json`,JSON.stringify({type:"class",class:c,items:used},null,2),"application/json");};
+$("#expClass").onclick=()=>{const c=cls();download(`class-${slug(c.name)}.json`,JSON.stringify({type:"class",class:c,items:classLines(c).map(l=>l.it)},null,2),"application/json");};
 $("#expClassCsv").onclick=()=>{const c=cls();const h=["Name","Category","Qty","Weight each (g)","Total (g)","Worn","Packed"];
-  const rows=classLines(c).map(({it,q})=>[it.name,it.cat,q,it.g,it.g*q,c.worn[it.id]?"yes":"",c.packed[it.id]?"yes":""]);
+  const rows=classLines(c).map(({it,q})=>[it.name,it.cat,q,itemW(it,c),itemW(it,c)*q,c.worn[it.id]?"yes":"",c.packed[it.id]?"yes":""]);
   const w=weights(c);rows.push([],["Water","",c.wx.water+" L","",w.water],["Food","","","",w.food],["Pack weight (g)","","","",w.pack]);
-  download(`class-${slug(c.name)}.csv`,[h,...rows].map(r=>r.map(csvCell).join(",")).join("\n"),"text/csv");};
+  download(`class-${slug(c.name)}.csv`,toCsv([h,...rows]),"text/csv");};
+$("#expTrips").onclick=()=>download("camp-trips.csv",toCsv([["Date","Location","Class","Actual low °C","Predicted comfort °C","Felt (-2..2)","Pack (g)","Notes"],
+  ...S.trips.map(t=>[t.date,t.loc,t.className,t.low,t.rating.toFixed(1),t.felt,Math.round(t.weight||0),t.notes])]),"text/csv");
 $("#expAll").onclick=()=>download("camp-planner-backup.json",JSON.stringify(Object.assign({type:"backup",exported:new Date().toISOString()},S),null,2),"application/json");
 $("#impFile").onchange=async e=>{
   const f=e.target.files[0];if(!f)return;
@@ -723,11 +1040,10 @@ $("#impFile").onchange=async e=>{
     const mergeItems=list=>{let n=0;(list||[]).forEach(it=>{if(!it||!it.name)return;
       if(!S.inv.some(x=>x.id===it.id||x.name===it.name)){S.inv.push(Object.assign({},it,{id:it.id&&!item(it.id)?it.id:"c_"+Math.random().toString(36).slice(2)}));n++;}});return n;};
     if(d.type==="backup"||(d.inv&&d.classes)){
-      if(!confirm("Replace ALL current data with this backup?"))return;
-      S={ver:1,inv:d.inv,classes:d.classes,active:d.active||d.classes[0]?.id};toast("Backup restored");
+      if(!await ask("Replace ALL current data with this backup?",{ok:"Replace",danger:true}))return;
+      S={ver:2,inv:d.inv,classes:d.classes,active:d.active||d.classes[0]?.id,trips:d.trips||[],calibOn:d.calibOn!==false,loc:d.loc||null};toast("Backup restored");
     } else if(d.type==="class"&&d.class){
-      const added=mergeItems(d.items);const c=Object.assign({},d.class,{id:"cls_"+Date.now().toString(36)});
-      // remap item ids by name if needed
+      const added=mergeItems(d.items);const c=Object.assign({},d.class,{id:newClassObj("").id});
       const items={};Object.entries(c.items||{}).forEach(([id,q])=>{const src=(d.items||[]).find(x=>x.id===id);const local=item(id)&&(!src||item(id).name===src.name)?item(id):S.inv.find(x=>src&&x.name===src.name);if(local)items[local.id]=Math.min(q,local.qty);});
       c.items=items;S.classes.push(c);S.active=c.id;toast(`Class imported${added?` (+${added} new items)`:""}`);
     } else if(d.inv||Array.isArray(d)){
@@ -737,7 +1053,15 @@ $("#impFile").onchange=async e=>{
   }catch(err){toast("Couldn't read that file");}
   e.target.value="";
 };
-$("#resetAll").onclick=()=>{if(!confirm("Restore the original kit list and preset classes? Your changes will be lost."))return;S=freshState();save();render();toast("Restored");};
+$("#resetAll").onclick=async()=>{if(!await ask("Restore the original kit list and preset classes? Your kit edits, classes and trip log will be lost.",{ok:"Restore",danger:true}))return;
+  const old=S;S=freshState();save();render();toast("Restored",()=>{S=old;save();render();});};
+
+/* ---- install as app (PWA) ---- */
+let deferredPrompt=null;
+window.addEventListener("beforeinstallprompt",e=>{e.preventDefault();deferredPrompt=e;$("#installBtn").hidden=false;});
+$("#installBtn").onclick=async()=>{if(!deferredPrompt)return;deferredPrompt.prompt();await deferredPrompt.userChoice;deferredPrompt=null;$("#installBtn").hidden=true;};
+if(window.matchMedia("(display-mode: standalone)").matches) $("#installHelp").textContent="✅ Running as an installed app. It works offline; the forecast needs signal.";
+if("serviceWorker" in navigator && location.protocol.startsWith("http")) navigator.serviceWorker.register("sw.js").catch(()=>{});
 
 render();
 </script>
