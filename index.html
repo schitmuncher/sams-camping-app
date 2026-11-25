@@ -1122,7 +1122,7 @@ function chipsFor(it,compact){
   if(it.condition==="worn") ch.push('<span class="chip rep" style="background:#5a4c18;color:#ffe9a3">worn</span>');
   if(it.measured) ch.push('<span class="chip ok">weighed ✓</span>');
   if(!compact&&it.seasons&&it.seasons.length) ch.push(`<span class="chip">${seasonLabel(it.seasons)}</span>`);
-  if(it.kind==="shelter"||it.cat==="Packs & Storage"||it.cat==="Clothing"){const v=visOf(it); if(v!=null&&(!compact||v!==1)) ch.push(`<span class="chip">🥷 ${VIS_LABEL[v]}</span>`);}
+  if(it.kind==="shelter"||it.cat==="Packs & Storage"||it.cat==="Clothing"){const v=visOf(it); if(v!=null&&(!compact||v!==1)) ch.push(`<span class="chip">🥷 ${it.colour?esc(it.colour)+" · ":""}${VIS_LABEL[v]}</span>`);}
   if(isLight(it)&&redOf(it)&&!compact) ch.push(`<span class="chip">red light</span>`);
   if(+it.rain) ch.push(`<span class="chip rain">rain ${it.rain}/3</span>`);
   if(+it.wind) ch.push(`<span class="chip wind">wind ${it.wind}/3</span>`);
@@ -1555,6 +1555,7 @@ includeKit&&kit.length?"- Do NOT add anything that is already in MY EXISTING KIT
 "- measured: true only if I tell you I weighed it myself",
 "- vis: colour for stealth camping — 0 camo, 1 muted (green/olive/brown/black/grey), 2 noticeable (blue/silver/white), 3 bright (orange/red/yellow). Include for shelters, rucksacks and outer clothing; ask me the colour if you don't know it.",
 "- redlight: true for head torches/torches with a red light mode",
+"In \"updates\" you may include any of these fields (plus \"colour\" as plain text, e.g. \"olive green\") — only the ones that change.",
 "Leave out any field that doesn't apply. Use plain numbers (no units) for qty, g, r, comfort, limit, warmth, rain, wind, bug."
   ];
   if(includeKit&&kit.length){
@@ -1563,6 +1564,28 @@ includeKit&&kit.length?"- Do NOT add anything that is already in MY EXISTING KIT
   } else if(includeKit) lines.push("","MY EXISTING KIT: (empty — this is a fresh start)");
   lines.push("","Start by asking me what I'd like to add.");
   return lines.join("\n");
+}
+/* fields an AI "update" may change on an existing item */
+const UPD_NUM={g:[0,1e6],qty:[0,999],vis:[0,3],profile:[0,3],warmth:[-5,10],r:[0,15],comfort:[-40,30],limit:[-50,30],rain:[0,3],wind:[0,3],bug:[0,3],price:[0,1e5]};
+function applyUpdate(m,u){
+  Object.entries(UPD_NUM).forEach(([k,[a,b]])=>{if(u[k]!=null&&u[k]!==""&&!isNaN(+u[k])) m[k]=Math.max(a,Math.min(b,k==="qty"?Math.round(+u[k]):+u[k]));});
+  if(u.redlight===true||u.redlight===false) m.redlight=u.redlight;
+  if(u.measured===true) m.measured=true;
+  if(["good","worn","repair"].includes(u.condition)) m.condition=u.condition;
+  if(["active","retired","wishlist"].includes(u.status)) m.status=u.status;
+  if(Array.isArray(u.seasons)) m.seasons=u.seasons.filter(s=>ALL4.includes(s));
+  if(u.notes) m.notes=String(u.notes).slice(0,400);
+  if(u.research) m.research=String(u.research).slice(0,400);
+  if(u.colour||u.color) m.colour=String(u.colour||u.color).slice(0,60);
+}
+function describeUpdate(m,u){
+  const L={g:"weight",qty:"qty",vis:"colour",profile:"profile",warmth:"warmth",r:"R",comfort:"comfort",limit:"limit",rain:"rain",wind:"wind",bug:"bugs",price:"£"};
+  const f=(k,v)=>k==="g"?fmtW(+v):k==="vis"?VIS_LABEL[+v]:v;
+  const out=Object.keys(UPD_NUM).filter(k=>u[k]!=null&&u[k]!=="").map(k=>`${L[k]} ${m&&m[k]!=null?f(k,m[k])+" → ":""}${f(k,u[k])}`);
+  if(u.colour||u.color) out.push(`“${u.colour||u.color}”`);
+  if(u.redlight!=null) out.push(u.redlight?"red light ✓":"no red light");
+  if(u.measured) out.push("weighed ✓"); if(u.condition) out.push(u.condition); if(u.notes) out.push("new notes");
+  return out.join(", ");
 }
 const normName=s=>String(s||"").toLowerCase().replace(/[^a-z0-9 ]+/g," ").replace(/\s+/g," ").trim();
 function similar(a,b){
@@ -1609,7 +1632,7 @@ function renderAIPreview(){
       <div class="nm"><b>${esc(it.name)}${it.qty>1?` ×${it.qty}`:""}</b><span class="small muted">${esc(it.cat)} · ${fmtW(it.g)} each${it.status!=="active"?" · "+it.status:""}</span>
       ${dup?`<div class="small" style="color:var(--warn)">⚠️ Looks like a duplicate of “${esc(dup.it.name)}” — unticked</div>`:""}${chipsFor(it)}</div></label>`;}).join("");
   const ups=updates.map((u,i)=>{const m=S.inv.find(x=>normName(x.name)===normName(u.name))||findDup(u.name)?.it;
-    const ch=[u.g!=null&&`weight ${m?fmtW(m.g)+" → ":""}${fmtW(+u.g)}`,u.qty!=null&&`qty ${m?m.qty+" → ":""}${u.qty}`,u.measured&&"weighed ✓",u.notes&&"new notes"].filter(Boolean).join(", ");
+    const ch=describeUpdate(m,u);
     return `<label class="item" style="flex-direction:row;color:var(--text)"><input type="checkbox" class="ck" data-aiu="${i}" ${m?"checked":"disabled"}>
       <div class="nm"><b>${esc(m?m.name:u.name)}</b><span class="small muted">${m?esc(ch||"no changes"):"Not found in your kit — skipped"}</span></div></label>`;}).join("");
   box.innerHTML=(inv.length?`<h3>New items (${inv.length})</h3>${rows}`:"<p class='small muted'>No new items in that reply.</p>")+(updates.length?`<h3>Updates to existing items</h3>${ups}`:"");
@@ -1635,7 +1658,7 @@ $("#aiAdd").onclick=()=>{
     S.inv.push(Object.assign({id:"c_"+Date.now().toString(36)+Math.random().toString(36).slice(2,6),custom:true},it));added++;});
   document.querySelectorAll("#aiPreview [data-aiu]").forEach(cb=>{if(!cb.checked)return;const u=aiParsed.updates[+cb.dataset.aiu];
     const m=S.inv.find(x=>normName(x.name)===normName(u.name))||findDup(u.name)?.it;if(!m)return;
-    if(u.g!=null&&!isNaN(+u.g)) m.g=+u.g; if(u.qty!=null&&!isNaN(+u.qty)) m.qty=Math.max(0,Math.round(+u.qty)); if(u.measured===true) m.measured=true; if(u.notes) m.notes=String(u.notes).slice(0,400); updated++;});
+    applyUpdate(m,u); updated++;});
   aiParsed=null;$("#aiReply").value="";$("#aiDlg").close();S.welcomed=true;save();showView("kit");
   toast(`${added} added${updated?`, ${updated} updated`:""}`,()=>{S.inv=before;save();render();});
 };

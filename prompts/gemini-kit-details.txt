@@ -1,0 +1,56 @@
+I'm updating my camping kit in my Camp Kit Planner app and need some missing details about gear I own. You may already know some of this from our earlier chats about my kit. Where you're not sure, ASK ME rather than guessing. I can check labels, look at the item or take a photo.
+
+Ask me in small batches (3–5 items at a time) so it's quick to answer. Skip anything I say I don't know.
+
+WHAT I NEED FOR EACH ITEM (only where relevant)
+- colour: the actual colour as plain text, e.g. "olive green", "grey/orange"
+- vis: stealth colour rating. 0 = camo, 1 = muted (green, olive, brown, black, dark grey), 2 = noticeable (blue, silver, white, light grey, club colours), 3 = bright (orange, red, yellow, hi-vis)
+- redlight: true/false. Does the light have a red light mode?
+- g: real weight in grams, if I've weighed it (then also "measured": true)
+- comfort / limit: sleeping bag temperatures in °C from the label
+- r: sleeping mat R-value if printed on it
+- anything you learn that corrects my notes: put it in "notes" (1–2 sentences) and say where it came from in "research"
+
+THE ITEMS AND WHAT'S MISSING
+1. Double Eiger Trekker Tent (Pinnacle Summit): colour / vis. Any reflective guylines or trim?
+2. Wise Owl Wisefly Lite Tarp 11'×9': colour / vis. Is it definitely the LITE (about 535 g) or the Standard (about 737 g)? Weight if weighed.
+3. COVACURE Camping Hammock: colour / vis. Does it have a built-in bug net?
+4. Karrimor Orkney 65 L Rucksack: colour / vis. Weight if weighed.
+5. North-Gate 30 L Dry Bag: colour / vis. Weight if weighed.
+6. Quiksilver Wool/Fleece-Lined Parka (Large): colour / vis. Is it waterproof, or just showerproof?
+7. Mountain Warehouse Zipped Fleece Jumper: colour / vis.
+8. Thermalite Insulated Trousers: colour / vis.
+9. Wool-Lined Nantwich Town FC Hat: colour / vis (I've assumed club colours = 2).
+10. Quechua BL100 Thermal Base Top: colour / vis.
+11. Quechua BL100 Thermal Base Bottoms: colour / vis.
+12. Forclaz MT500 Fleece Trekking Gloves: colour / vis.
+13. Warm Thermal Neck Gaiter: colour / vis.
+14. USB Rechargeable LED Headlamp: brand/model if known, and redlight true/false.
+15. Mini Rechargeable Torch: redlight true/false.
+16. Regatta LED Tent Lantern: does it have a red or dim mode?
+17. Coolzon 3–4 Season Sleeping Bag: comfort and limit °C if printed on the label (my app currently guesses 8°C / 3°C). Colour / vis.
+18. AKSOUL 10 cm Inflatable Sleeping Mat: R-value if printed anywhere. Colour / vis.
+19. SIMOND MT500 Folding Foam Mattress: is it the 180 cm (370 g, R2.1) or the 195 cm "Insulating" version (480 g, R2.2)?
+20. TheFitLife Lever-Lock Trekking Poles: colour. Weight of the pair if weighed.
+21. Pocket Rocket-style Gas Stove: does it have a push-button (piezo) igniter?
+22. Extra Tent Groundsheet / Footprint: colour / vis.
+23. Anything else I own that's bright or reflective (orange stuff sacks, hi-vis bits and so on).
+
+WHEN WE'RE DONE
+When I say "done", reply with ONE json code block only, in exactly this format. Use the item names EXACTLY as written above so my app can match them. Only include fields you actually know:
+
+```json
+{
+  "type": "kit",
+  "inv": [],
+  "updates": [
+    {"name": "Double Eiger Trekker Tent (Pinnacle Summit)", "colour": "sage green", "vis": 1, "notes": "Green flysheet, black reflective guylines.", "research": "Sam"},
+    {"name": "USB Rechargeable LED Headlamp", "redlight": true},
+    {"name": "Coolzon 3–4 Season Sleeping Bag", "comfort": 6, "limit": 1, "research": "label"}
+  ]
+}
+```
+
+If I mention gear that ISN'T on the list above, put it in "inv" as a new item with: name, cat (one of "Shelter & Rigging", "Sleep & Thermal", "Clothing", "Packs & Storage", "Kitchen & Hydration", "Lighting & Power", "Bugs & Recon", "Hygiene & First Aid", "Other"), qty, g (grams each), kind ("shelter", "bag", "pad", "layer", "consumable" or "other"), colour, vis, notes and research.
+
+Use plain numbers only (no units). Start by asking me about the first batch.
