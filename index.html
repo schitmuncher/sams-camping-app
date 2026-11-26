@@ -131,6 +131,55 @@ details.sub>summary{font-size:13px;color:var(--accent);font-weight:600}
 .gm-attr{position:absolute;right:0;bottom:0;font-size:9px;background:#fffc;color:#333;padding:1px 4px;border-top-left-radius:4px}
 body.nightmode .gmapbox{filter:brightness(.55) sepia(.6) hue-rotate(-30deg)}
 .gsite{margin-top:8px;padding:8px;border-radius:10px;background:var(--panel2)}
+
+/* ---------- Pitch Dark game ---------- */
+body.pd-on{overflow:hidden}
+.pd{position:fixed;inset:0;z-index:900;background:#05080f;color:#eef;touch-action:none;user-select:none;-webkit-user-select:none;font-family:system-ui,sans-serif}
+#pdC{position:absolute;inset:0;width:100%;height:100%;display:block}
+.pd-top{position:absolute;left:0;right:0;top:0;display:flex;gap:6px;align-items:center;padding:calc(env(safe-area-inset-top) + 6px) 8px 6px;background:linear-gradient(#000c,#0000);pointer-events:none}
+.pd-top>*{pointer-events:auto}.pd-top .grow{flex:1;pointer-events:none}
+.pd-clock{display:flex;flex-direction:column;line-height:1.05;text-shadow:0 1px 3px #000}.pd-clock b{font-size:22px;font-variant-numeric:tabular-nums}.pd-clock span{font-size:11px;opacity:.85}
+.pd-wx{display:flex;gap:8px;font-size:13px;background:#0008;border-radius:10px;padding:4px 8px;margin-left:4px}.pd-arrow{display:inline-block;font-style:normal;margin-right:2px}
+.pd-ib{width:38px;height:38px;padding:0;border-radius:10px;background:#0009;border:1px solid #fff2;color:#fff;font-size:17px}
+.pd-ib.on{background:#ffd27a55}
+.pd-left{position:absolute;left:6px;top:calc(env(safe-area-inset-top) + 58px);display:flex;flex-direction:column;gap:6px;pointer-events:none;width:74px}
+#pdBodyW{background:#0009;border-radius:12px;padding:6px;display:flex;flex-direction:column;align-items:center;gap:4px}
+.pd-sil{width:40px;height:66px}.pd-ms{width:100%;display:flex;flex-direction:column;gap:3px}
+.pd-m{height:5px;border-radius:3px;background:#fff2;overflow:hidden;width:100%}.pd-m i{display:block;height:100%;background:#9ccc65;border-radius:3px;transition:width .3s}
+.pd-m.w i{background:#ff8a50}.pd-m.e i{background:#ffd54f}.pd-m.d i{background:#4fc3f7}.pd-m.m i{background:#ba68c8}.pd-m.ok i{background:#81c784}.pd-m.mid i{background:#ffd54f}.pd-m.bad i{background:#e57373}
+.pd-eye{background:#0009;border-radius:12px;padding:5px;text-align:center;font-size:10px}.pd-gem{font-size:20px;line-height:1.2;border-radius:50%;width:32px;height:32px;margin:0 auto;display:flex;align-items:center;justify-content:center}
+.pd-gem.g0{background:#0a1530}.pd-gem.g1{background:#3a4a20}.pd-gem.g2{background:#8a6a10;box-shadow:0 0 10px #ffc107}.pd-gem.g3{background:#c04020;box-shadow:0 0 14px #ff5722}
+.pd-st{font-size:14px;margin-top:2px}.pd-res{background:#0009;border-radius:10px;padding:4px;font-size:10px;line-height:1.5;word-break:break-word}
+.pd-obj{position:absolute;left:86px;right:8px;top:calc(env(safe-area-inset-top) + 50px);font-size:11px;color:#ffe082;text-shadow:0 1px 2px #000;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
+.pd-msg{position:absolute;left:86px;right:8px;top:calc(env(safe-area-inset-top) + 66px);background:#000b;border-radius:12px;padding:8px 10px;font-size:14px;line-height:1.35;max-height:6.8em;overflow:hidden;border-left:3px solid #fff4}
+.pd-msg.k-tip{border-color:#ffe082;background:#1a1a30e6}.pd-msg.k-warn{border-color:#ffb74d}.pd-msg.k-danger{border-color:#ff5252;background:#3a0a0acc}.pd-msg.k-moment{border-color:#ffd27a;background:#2a2410d0}.pd-msg.k-story{border-color:#90caf9}
+.pd-msg.pop{animation:pdpop .4s}.pd-mt{opacity:.6;font-size:11px;font-variant-numeric:tabular-nums}@keyframes pdpop{from{transform:translateY(-6px);opacity:.3}to{transform:none;opacity:1}}
+.pd-bar{position:absolute;left:0;right:0;bottom:0;display:flex;gap:6px;flex-wrap:wrap;justify-content:center;padding:8px 8px calc(env(safe-area-inset-bottom) + 10px);background:linear-gradient(#0000,#000d)}
+.pd-b{min-width:64px;padding:10px 12px;border-radius:14px;background:#1b2530e6;color:#fff;border:1px solid #fff2;font-size:14px;font-weight:600}.pd-b.pri{background:#2e7d32;border-color:#81c784}.pd-b.on{background:#4a3a8a}.pd-b.wide{min-width:60%}
+.pd-busy{flex:1;max-width:420px;background:#000b;border-radius:12px;padding:8px 12px;font-size:14px}.pd-busy .pd-m{height:7px;margin-top:6px}.pd-busy .pd-m i{background:#ffd27a}
+.pd-sheet{position:absolute;left:0;right:0;bottom:0;max-height:72%;overflow:auto;background:#111a22f5;border-radius:18px 18px 0 0;padding:10px 12px calc(env(safe-area-inset-bottom) + 16px);border-top:1px solid #fff2}
+.pd-sh-h{display:flex;align-items:center;gap:8px;position:sticky;top:-10px;background:#111a22;padding:6px 0}.pd-sh-h span{flex:1}
+.pd-sec h4{margin:10px 0 6px;font-size:12px;text-transform:uppercase;letter-spacing:.06em;opacity:.7}
+.pd-a{display:flex;justify-content:space-between;align-items:center;gap:8px;width:100%;text-align:left;padding:10px 12px;margin:4px 0;border-radius:12px;background:#1e2a36;color:#fff;border:1px solid #fff1;font-size:15px}
+.pd-a small{opacity:.65;font-size:12px;text-align:right}.pd-a:disabled{opacity:.4}
+.pd-modal[hidden],.pd-sheet[hidden]{display:none!important}
+.pd-modal{position:absolute;inset:0;background:#0009;display:flex;align-items:center;justify-content:center;padding:14px}
+.pd-card{background:#141c24;border:1px solid #fff2;border-radius:16px;padding:16px;max-width:460px;width:100%;max-height:92vh;overflow:auto;color:#eef}
+.pd-card h3{margin:4px 0 8px}.pd-rate>div{display:grid;grid-template-columns:96px 1fr 44px;gap:8px;align-items:center;font-size:14px;margin:6px 0}.pd-rate .pd-m{height:8px}
+.pd-notes{margin:8px 0;padding-left:18px;font-size:13px;line-height:1.5}
+.pd-door{display:flex;align-items:center;gap:8px;margin-top:10px}.pd-compass{position:relative;width:54px;height:54px;border-radius:50%;background:#0a1018;border:1px solid #fff3}
+.pd-compass i{position:absolute;left:50%;top:50%;font-style:normal;width:0;height:0}.pd-compass i b{position:absolute;transform:translate(-50%,-50%)}.pd-wind b{color:#90caf9;font-size:20px}.pd-doorI b{width:12px;height:12px;border-radius:50%;background:#ffb74d;box-shadow:0 0 6px #ffb74d}.pd-compass .pd-tent{position:absolute;left:50%;top:50%;transform:translate(-50%,-50%);font-size:16px}
+.pd-shs label{display:inline-flex;gap:6px;margin:4px 10px 4px 0;font-size:14px}
+.pd-say{font-size:17px;line-height:1.45;font-style:italic;margin:0 0 10px}
+.pd-log p{margin:4px 0;font-size:13px}.pd-log .k-danger{color:#ff8a80}.pd-log .k-moment{color:#ffe082}
+.pd-endc .pd-endh{display:flex;gap:12px;align-items:center}.pd-bigi{font-size:44px}.pd-endc h2{margin:0}.pd-stars{color:#ffd27a;font-size:22px;letter-spacing:2px}.pd-stars.s{font-size:13px}
+.pd-mini{width:100%;max-width:300px;display:block;margin:8px auto;border-radius:12px;aspect-ratio:1}
+.pd-help{background:#0a1018;border-radius:10px;padding:10px;line-height:1.5}
+.pd-hero{background:linear-gradient(160deg,#0b1a2a,#1a2a1a)!important}
+.pd-locs{display:grid;grid-template-columns:repeat(auto-fill,minmax(140px,1fr));gap:8px}
+.pd-loc{display:flex;flex-direction:column;align-items:flex-start;gap:2px;text-align:left;padding:10px;border-radius:14px;background:var(--panel2);border:2px solid transparent;color:inherit;position:relative}
+.pd-loc.on{border-color:#81c784;background:#1d3322}.pd-li{font-size:26px}.pd-loc small{opacity:.7;font-size:12px;line-height:1.3}.pd-loc em{position:absolute;right:8px;top:8px;color:#ffd27a;font-style:normal;font-size:12px}
+.pd-j{padding:6px 0;border-bottom:1px solid var(--line)}
 .gdelta{white-space:nowrap;font-style:normal}.gach{display:grid;grid-template-columns:repeat(auto-fill,minmax(150px,1fr));gap:8px;margin-top:10px}.gach>div{background:var(--panel2);border-radius:10px;padding:8px;font-size:13px}
 .ggrades{display:grid;grid-template-columns:repeat(5,1fr);gap:6px;margin:12px 0}.gg{background:var(--panel2);border-radius:10px;padding:6px 2px;text-align:center;display:flex;flex-direction:column}.gg b{font-size:22px}.gg span{font-size:10px;color:var(--muted)}
 .gA b,.gB b{color:var(--ok)}.gC b{color:var(--warn)}.gD b,.gE b{color:var(--bad)}
@@ -3246,6 +3295,7 @@ function gMeterBar(k){ const v=Math.round(G.meters[k]); const bad=k==="suspicion
   return `<div class="gm ${bad?"bad":""}" title="${k}"><span>${G_ICON[k]}</span><div class="gmb"><div style="width:${v}%;background:${k==="suspicion"?"var(--hot)":k==="warmth"?"var(--accent2)":k==="dry"?"var(--cold)":"var(--accent)"}"></div></div></div>`; }
 function renderPlay(){
   const root=$("#playRoot"); if(!root) return;
+  if((S.playMode||"pd")!=="classic"){ document.body.classList.remove("nightmode"); pdRenderStart(); return; }
   if(!G) gLoad();
   document.body.classList.toggle("nightmode",currentView==="play"&&G&&!G.ended&&G.phase==="night");
   if(!G||(!G.scene&&!G.ended)){ root.innerHTML=gStartScreen(); const sel=$("#gScen"); if(sel) sel.value=S.gameScen||"towpath"; if((S.gameScen||"towpath")==="map") gmMountSetup(); return; }
@@ -3283,6 +3333,7 @@ function gStartScreen(){
     <div class="row" style="margin-top:12px"><button class="pri" id="gGo">▶ Start the night</button>${S.game&&S.game.ended?`<button id="gLast">Last result</button>`:""}</div></div>
     ${(S.gameScen||"towpath")==="map"?gmSetupHTML():""}
     ${gStatsCard()}
+    <p class="small center"><a href="#" id="pdStory">← Back to the full game</a></p>
     <div class="card small muted"><b>How to play:</b> tap a choice. Icons hint at what it does: 🔥 warmth · ⚡ energy · 💧 dry · 🙂 morale · 👁️ suspicion (keep it low). Choices marked 🔒 need kit you didn't bring. Your kit, the cold and the dark do the rest.</div>`;
 }
 function gStatsCard(){
@@ -3316,7 +3367,7 @@ document.addEventListener("click",e=>{
     gStart($("#gClass").value,$("#gScen").value,$("#gDiff").value); renderPlay(); window.scrollTo(0,0); return; }
   if(b.id==="gmUseClass"){ const M=S.gameMap=S.gameMap||{}; M.route=null; M.noRoute=false; M.lat=null; save(); renderPlay(); return; }
   if(b.id==="gmNoRoute"){ const M=S.gameMap=S.gameMap||{}; M.route=null; M.noRoute=true; save(); renderPlay(); return; }
-  if(b.id==="gmRouteEnd"){ const r=gmRouteFor(cls()); if(r){ const p=r.pts[r.pts.length-1]; gmPick(p[0],p[1]); } return; }
+  if(b.id==="gmRouteEnd"){ const r=gmRouteFor(cls()); if(r){ const p=r.pts[r.pts.length-1]; (S.playMode||"pd")!=="classic"?pdPickReal(p[0],p[1]):gmPick(p[0],p[1]); } return; }
   if(b.id==="gmNear"){ if(!navigator.geolocation) return toast("Location isn't available on this device");
     navigator.geolocation.getCurrentPosition(p=>{ gmSetupMap&&gmSetupMap.setView(p.coords.latitude,p.coords.longitude,15); },()=>toast("Couldn't get your location"),{timeout:10000}); return; }
   if(b.id==="gLast"){ G=S.game; if(G.scenKey!=="map") G.scen=GAME_SCEN[G.scenKey]||GAME_SCEN.towpath; renderPlay(); return; }
@@ -3562,7 +3613,7 @@ async function gmSurvey(lat,lon){
   const q=gmQuery(lat.toFixed(5),lon.toFixed(5));
   const ring=[[0,0],[0.0027,0],[-0.0027,0],[0,0.0045],[0,-0.0045]];
   const [osm,el]=await Promise.all([
-    fetch(GM_OVERPASS,{method:"POST",body:"data="+encodeURIComponent(q),headers:{"Content-Type":"application/x-www-form-urlencoded"}}).then(r=>{ if(!r.ok) throw new Error("Map data service is busy. Try again in a minute."); return r.json(); }),
+    pdOverpass(q),
     fetch(`https://api.open-meteo.com/v1/elevation?latitude=${ring.map(o=>(lat+o[0]).toFixed(5)).join(",")}&longitude=${ring.map(o=>(lon+o[1]).toFixed(5)).join(",")}`).then(r=>r.ok?r.json():null).catch(()=>null)
   ]);
   return gmAnalyse(lat,lon,osm.elements||[],el&&el.elevation);
@@ -3771,6 +3822,1389 @@ document.addEventListener("change",async e=>{
     try{ const r=parseGPX(await f.text(),f.name); const M=S.gameMap=S.gameMap||{}; M.route=r; M.noRoute=false; M.lat=null; save(); renderPlay(); gmSetupMap&&gmSetupMap.fit(r.pts.map(p=>[p[0],p[1]])); toast(`Loaded ${r.name}: ${r.distKm.toFixed(1)} km`); }
     catch(err){ toast(err.message||"Couldn't read that GPX"); } }
 });
+/* ============================================================
+   PITCH DARK (game): WORLD
+   A 100×100 tile map, 4 m per tile (400 m square). Built from real OpenStreetMap
+   data around a spot, or generated for the preset locations.
+   ============================================================ */
+const PD_T={GRASS:0,CROP:1,MEADOW:2,WOOD:3,SCRUB:4,WATER:5,PATH:6,ROAD:7,BUILD:8,HEDGE:9,WALL:10,YARD:11,HEATH:12,ROCK:13,BOG:14,GARDEN:15};
+// cost: walk cost · pass · cover: hides you · noise: footstep noise · damp · comfort for sleeping · peg: ground hardness (0 soft–3 rock) · bl: wind block height class
+const PD_TP=[
+ {n:"grass",c:1,p:1,cv:0,no:1,dm:0,cf:1,pg:1,bl:0,col:[86,124,62]},
+ {n:"ploughed field",c:1.4,p:1,cv:0.05,no:1.2,dm:0.1,cf:0.5,pg:1,bl:0,col:[120,104,70]},
+ {n:"long grass",c:1.2,p:1,cv:0.3,no:1.3,dm:0.2,cf:1,pg:0.8,bl:0,col:[104,132,66]},
+ {n:"woodland",c:1.7,p:1,cv:0.7,no:1.7,dm:0.1,cf:0.6,pg:0.8,bl:3,col:[46,72,40]},
+ {n:"brambles",c:2.6,p:1,cv:0.65,no:2.4,dm:0.1,cf:0.2,pg:0.7,bl:1,col:[70,86,46]},
+ {n:"water",c:99,p:0,cv:0,no:0,dm:1,cf:0,pg:0,bl:0,col:[44,84,112]},
+ {n:"path",c:0.8,p:1,cv:0,no:1,dm:0,cf:0.3,pg:1.8,bl:0,col:[150,134,100]},
+ {n:"road",c:0.7,p:1,cv:0,no:0.8,dm:0,cf:0,pg:3,bl:0,col:[78,82,86]},
+ {n:"building",c:99,p:0,cv:1,no:0,dm:0,cf:0,pg:3,bl:3,col:[128,92,78]},
+ {n:"hedge",c:99,p:0,cv:1,no:0,dm:0,cf:0,pg:1,bl:2,col:[34,58,30]},
+ {n:"wall",c:7,p:1,cv:0.5,no:2,dm:0,cf:0,pg:3,bl:1,col:[120,118,112]},
+ {n:"farmyard",c:0.8,p:1,cv:0,no:1.3,dm:0.1,cf:0,pg:3,bl:0,col:[110,106,96]},
+ {n:"heather",c:1.4,p:1,cv:0.2,no:1.3,dm:0.2,cf:0.9,pg:0.9,bl:0,col:[110,90,82]},
+ {n:"granite",c:2,p:1,cv:0.45,no:1,dm:0,cf:0.1,pg:3,bl:2,col:[140,138,130]},
+ {n:"bog",c:2.6,p:1,cv:0.1,no:1.6,dm:1,cf:0.1,pg:0.2,bl:0,col:[78,96,64]},
+ {n:"garden",c:1,p:1,cv:0.25,no:1,dm:0,cf:1,pg:1,bl:0,col:[92,136,70]}
+];
+const PD_W=100, PD_TILE=4;
+/* ---------- seeded randomness ---------- */
+function pdRng(seed){ let a=seed>>>0||1; return ()=>{ a|=0; a=a+0x6D2B79F5|0; let t=Math.imul(a^a>>>15,1|a); t=t+Math.imul(t^t>>>7,61|t)^t; return ((t^t>>>14)>>>0)/4294967296; }; }
+function pdHash(x,y,s){ let h=(x*374761393+y*668265263+s*982451653)|0; h=Math.imul(h^h>>>13,1274126177); return ((h^h>>>16)>>>0)/4294967296; }
+function pdNoise(x,y,s){ const xi=Math.floor(x), yi=Math.floor(y), xf=x-xi, yf=y-yi, f=t=>t*t*(3-2*t);
+  const a=pdHash(xi,yi,s), b=pdHash(xi+1,yi,s), c=pdHash(xi,yi+1,s), d=pdHash(xi+1,yi+1,s);
+  return a+(b-a)*f(xf)+(c-a)*f(yf)+(a-b-c+d)*f(xf)*f(yf); }
+function pdFbm(x,y,s,o=4){ let v=0,a=0.5,fr=1,n=0; for(let i=0;i<o;i++){ v+=a*pdNoise(x*fr,y*fr,s+i*17); n+=a; a/=2; fr*=2; } return v/n; }
+
+/* ---------- world object ---------- */
+function pdNewWorld(kind){ return {kind,w:PD_W,h:PD_W,t:new Uint8Array(PD_W*PD_W),elev:new Float32Array(PD_W*PD_W),trees:[],objs:[],names:{},flags:{},spot:null,entry:null,origin:null,label:""}; }
+const pdIdx=(x,y)=>y*PD_W+x, pdIn=(x,y)=>x>=0&&y>=0&&x<PD_W&&y<PD_W;
+const pdAt=(W,x,y)=>pdIn(x|0,y|0)?W.t[pdIdx(x|0,y|0)]:PD_T.HEDGE;
+const pdSet=(W,x,y,v)=>{ x=Math.round(x); y=Math.round(y); if(pdIn(x,y)) W.t[pdIdx(x,y)]=v; };
+function pdDisk(W,x,y,r,v,only){ for(let dy=-Math.ceil(r);dy<=Math.ceil(r);dy++) for(let dx=-Math.ceil(r);dx<=Math.ceil(r);dx++){ if(dx*dx+dy*dy>r*r+0.25) continue; const X=Math.round(x+dx),Y=Math.round(y+dy); if(!pdIn(X,Y)) continue; if(only&&!only(W.t[pdIdx(X,Y)])) continue; W.t[pdIdx(X,Y)]=v; } }
+function pdLine(W,pts,v,width,only){ const r=Math.max(0,(width-1)/2);
+  for(let i=1;i<pts.length;i++){ const [x0,y0]=pts[i-1],[x1,y1]=pts[i], n=Math.max(1,Math.ceil(Math.hypot(x1-x0,y1-y0)*2));
+    for(let k=0;k<=n;k++){ const x=x0+(x1-x0)*k/n, y=y0+(y1-y0)*k/n; if(r<0.5){ const X=Math.round(x),Y=Math.round(y); if(pdIn(X,Y)&&(!only||only(W.t[pdIdx(X,Y)]))) W.t[pdIdx(X,Y)]=v; } else pdDisk(W,x,y,r,v,only); } } }
+function pdFill(W,ring,v,only){
+  if(ring.length<3) return; let x0=Infinity,x1=-Infinity,y0=Infinity,y1=-Infinity; ring.forEach(([x,y])=>{x0=Math.min(x0,x);x1=Math.max(x1,x);y0=Math.min(y0,y);y1=Math.max(y1,y);});
+  x0=Math.max(0,Math.floor(x0)); y0=Math.max(0,Math.floor(y0)); x1=Math.min(PD_W-1,Math.ceil(x1)); y1=Math.min(PD_W-1,Math.ceil(y1));
+  for(let y=y0;y<=y1;y++){ const xs=[]; for(let i=0,j=ring.length-1;i<ring.length;j=i++){ const a=ring[i],b=ring[j]; if((a[1]>y)!==(b[1]>y)) xs.push(a[0]+(y-a[1])*(b[0]-a[0])/(b[1]-a[1])); }
+    xs.sort((a,b)=>a-b); for(let k=0;k+1<xs.length;k+=2) for(let x=Math.max(x0,Math.ceil(xs[k]));x<=Math.min(x1,Math.floor(xs[k+1]));x++){ if(!only||only(W.t[pdIdx(x,y)])) W.t[pdIdx(x,y)]=v; } } }
+
+/* ---------- OpenStreetMap: fetch with timeouts and mirrors ---------- */
+const PD_OVERPASS=["https://overpass-api.de/api/interpreter","https://overpass.private.coffee/api/interpreter","https://overpass.kumi.systems/api/interpreter"];
+async function pdOverpass(q,onTry){
+  let last=null;
+  for(let i=0;i<PD_OVERPASS.length;i++){
+    const ctl=new AbortController(), timer=setTimeout(()=>ctl.abort(),i===0?14000:12000);
+    onTry&&onTry(i);
+    try{ const r=await fetch(PD_OVERPASS[i],{method:"POST",body:"data="+encodeURIComponent(q),headers:{"Content-Type":"application/x-www-form-urlencoded"},signal:ctl.signal});
+      clearTimeout(timer); if(!r.ok) throw new Error("busy ("+r.status+")"); const j=await r.json(); if(!j||!Array.isArray(j.elements)) throw new Error("bad reply"); return j; }
+    catch(e){ clearTimeout(timer); last=e; }
+  }
+  throw new Error("Couldn't reach the map data servers"+(last&&last.name==="AbortError"?" (too slow)":""));
+}
+function pdBBox(lat,lon){ const dLat=(PD_W*PD_TILE/2)/110540, dLon=(PD_W*PD_TILE/2)/(111320*Math.cos(lat*Math.PI/180)); return [lat-dLat,lon-dLon,lat+dLat,lon+dLon]; }
+function pdAreaQuery(lat,lon){ const [s,w,n,e]=pdBBox(lat,lon).map(v=>v.toFixed(5));
+  return `[out:json][timeout:20][bbox:${s},${w},${n},${e}];(
+way["natural"];relation["natural"~"^(wood|water|wetland|heath|scrub)$"];
+way["landuse"];relation["landuse"~"^(forest|farmland|meadow|grass)$"];
+way["waterway"];way["highway"];way["barrier"~"^(hedge|wall|fence|retaining_wall)$"];way["building"];way["leisure"~"^(park|nature_reserve|garden|pitch)$"];
+node["natural"="tree"];node["amenity"~"^(bench|pub|drinking_water|parking)$"];node["natural"~"^(peak|rock)$"];node["man_made"="survey_point"];node["place"];
+);out tags geom qt;
+is_in(${lat.toFixed(5)},${lon.toFixed(5)})->.a;(area.a["boundary"="national_park"];area.a["boundary"="protected_area"];area.a["designation"="access_land"];);out tags;`; }
+async function pdElevGrid(lat,lon){
+  const [s,w,n,e]=pdBBox(lat,lon), N=7, la=[], lo=[];
+  for(let j=0;j<N;j++) for(let i=0;i<N;i++){ la.push((n-(n-s)*j/(N-1)).toFixed(5)); lo.push((w+(e-w)*i/(N-1)).toFixed(5)); }
+  try{ const ctl=new AbortController(), tm=setTimeout(()=>ctl.abort(),9000);
+    const r=await fetch(`https://api.open-meteo.com/v1/elevation?latitude=${la.join(",")}&longitude=${lo.join(",")}`,{signal:ctl.signal}); clearTimeout(tm);
+    const j=await r.json(); return Array.isArray(j.elevation)&&j.elevation.length===N*N?j.elevation:null; }catch(e){ return null; }
+}
+/* stitch multipolygon member ways into closed rings */
+function pdRings(rel){
+  const segs=(rel.members||[]).filter(m=>m.type==="way"&&m.geometry&&m.role!=="inner").map(m=>m.geometry.map(g=>[g.lat,g.lon]));
+  const rings=[]; const key=p=>p[0].toFixed(6)+","+p[1].toFixed(6);
+  while(segs.length){ let ring=segs.shift(), grew=true;
+    while(grew&&key(ring[0])!==key(ring[ring.length-1])){ grew=false;
+      for(let i=0;i<segs.length;i++){ const s=segs[i], a=key(ring[ring.length-1]);
+        if(key(s[0])===a){ ring=ring.concat(s.slice(1)); segs.splice(i,1); grew=true; break; }
+        if(key(s[s.length-1])===a){ ring=ring.concat(s.slice(0,-1).reverse()); segs.splice(i,1); grew=true; break; } } }
+    rings.push(ring); }
+  return rings;
+}
+function pdFromOSM(lat,lon,els,elev,seed){
+  const W=pdNewWorld("real"); W.origin=[lat,lon]; const R=pdRng(seed);
+  const cosl=Math.cos(lat*Math.PI/180), P=(la,lo)=>[(lo-lon)*111320*cosl/PD_TILE+PD_W/2,(lat-la)*110540/PD_TILE+PD_W/2];
+  W.proj=null;
+  const ways=els.filter(e=>e.type==="way"&&e.geometry), rels=els.filter(e=>e.type==="relation"), nodes=els.filter(e=>e.type==="node");
+  const ringsOf=e=>e.type==="way"?[e.geometry.map(g=>P(g.lat,g.lon))]:pdRings(e).map(r=>r.map(p=>P(p[0],p[1])));
+  const polys=(test,v,only)=>[...ways,...rels].forEach(e=>{ const t=e.tags||{}; if(!test(t)) return; if(e.type==="way"&&!(e.geometry.length>3)) return; ringsOf(e).forEach(r=>pdFill(W,r,v,only)); });
+  const lines=(test,v,wd,only)=>ways.forEach(e=>{ const t=e.tags||{}; if(!test(t)) return; pdLine(W,e.geometry.map(g=>P(g.lat,g.lon)),v,typeof wd==="function"?wd(t):wd,only); });
+  // elevation first
+  if(elev){ for(let y=0;y<PD_W;y++) for(let x=0;x<PD_W;x++){ const gx=x/(PD_W-1)*6, gy=y/(PD_W-1)*6, i=Math.min(5,Math.floor(gx)), j=Math.min(5,Math.floor(gy)), fx=gx-i, fy=gy-j, g=(a,b)=>elev[b*7+a]??elev[0];
+      W.elev[pdIdx(x,y)]=g(i,j)*(1-fx)*(1-fy)+g(i+1,j)*fx*(1-fy)+g(i,j+1)*(1-fx)*fy+g(i+1,j+1)*fx*fy; } }
+  else W.elev.fill(60);
+  W.t.fill(PD_T.GRASS);
+  polys(t=>t.landuse==="farmland",PD_T.CROP);
+  polys(t=>/^(meadow|grass|village_green|recreation_ground|orchard)$/.test(t.landuse||"")||t.natural==="grassland",PD_T.MEADOW);
+  polys(t=>/^(residential|allotments)$/.test(t.landuse||"")||t.leisure==="garden",PD_T.GARDEN);
+  polys(t=>/^(farmyard|industrial|commercial|construction)$/.test(t.landuse||""),PD_T.YARD);
+  polys(t=>t.leisure==="park"||t.leisure==="pitch",PD_T.GRASS);
+  polys(t=>/^(heath|moor|fell)$/.test(t.natural||""),PD_T.HEATH);
+  polys(t=>t.natural==="scrub",PD_T.SCRUB);
+  polys(t=>t.natural==="wetland",PD_T.BOG);
+  polys(t=>/^(bare_rock|scree)$/.test(t.natural||""),PD_T.ROCK);
+  polys(t=>t.natural==="wood"||t.landuse==="forest",PD_T.WOOD);
+  polys(t=>t.natural==="water"||t.landuse==="reservoir"||t.waterway==="riverbank",PD_T.WATER);
+  lines(t=>/^(canal|river)$/.test(t.waterway||""),PD_T.WATER,t=>t.waterway==="canal"?3:Math.min(5,Math.max(2,Math.round((+t.width||8)/PD_TILE))));
+  lines(t=>/^(stream|brook)$/.test(t.waterway||""),PD_T.WATER,1);
+  lines(t=>/^(ditch|drain)$/.test(t.waterway||""),PD_T.BOG,1);
+  polys(t=>!!t.building,PD_T.BUILD);
+  // field boundaries: real hedges if mapped, otherwise hedge the edges of farmland/meadow (very Cheshire)
+  const hedges=ways.filter(e=>(e.tags||{}).barrier==="hedge");
+  if(hedges.length) lines(t=>t.barrier==="hedge",PD_T.HEDGE,1,v=>v!==PD_T.WATER&&v!==PD_T.BUILD);
+  else ways.filter(e=>/^(farmland|meadow|grass)$/.test((e.tags||{}).landuse||"")&&e.geometry.length>3).forEach(e=>pdLine(W,e.geometry.map(g=>P(g.lat,g.lon)),PD_T.HEDGE,1,v=>v!==PD_T.WATER&&v!==PD_T.BUILD&&v!==PD_T.WOOD));
+  lines(t=>/^(wall|retaining_wall)$/.test(t.barrier||""),PD_T.WALL,1);
+  lines(t=>t.barrier==="fence",PD_T.WALL,1,v=>v!==PD_T.WATER&&v!==PD_T.BUILD);
+  // roads and paths cut through hedges (gates and stiles)
+  lines(t=>/^(track)$/.test(t.highway||""),PD_T.PATH,2);
+  lines(t=>/^(footway|path|bridleway|steps|cycleway|pedestrian)$/.test(t.highway||""),PD_T.PATH,1);
+  lines(t=>/^(service|residential|unclassified|tertiary|living_street|tertiary_link)$/.test(t.highway||""),PD_T.ROAD,2);
+  lines(t=>/^(secondary|primary|trunk|motorway)/.test(t.highway||""),PD_T.ROAD,3);
+  // trees
+  for(let y=0;y<PD_W;y++) for(let x=0;x<PD_W;x++){ const v=W.t[pdIdx(x,y)];
+    if(v===PD_T.WOOD&&R()<0.33) W.trees.push({x:x+R(),y:y+R(),r:1.2+R()*1.6});
+    else if(v===PD_T.HEDGE&&R()<0.035) W.trees.push({x:x+0.5,y:y+0.5,r:1.8+R()*1.4,oak:1});
+    else if(v===PD_T.GARDEN&&R()<0.03) W.trees.push({x:x+R(),y:y+R(),r:1+R()}); }
+  nodes.filter(n=>(n.tags||{}).natural==="tree").forEach(n=>{ const [x,y]=P(n.lat,n.lon); if(pdIn(x|0,y|0)) W.trees.push({x,y,r:1.6+R()*1.2,oak:1}); });
+  ways.filter(e=>(e.tags||{}).natural==="tree_row").forEach(e=>{ const pts=e.geometry.map(g=>P(g.lat,g.lon)); for(let i=1;i<pts.length;i++){ const d=Math.hypot(pts[i][0]-pts[i-1][0],pts[i][1]-pts[i-1][1]); for(let k=0;k<d;k+=2.5){ const f=k/d; W.trees.push({x:pts[i-1][0]+(pts[i][0]-pts[i-1][0])*f,y:pts[i-1][1]+(pts[i][1]-pts[i-1][1])*f,r:1.4+R()}); } } });
+  // objects
+  nodes.forEach(n=>{ const t=n.tags||{}, [x,y]=P(n.lat,n.lon); if(!pdIn(x|0,y|0)) return;
+    if(t.amenity==="bench") W.objs.push({k:"bench",x,y}); if(t.amenity==="drinking_water") W.objs.push({k:"tap",x,y});
+    if(t.amenity==="pub") W.objs.push({k:"pub",x,y,name:t.name}); if(t.man_made==="survey_point"||t.natural==="peak") W.objs.push({k:"trig",x,y,name:t.name}); if(t.amenity==="parking") W.objs.push({k:"car",x,y}); });
+  ways.filter(e=>(e.tags||{}).building).forEach(e=>{ const t=e.tags, c=e.geometry.reduce((a,g)=>[a[0]+g.lat/e.geometry.length,a[1]+g.lon/e.geometry.length],[0,0]), [x,y]=P(c[0],c[1]);
+    if(pdIn(x|0,y|0)) W.objs.push({k:/farm|barn|stable|cowshed/.test(t.building)?"barn":"house",x,y,lit:/house|residential|detached|semidetached_house|terrace|farm|bungalow|yes/.test(t.building)&&R()<0.75,name:t.name}); });
+  if(ways.some(e=>/^(farmyard)$/.test((e.tags||{}).landuse||"")||/farm/.test((e.tags||{}).building||""))) W.flags.farm=true;
+  // canal boats
+  const canal=ways.find(e=>(e.tags||{}).waterway==="canal");
+  if(canal){ W.flags.canal=true; W.names.water=canal.tags.name||"the canal"; pdPlaceBoats(W,R); }
+  const river=ways.find(e=>/^(river|stream)$/.test((e.tags||{}).waterway||"")); if(river&&!W.names.water) W.names.water=river.tags.name||("the "+river.tags.waterway);
+  const wood=[...ways,...rels].find(e=>((e.tags||{}).natural==="wood"||(e.tags||{}).landuse==="forest")&&(e.tags||{}).name); if(wood) W.names.wood=wood.tags.name;
+  const place=nodes.find(n=>(n.tags||{}).place&&n.tags.name); if(place) W.names.place=place.tags.name;
+  const path=ways.find(e=>/^(footway|path|bridleway|track)$/.test((e.tags||{}).highway||"")&&e.tags.name); if(path) W.names.path=path.tags.name;
+  const road=ways.find(e=>/^(residential|unclassified|tertiary|secondary|primary)/.test((e.tags||{}).highway||"")&&e.tags.name); if(road) W.names.road=road.tags.name;
+  const areas=els.filter(e=>e.type==="area").map(e=>e.tags||{});
+  const park=areas.find(t=>t.boundary==="national_park"); W.flags.park=park?park.name||"a national park":null; W.flags.legal=/dartmoor/i.test(W.flags.park||"");
+  W.flags.moor=W.flags.legal||pdCount(W,PD_T.HEATH)>PD_W*PD_W*0.25;
+  W.spot=[PD_W/2,PD_W/2]; W.label=W.names.place||W.names.wood||W.names.water||"your spot";
+  pdFinish(W,R); return W;
+}
+function pdCount(W,v){ let n=0; for(let i=0;i<W.t.length;i++) if(W.t[i]===v) n++; return n; }
+function pdPlaceBoats(W,R){ const cand=[]; for(let y=1;y<PD_W-1;y++) for(let x=4;x<PD_W-4;x++){ if(W.t[pdIdx(x,y)]!==PD_T.WATER) continue; const adj=[[0,-1],[0,1],[-1,0],[1,0]].some(([dx,dy])=>W.t[pdIdx(x+dx,y+dy)]===PD_T.PATH); if(adj) cand.push([x,y]); }
+  const n=Math.min(3,Math.floor(cand.length/40)); for(let i=0;i<n;i++){ const [x,y]=cand[Math.floor(R()*cand.length)]; if(W.objs.some(o=>o.k==="boat"&&Math.hypot(o.x-x,o.y-y)<10)) continue;
+    const horiz=W.t[pdIdx(x-1,y)]===PD_T.WATER&&W.t[pdIdx(x+1,y)]===PD_T.WATER; W.objs.push({k:"boat",x:x+0.5,y:y+0.5,ang:horiz?0:Math.PI/2,lit:R()<0.8,col:["#7a1f2b","#1f4a7a","#2b5a2b","#4a2b5a"][Math.floor(R()*4)]}); } }
+
+/* ---------- shared finishing: entry points, regions ---------- */
+function pdFinish(W,R){
+  // edge entries on paths/roads for people
+  W.entries=[]; for(let i=0;i<PD_W;i++) [[i,0],[i,PD_W-1],[0,i],[PD_W-1,i]].forEach(([x,y])=>{ const v=W.t[pdIdx(x,y)]; if(v===PD_T.PATH||v===PD_T.ROAD) W.entries.push([x,y,v]); });
+  W.hasPaths=W.t.some(v=>v===PD_T.PATH); W.hasRoads=W.t.some(v=>v===PD_T.ROAD);
+  // relief (for hilltops, frost pockets)
+  W.relief=new Float32Array(PD_W*PD_W); const r=8;
+  for(let y=0;y<PD_W;y++) for(let x=0;x<PD_W;x++){ let s=0,n=0; for(let dy=-r;dy<=r;dy+=4) for(let dx=-r;dx<=r;dx+=4){ if(!dx&&!dy) continue; const X=x+dx,Y=y+dy; if(pdIn(X,Y)){ s+=W.elev[pdIdx(X,Y)]; n++; } } W.relief[pdIdx(x,y)]=W.elev[pdIdx(x,y)]-s/Math.max(1,n); }
+  if(!W.entry){ const tgt=W.spot||[50,50]; let best=null; (W.entries.length?W.entries:pdBorderPassable(W)).forEach(e=>{ const d=Math.hypot(e[0]-tgt[0],e[1]-tgt[1]); if(!best||d>best.d*0.6&&R()<0.5||d<best.d&&R()<0.3) best={e,d}; }); W.entry=best?best.e.slice(0,2):[0,50]; }
+  W.treeGrid=new Map(); W.trees.forEach((t,i)=>{ const k=(t.x|0)+","+(t.y|0); if(!W.treeGrid.has(k)) W.treeGrid.set(k,[]); W.treeGrid.get(k).push(i); });
+}
+function pdBorderPassable(W){ const o=[]; for(let i=0;i<PD_W;i+=3) [[i,0],[i,PD_W-1],[0,i],[PD_W-1,i]].forEach(([x,y])=>{ if(PD_TP[W.t[pdIdx(x,y)]].p) o.push([x,y]); }); return o; }
+
+/* ---------- generated locations ---------- */
+const PD_PRESETS={
+  towpath:{name:"Off the Towpath",where:"Hurleston, Cheshire",sub:"Canal, hedged fields, a farm and a copse",month:11,low:-1,high:7,humid:88,wind:4,rain:0,legal:false},
+  hill:{name:"Storm Hill",where:"Bickerton Hills, Cheshire",sub:"Exposed hill farm, gusts and rain",month:10,low:6,high:10,humid:95,wind:18,rain:2,legal:false},
+  river:{name:"Midsummer River",where:"River Weaver meadows",sub:"Long grass, willows, a village edge, midges",month:6,low:11,high:22,humid:80,wind:2,rain:0,legal:false},
+  moor:{name:"Dartmoor Commons",where:"Near Hound Tor, Devon",sub:"Legal wild camp: open moor, tors, ponies",month:10,low:3,high:9,humid:88,wind:14,rain:1,legal:true}
+};
+function pdGenerate(kind,seed){
+  const W=pdNewWorld(kind), R=pdRng(seed), s=seed%9973, T=PD_T;
+  const fields=(base,hedgeP=1)=>{ // jittered grid of fields with hedges and gates
+    const xs=[0], ys=[0]; let a=0; while(a<PD_W-18){ a+=18+Math.floor(R()*14); xs.push(Math.min(PD_W-1,a)); } let b=0; while(b<PD_W-18){ b+=16+Math.floor(R()*14); ys.push(Math.min(PD_W-1,b)); }
+    for(let y=0;y<PD_W;y++) for(let x=0;x<PD_W;x++) W.t[pdIdx(x,y)]=base(x,y);
+    xs.forEach(X=>{ if(X<=0||X>=PD_W-1||R()>hedgeP) return; const pts=[]; for(let y=0;y<PD_W;y+=6) pts.push([X+(pdNoise(X,y/10,s)-0.5)*4,y]); pts.push([X,PD_W]); pdLine(W,pts,T.HEDGE,1); });
+    ys.forEach(Y=>{ if(Y<=0||Y>=PD_W-1||R()>hedgeP) return; const pts=[]; for(let x=0;x<PD_W;x+=6) pts.push([x,Y+(pdNoise(x/10,Y,s+5)-0.5)*4]); pts.push([PD_W,Y]); pdLine(W,pts,T.HEDGE,1); });
+    for(let y=0;y<PD_W;y++) for(let x=0;x<PD_W;x++) if(W.t[pdIdx(x,y)]===T.HEDGE&&R()<0.012){ pdDisk(W,x,y,1,base(x,y),v=>v===T.HEDGE); W.objs.push({k:"gate",x:x+0.5,y:y+0.5}); }
+    for(let y=0;y<PD_W;y++) for(let x=0;x<PD_W;x++) if(W.t[pdIdx(x,y)]===T.HEDGE&&R()<0.03) W.trees.push({x:x+0.5,y:y+0.5,r:1.8+R()*1.5,oak:1});
+  };
+  const blob=(cx,cy,r,v,only)=>{ for(let y=0;y<PD_W;y++) for(let x=0;x<PD_W;x++){ const d=Math.hypot(x-cx,y-cy)/r+(pdFbm(x/9,y/9,s+31)-0.5)*0.9; if(d<1&&(!only||only(W.t[pdIdx(x,y)]))) W.t[pdIdx(x,y)]=v; } };
+  const woodTrees=()=>{ for(let y=0;y<PD_W;y++) for(let x=0;x<PD_W;x++) if(W.t[pdIdx(x,y)]===T.WOOD&&R()<0.36) W.trees.push({x:x+R(),y:y+R(),r:1.2+R()*1.7}); };
+  const farm=(cx,cy)=>{ blob(cx,cy,7,T.YARD); [[0,0,6,4],[8,-3,4,7],[-7,3,4,4]].forEach(([dx,dy,w,h],i)=>{ for(let y=0;y<h;y++) for(let x=0;x<w;x++) pdSet(W,cx+dx+x-w/2,cy+dy+y-h/2,T.BUILD); W.objs.push({k:i?"barn":"house",x:cx+dx,y:cy+dy,lit:i===0}); }); W.flags.farm=true; };
+  for(let y=0;y<PD_W;y++) for(let x=0;x<PD_W;x++) W.elev[pdIdx(x,y)]=50+pdFbm(x/40,y/40,s+3)*25;
+  if(kind==="towpath"){
+    fields((x,y)=>pdNoise(x/30,y/30,s+9)>0.55?T.MEADOW:pdNoise(x/25,y/25,s+11)>0.5?T.CROP:T.GRASS);
+    const cy=58+Math.floor(R()*8), canal=[]; for(let x=-2;x<=PD_W+2;x+=4) canal.push([x,cy+Math.sin(x/23+s)*5]);
+    pdLine(W,canal,T.WATER,3); pdLine(W,canal.map(([x,y])=>[x,y-2.5]),T.PATH,1); pdLine(W,canal.map(([x,y])=>[x,y+2.5]),T.MEADOW,1);
+    blob(28+R()*40,25+R()*12,11,T.WOOD,v=>v!==T.WATER); blob(70+R()*15,80+R()*8,8,T.WOOD,v=>v!==T.WATER&&v!==T.PATH);
+    blob(20+R()*20,78,5,T.SCRUB,v=>v!==T.WATER&&v!==T.PATH);
+    const fx=72+R()*14, fy=22+R()*10; farm(fx,fy);
+    pdLine(W,[[PD_W,8],[fx+12,10],[fx,fy]],T.PATH,2); pdLine(W,[[-1,4],[40,6],[PD_W,8]],T.ROAD,2);
+    const bx=12+R()*20; pdLine(W,[[bx,6],[bx+3,cy-3],[bx+4,cy+4],[bx+6,PD_W]],T.ROAD,2);
+    pdLine(W,[[50,6],[52,30],[48,cy-3]],T.PATH,1);
+    W.objs.push({k:"bench",x:44,y:cy-4}); W.objs.push({k:"lock",x:60,y:cy}); W.names={water:"the Shropshire Union",wood:"Hurleston Covert",place:"Hurleston",path:"the towpath",road:"the lane"}; W.flags.canal=true;
+    pdPlaceBoats(W,R);
+  } else if(kind==="hill"){
+    for(let y=0;y<PD_W;y++) for(let x=0;x<PD_W;x++) W.elev[pdIdx(x,y)]=120+90*Math.exp(-((x-58)**2+(y-40)**2)/1400)+pdFbm(x/20,y/20,s)*12;
+    fields((x,y)=>W.elev[pdIdx(x,y)]>190?T.HEATH:pdNoise(x/30,y/30,s)>0.5?T.GRASS:T.MEADOW,0.8);
+    blob(58,40,9,T.HEATH); blob(25,70,12,T.WOOD); blob(80,75,7,T.WOOD); blob(40,30,4,T.SCRUB); blob(70,52,4,T.SCRUB);
+    for(let y=36;y<44;y++) for(let x=54;x<62;x++) if(R()<0.35) W.t[pdIdx(x,y)]=T.ROCK;
+    farm(18,22); pdLine(W,[[-1,92],[40,90],[PD_W,94]],T.ROAD,2); pdLine(W,[[18,22],[10,50],[20,90]],T.PATH,2);
+    pdLine(W,[[44,PD_W],[50,70],[57,46],[58,40],[66,20],[70,-1]],T.PATH,1); W.objs.push({k:"trig",x:58,y:40,name:"the trig point"});
+    W.names={wood:"Peckforton Woods",place:"Burwardsley",path:"the Sandstone Trail",road:"Coppermine Lane"};
+  } else if(kind==="river"){
+    fields((x,y)=>pdNoise(x/25,y/25,s)>0.45?T.MEADOW:T.GRASS,0.7);
+    const river=[]; for(let y=-2;y<=PD_W+2;y+=3) river.push([48+Math.sin(y/14+s)*14+Math.sin(y/5)*2,y]);
+    pdLine(W,river,T.WATER,3); river.forEach(([x,y],i)=>{ if(i%2) W.trees.push({x:x+(R()<0.5?-3:3),y,r:2+R(),willow:1}); });
+    pdLine(W,river.map(([x,y])=>[x+4,y]),T.PATH,1); blob(15,20,9,T.WOOD);
+    const by=30+Math.floor(R()*30), bx=river.reduce((a,p)=>Math.abs(p[1]-by)<Math.abs(a[1]-by)?p:a)[0]; pdLine(W,[[2,by-6],[bx-6,by],[bx+6,by]],T.PATH,1); W.objs.push({k:"bridge",x:bx,y:by});
+    for(let y=60;y<PD_W;y++) for(let x=72;x<PD_W;x++) W.t[pdIdx(x,y)]=T.GARDEN;
+    [[78,66],[88,66],[78,80],[90,82],[80,94],[92,94]].forEach(([x,y],i)=>{ for(let j=0;j<5;j++) for(let k=0;k<6;k++) pdSet(W,x+k-3,y+j-2,T.BUILD); W.objs.push({k:"house",x,y,lit:true}); });
+    pdLine(W,[[70,-1],[72,58],[PD_W,62]],T.ROAD,2); pdLine(W,[[72,58],[70,PD_W]],T.ROAD,2);
+    W.objs.push({k:"bench",x:56,y:45}); W.objs.push({k:"pub",x:84,y:58,name:"The Ferry Inn"}); for(let i=0;i<3;i++) pdSet(W,84+i-1,58,T.BUILD);
+    W.names={water:"the River Weaver",wood:"Vale Royal wood",place:"Winsford",path:"the Weaver Way",road:"Ferry Lane"};
+  } else if(kind==="moor"){
+    for(let y=0;y<PD_W;y++) for(let x=0;x<PD_W;x++) W.elev[pdIdx(x,y)]=330+60*Math.exp(-((x-34)**2+(y-30)**2)/500)+40*pdFbm(x/30,y/30,s);
+    for(let y=0;y<PD_W;y++) for(let x=0;x<PD_W;x++) W.t[pdIdx(x,y)]=pdFbm(x/14,y/14,s+2)>0.58?T.MEADOW:T.HEATH;
+    for(let y=0;y<PD_W;y++) for(let x=0;x<PD_W;x++){ const d=Math.hypot(x-34,y-30); if(d<7&&R()<0.5+0.4*(1-d/7)) W.t[pdIdx(x,y)]=T.ROCK; }
+    const st=[]; for(let y=-2;y<=PD_W+2;y+=3) st.push([72+Math.sin(y/11+s)*8,y]); pdLine(W,st,T.WATER,1); st.forEach(([x,y])=>{ if(R()<0.5) pdDisk(W,x+(R()-0.5)*6,y,1.5+R()*2,T.BOG,v=>v!==T.WATER); });
+    [25,62].forEach(y=>{ const sx=st.reduce((a,p)=>Math.abs(p[1]-y)<Math.abs(a[1]-y)?p:a)[0]; pdLine(W,[[sx-4,y],[sx+4,y]],T.HEATH,1); W.objs.push({k:"stones",x:sx,y}); });
+    for(let i=0;i<14;i++){ const x=R()*PD_W, y=R()*PD_W; if(W.t[pdIdx(x|0,y|0)]!==T.ROCK) W.trees.push({x,y,r:1+R()*0.8,thorn:1}); }
+    blob(85,15,6,T.SCRUB); pdLine(W,[[-1,94],[50,92],[PD_W,96]],T.ROAD,2); blob(18,90,3,T.YARD); W.objs.push({k:"car",x:17,y:90},{k:"car",x:20,y:91});
+    pdLine(W,[[18,90],[26,60],[32,36]],T.PATH,1); pdLine(W,[[34,30],[60,18],[PD_W,10]],T.PATH,1); W.objs.push({k:"trig",x:34,y:30,name:"Hound Tor"});
+    W.flags.legal=true; W.flags.moor=true; W.flags.park="Dartmoor National Park"; W.names={water:"the stream",place:"Manaton",path:"the tor path",road:"the moor road"};
+  }
+  if(kind!=="moor") woodTrees();
+  const P=PD_PRESETS[kind]; W.label=P?P.where:"";
+  W.spot=null; pdFinish(W,R); return W;
+}
+
+/* ---------- site analysis: how good is a tile for a pitch ---------- */
+function pdLOS(W,x0,y0,x1,y1){ // returns 0..1 visibility along the line (1 = clear)
+  let v=1; const n=Math.ceil(Math.hypot(x1-x0,y1-y0)); for(let i=1;i<n;i++){ const x=x0+(x1-x0)*i/n, y=y0+(y1-y0)*i/n, t=pdAt(W,x,y);
+    if(t===PD_T.BUILD||t===PD_T.HEDGE) return 0; if(t===PD_T.WOOD) v*=0.82; else if(t===PD_T.SCRUB) v*=0.85; else if(t===PD_T.ROCK) v*=0.7; else if(t===PD_T.WALL) v*=0.6;
+    if(v<0.05) return 0; } return v; }
+function pdWindShelter(W,x,y,dir){ // dir: radians the wind comes FROM
+  const dx=Math.cos(dir), dy=Math.sin(dir); let sh=0;
+  for(let d=1;d<=24;d++){ const t=pdAt(W,x+dx*d,y+dy*d), H={2:6,3:22,1:3}[PD_TP[t].bl]||0; if(H) sh=Math.max(sh,1-d/H); }
+  const here=pdAt(W,x,y); if(here===PD_T.WOOD) sh=Math.max(sh,0.75);
+  const rel=W.relief?W.relief[pdIdx(x|0,y|0)]:0; let ex=1-sh; if(rel>6) ex*=1.25; if(rel<-6) ex*=0.8;
+  return Math.max(0,Math.min(1.3,ex));
+}
+function pdSite(W,x,y,env){
+  x=Math.round(x); y=Math.round(y); const t=pdAt(W,x,y), TP=PD_TP[t];
+  if(!TP.p||t===PD_T.ROAD) return {ok:false,why:t===PD_T.ROAD?"You can't pitch on a road.":"You can't pitch here."};
+  // seen from paths and roads
+  let exposed=0, n=0;
+  for(let dy=-40;dy<=40;dy+=3) for(let dx=-40;dx<=40;dx+=3){ const X=x+dx,Y=y+dy, v=pdAt(W,X,Y); if(v!==PD_T.PATH&&v!==PD_T.ROAD&&v!==PD_T.YARD) continue; const d=Math.hypot(dx,dy); if(d>40) continue; n++; exposed=Math.max(exposed,pdLOS(W,X,Y,x,y)*(1-d/44)); }
+  let localCover=TP.cv; [[1,0],[-1,0],[0,1],[0,-1]].forEach(([a,b])=>{ localCover=Math.max(localCover,PD_TP[pdAt(W,x+a,y+b)].cv*0.6); });
+  const hidden=Math.round(100*(1-exposed*(1-localCover*0.7)));
+  const wind=pdWindShelter(W,x,y,env.windDir);
+  let wd=99; for(let r=1;r<=16&&wd===99;r++) for(let a=0;a<16;a++){ if(pdAt(W,x+Math.cos(a/16*6.283)*r,y+Math.sin(a/16*6.283)*r)===PD_T.WATER){ wd=r; break; } }
+  const rel=W.relief[pdIdx(x,y)], slope=Math.abs(W.elev[pdIdx(Math.min(PD_W-1,x+1),y)]-W.elev[pdIdx(Math.max(0,x-1),y)])+Math.abs(W.elev[pdIdx(x,Math.min(PD_W-1,y+1))]-W.elev[pdIdx(x,Math.max(0,y-1))]);
+  const roots=t===PD_T.WOOD;
+  const comfort=Math.max(0,Math.min(1,TP.cf-(slope>3?0.3:0)-(roots?0.1:0)));
+  const damp=Math.min(1,TP.dm+(wd<6?0.5:wd<12?0.25:0)+(rel<-5?0.25:0));
+  const frost=env.low<=1&&TP.cv<0.5&&rel<-3;
+  const frozen=env.low<=0&&TP.cv<0.6;
+  const hard=Math.min(3,TP.pg+(frozen?1.2:0));
+  const trees=[]; (function(){ for(let dy=-3;dy<=3;dy++) for(let dx=-3;dx<=3;dx++){ (W.treeGrid.get((x+dx)+","+(y+dy))||[]).forEach(i=>trees.push(W.trees[i])); } })();
+  let hammock=null; for(let i=0;i<trees.length&&!hammock;i++) for(let j=i+1;j<trees.length;j++){ const d=Math.hypot(trees[i].x-trees[j].x,trees[i].y-trees[j].y); if(d>=0.9&&d<=1.6){ hammock=[trees[i],trees[j]]; break; } }
+  const lntOK=wd>=15;
+  return {ok:true,x,y,t,name:TP.n,hidden,wind,waterDist:wd*PD_TILE,comfort,damp,frost,frozen,hard,hammock,lntOK,cover:localCover,slope,rel};
+}
+function pdSiteWords(s){
+  const g=v=>v>=70?"good":v>=45?"OK":"poor";
+  return [["👁️ Hidden",g(s.hidden),s.hidden],["🌬️ Shelter",g(100-s.wind*75),Math.round(100-s.wind*75)],["🛏️ Ground",g(s.comfort*100),Math.round(s.comfort*100)],["💧 Dry",g(100-s.damp*100),Math.round(100-s.damp*100)]];
+}
+/* ============================================================
+   PITCH DARK (game): ENGINE
+   Real-time survival + stealth sim. Time is in game minutes from midnight of the night's date
+   (so 16:30 = 990, 07:10 next day = 1870).
+   ============================================================ */
+let PD=null, PDW=null; // current night state, current world
+const PD_SPEED={walk:0.25,fast:1.2,sleep:9}; // game minutes per real second
+const pdHM=t=>{ t=((Math.round(t)%1440)+1440)%1440; return String(Math.floor(t/60)).padStart(2,"0")+":"+String(t%60).padStart(2,"0"); };
+const pdClamp=(v,a=0,b=100)=>Math.max(a,Math.min(b,v));
+const pdDist=(a,b)=>Math.hypot(a.x-b.x,a.y-b.y);
+const pdAng=(a,b)=>{ let d=a-b; while(d>Math.PI) d-=2*Math.PI; while(d<-Math.PI) d+=2*Math.PI; return d; };
+
+/* ---------- kit analysis ---------- */
+const PD_COL=[[/camo|mtp|dpm|multicam/i,"camo"],[/hi-?vis|fluor|neon|lime/i,"#d7e21b"],[/orange/i,"#e8681a"],[/\bred\b/i,"#a8322d"],[/yellow/i,"#d8b83a"],[/navy|dark blue/i,"#24365a"],[/\bblue\b/i,"#2e5a9a"],[/olive|khaki|army|sage|forest|green/i,"#4c5a30"],[/coyote|\btan\b|brown|sand/i,"#7a5c3a"],[/black/i,"#222"],[/silver|grey|gray/i,"#8a8d90"],[/white/i,"#ddd"]];
+function pdColour(it){ const s=((it&&(it.colour||""))+" "+(it?it.name:"")); for(const [r,c] of PD_COL) if(r.test(s)) return c; return "#5a5a4a"; }
+function pdKit(c){
+  const L=classLines(c), f=fn=>(L.find(l=>fn(l.it))||{}).it||null, any=fn=>L.some(l=>fn(l.it)), n=s=>s.name.replace(/\s*\(.*?\)\s*/g," ").trim();
+  const shelters=L.filter(l=>l.it.kind==="shelter").map(l=>l.it);
+  const layers=L.filter(l=>l.it.kind==="layer").map(l=>l.it).sort((a,b)=>(+b.warmth||0)-(+a.warmth||0));
+  const meals=c.meals||[];
+  const waterCap=L.filter(l=>/bottle|container|bladder|canteen|nalgene|platypus|hydration/i.test(l.it.name)&&!/flask|insulated|thermos|vacuum/i.test(l.it.name)).reduce((s,l)=>{ const m=l.it.name.match(/(\d+(?:\.\d+)?)\s*L\b/i); return s+(m?+m[1]:0.75)*l.q; },0);
+  const pack=f(it=>RX.pack.test(it.name)&&!RX.drybag.test(it.name));
+  const k={c,shelters,layers,bag:f(it=>it.kind==="bag"),pads:L.filter(l=>l.it.kind==="pad").map(l=>l.it),
+    light:f(isLight),red:any(it=>isLight(it)&&redOf(it)),flasks:L.filter(l=>/flask|insulated|thermos|vacuum/i.test(l.it.name)).reduce((s,l)=>s+l.q,0),
+    stove:any(it=>RX.stove.test(it.name))&&any(it=>RX.gas.test(it.name))&&any(it=>/lighter|match|fire ?steel|ferro/i.test(it.name)||RX.stove.test(it.name)&&/piezo|ignit/i.test(it.name)),
+    headnet:any(it=>RX.headnet.test(it.name)),drybag:any(it=>RX.drybag.test(it.name)),towel:any(it=>RX.towel.test(it.name)),bank:any(it=>RX.power.test(it.name)),
+    filter:any(it=>/filter|sawyer|lifestraw|purif|steripen/i.test(it.name)),optic:any(it=>RX.optic.test(it.name)),metalPegs:any(it=>RX.ypeg.test(it.name)),pegs:any(it=>RX.peg.test(it.name)),
+    cord:any(it=>RX.cord.test(it.name)),trowel:any(it=>RX.trowel.test(it.name)),socks:any(it=>/sock/i.test(it.name)),gloves:any(it=>/glove|mitt/i.test(it.name)),hat:any(it=>RX.hat.test(it.name)||/beanie|balaclava|buff/i.test(it.name)),
+    poncho:shelters.find(s=>s.shelter==="poncho")||null,tarp:shelters.find(s=>s.shelter==="tarp")||null,
+    snacks:Math.max(2,Math.min(8,meals.filter(m=>m.type==="snack"||m.type==="lunch").length||3)),hot:meals.filter(m=>m.hot).length||(any(it=>RX.stove.test(it.name))?1:0),
+    waterCap:Math.round(waterCap*10)/10,packCol:pdColour(pack),packKg:weights(c).pack/1000,stealth:stealth(c).score,name:n};
+  const main=shelters.slice().sort((a,b)=>({tent:0,hammock:1,bivvy:2,tarp:3,poncho:4}[a.shelter]??5)-({tent:0,hammock:1,bivvy:2,tarp:3,poncho:4}[b.shelter]??5))[0]||null;
+  k.main=main; k.mainCol=main?pdColour(main):"#555"; k.vis=main?(visOf(main)??1):1;
+  return k;
+}
+
+/* ---------- start a night ---------- */
+function pdStart(o){
+  const c=S.classes.find(x=>x.id===o.classId)||cls(), K=pdKit(c), seed=o.seed??Math.floor(Math.random()*1e9), R=pdRng(seed^0x5bd1e995);
+  const W=o.world||pdGenerate(o.preset||"towpath",seed); PDW=W;
+  const P=PD_PRESETS[o.preset]||{}, wx=o.wx||{low:P.low??5,high:P.high??11,humid:P.humid??85,windAvg:P.wind??8,rain:P.rain??0,bugs:(P.month>=6&&P.month<=8)?2:0};
+  const date=o.date||todayISO(), month=o.month||P.month||+date.slice(5,7);
+  const lat=W.origin?W.origin[0]:{towpath:53.1,hill:53.07,river:53.2,moor:50.58}[o.preset]||53, lon=W.origin?W.origin[1]:{towpath:-2.57,hill:-2.73,river:-2.52,moor:-3.77}[o.preset]||-2.5;
+  const sunIso=o.preset?`${date.slice(0,4)}-${String(month).padStart(2,"0")}-${month===6?"21":"15"}`:date;
+  const sun=gmSun(lat,lon,sunIso), moon=o.moon??gmMoon(sunIso);
+  const cloud=wx.rain>=1?0.9:Math.min(0.95,Math.max(0.05,(wx.humid-60)/45+R()*0.3-0.1));
+  const env={low:wx.low-(cloud<0.3?1.5:0),high:wx.high,humid:wx.humid,windAvg:wx.windAvg,rain:wx.rain,bugs:wx.bugs??((month>=6&&month<=8&&W.t.some(v=>v===PD_T.WATER))?2:month>=5&&month<=9?1:0),
+    month,sunset:(o.sunset??sun.sunset)*60,sunrise:1440+(o.sunrise??sun.sunrise)*60,moon,cloud,windDir:(R()<0.7?Math.PI*0.75:R()*6.283)+(R()-0.5)*0.8,hours:o.hours||null,legal:!!(W.flags.legal||P.legal)};
+  if(env.rain>=1){ const st=1260+Math.floor(R()*(env.rain>=2?120:300)); env.rainAt=st; env.rainEnd=st+(env.rain>=2?420:120+Math.floor(R()*180)); }
+  if(env.windAvg>=12) env.gustAt=1320+Math.floor(R()*240);
+  const t0=Math.max(13*60,Math.round(env.sunset-65));
+  // twists
+  const tw=[]; const add=(id,p)=>{ if(R()<p) tw.push(id); };
+  if(moon>0.42&&moon<0.58) tw.push("fullmoon");
+  if(env.low<=0&&cloud<0.6) tw.push("frost");
+  if(W.flags.farm&&!env.legal) add("cattle",0.3);
+  if(W.flags.farm&&(month>=2&&month<=4)) add("lambing",0.6);
+  if(W.t.some(v=>v===PD_T.WOOD)) add("keeper",0.15); add("owls",0.3);
+  if(W.hasPaths) add("dogwalkers",0.2);
+  if((month===8||month===12)&&cloud<0.6) tw.push("meteors");
+  if(env.humid>=88&&W.t.some(v=>v===PD_T.WATER)) add("fog",0.5);
+  if(W.objs.some(o=>o.k==="pub")) add("pubnight",0.5);
+  const flaskUses=K.flasks*2;
+  PD={v:3,seed,rs:seed,src:o.src||"preset",preset:o.preset||null,date,classId:c.id,className:c.name,diff:o.diff||"normal",label:o.label||W.label,
+    t:t0,t0,env,twists:tw,speed:"walk",paused:false,
+    p:{x:W.entry[0]+0.5,y:W.entry[1]+0.5,path:[],dir:0,speed:1,sneak:false,torch:"off",state:"free",busy:null,worn:{},headnet:false,moved:0,still:0,lastStep:0},
+    b:{warmth:80,energy:Math.min(96,74+(c.meals&&c.meals.length?8:0)-Math.min(20,(o.walkInKm||1.5)*2.2)),dry:100,morale:66,hunger:120,thirst:82,bladder:25,sweat:0,slept:0,heatBoost:0,heatUntil:0},
+    r:{water:Math.max(0.5,K.waterCap||0.5),phone:84,torch:K.light?100:0,bank:K.bank?2:0,snacks:K.snacks,hot:K.hot,flask:flaskUses,flaskAt:t0-60,gas:K.stove?1:0},
+    camp:null,npcs:[],animals:[],noises:[],msgs:[],sched:[],heat:0,stats:{spotted:0,heard:0,seen:[],minW:80,maxHeat:0,lnt:4,lntWhy:[],moments:{},disturb:0,trail:[]},
+    flags:{},nid:1,ended:null,wake:null,walkInKm:o.walkInKm||null,routeName:o.routeName||null};
+  // already-worn layers from the class
+  Object.keys(c.worn||{}).forEach(id=>{ const it=item(id); if(it&&it.kind==="layer") PD.p.worn[id]=1; });
+  if(!Object.keys(PD.p.worn).length&&K.layers.length) PD.p.worn[K.layers[K.layers.length-1].id]=1;
+  pdSchedule(R);
+  pdMsg(o.intro||pdIntro(K),"story");
+  if(!(S.pdTips&&S.pdTips.walk)) setTimeout(()=>PD&&pdTip("walk","Tap the map to walk. Paths and roads are where people go. Find cover away from them: woods, hedge corners, scrub. Then ⛺ Pitch here."),50);
+  pdThermalCache(true);
+  return PD;
+}
+function pdIntro(K){
+  const e=PD.env, w=PDW, bits=[];
+  bits.push(`${pdHM(PD.t)}. ${PD.walkInKm?`${PD.walkInKm.toFixed(1)} km in${PD.routeName?" on "+PD.routeName:""}, `:""}${K.packKg.toFixed(1)} kg on your back.`);
+  bits.push(`Sunset ${pdHM(e.sunset)}, ${Math.round(e.low)}°C by dawn${e.rain?", rain later":""}${e.windAvg>=12?", windy":""}.`);
+  bits.push(e.legal?"Wild camping is allowed here. Find somewhere good.":"Find somewhere hidden to pitch. Stay out of sight of the paths.");
+  if(PD.twists.length) bits.push("Tonight: "+PD.twists.map(t=>PD_TWIST[t]).join(" · ")+".");
+  return bits.join(" ");
+}
+const PD_TWIST={fullmoon:"full moon (bright, easy to be seen)",frost:"hard frost",cattle:"cattle in the fields",lambing:"lambing season (the farmer's up at night)",keeper:"a gamekeeper about",owls:"owl territory",dogwalkers:"a lot of dog walkers",meteors:"a meteor shower",fog:"fog later",pubnight:"a busy night at the pub"};
+function pdRand(){ PD.rs=(PD.rs+0x6D2B79F5)|0; let t=Math.imul(PD.rs^PD.rs>>>15,1|PD.rs); t=t+Math.imul(t^t>>>7,61|t)^t; return ((t^t>>>14)>>>0)/4294967296; }
+function pdMsg(text,kind="info",dir){ PD.msgs.push({t:PD.t,text,kind,dir}); if(PD.msgs.length>80) PD.msgs.shift(); PD._newMsg=true; }
+
+/* ---------- schedule of people and animals ---------- */
+function pdSchedule(R){
+  const e=PD.env, S_=(at,k,o={})=>PD.sched.push(Object.assign({at:Math.round(at),k},o)), rng=(a,b)=>a+R()*(b-a), W=PDW, tw=t=>PD.twists.includes(t);
+  const ss=e.sunset, sr=e.sunrise, legal=e.legal;
+  if(W.hasPaths){
+    const busy=legal?0.5:1;
+    for(let i=0;i<Math.round((2+(tw("dogwalkers")?2:0))*busy);i++) S_(rng(PD.t0+5,ss+45),"walker",{dog:R()<0.75});
+    if(R()<0.8) S_(rng(1260,1365),"walker",{dog:true});
+    for(let i=0;i<Math.round((3+(tw("dogwalkers")?2:0))*busy);i++) S_(rng(sr-25,sr+120),"walker",{dog:R()<0.8});
+    if(!legal){ S_(rng(ss-15,ss+80),"jogger"); S_(rng(sr-10,sr+60),"jogger"); }
+    if(tw("pubnight")) for(let i=0;i<3;i++) S_(rng(1350,1440),"walker",{drunk:true,dog:false});
+  }
+  if(W.hasRoads){ for(let t=PD.t0+R()*20;t<sr+150;t+=t<1410?rng(10,32):t<sr-60?rng(50,120):rng(8,20)) S_(t,"car"); }
+  if(W.flags.farm&&!legal){ S_(rng(1140,1260),"farmer"); S_(rng(sr-50,sr+30),"farmer"); if(tw("lambing")) S_(rng(1500,1620),"farmer"); }
+  if(tw("keeper")) S_(rng(1350,1530),"keeper");
+  if(W.objs.some(o=>o.k==="boat")){ S_(rng(ss-10,ss+60),"walker",{dog:true,boater:true}); S_(sr+rng(-20,40),"engine"); }
+  if(W.t.some(v=>v===PD_T.WATER)&&!legal) S_(sr-rng(10,45),"angler");
+  if(e.month>=5&&e.month<=8&&W.objs.some(o=>o.k==="bench")&&!legal) S_(rng(1250,1320),"teens");
+  // wildlife
+  if(!W.flags.moor) for(let i=0;i<2+(R()<0.5?1:0);i++) S_(rng(1230,sr-60),"fox");
+  if(W.t.some(v=>v===PD_T.WOOD)){ S_(rng(1320,1560),"badger"); S_(sr-rng(20,50),"deer"); }
+  for(let t=ss+40+rng(0,40);t<sr-20;t+=rng(tw("owls")?18:35,tw("owls")?40:90)) S_(t,"owl");
+  if(R()<(tw("owls")?0.8:0.4)) S_(ss+rng(5,45),"barnowl");
+  if(e.cloud<0.55) for(let t=ss+90+rng(0,60);t<sr-40;t+=rng(tw("meteors")?8:30,tw("meteors")?20:80)) S_(t,"star");
+  if(e.cloud<0.3&&(e.month>=10||e.month<=3)&&R()<0.06) S_(rng(1350,1560),"aurora");
+  if(W.flags.moor) S_(PD.t0,"ponies");
+  if(tw("cattle")) S_(PD.t0,"cattle");
+  if(e.month>=4&&e.month<=7) S_(sr-50,"chorus");
+  if(W.t.some(v=>v===PD_T.WATER)&&R()<0.4) S_(sr+rng(0,40),"kingfisher");
+  PD.sched.sort((a,b)=>a.at-b.at);
+}
+
+/* ---------- pathfinding (A*, 8-way) ---------- */
+function pdPath(sx,sy,tx,ty,mode){
+  const W=PDW, N=PD_W, cost=new Float32Array(N*N).fill(Infinity), from=new Int32Array(N*N).fill(-1), closed=new Uint8Array(N*N);
+  sx=Math.round(sx-0.5); sy=Math.round(sy-0.5); tx=Math.round(tx-0.5); ty=Math.round(ty-0.5);
+  sx=pdClamp(sx,0,N-1); sy=pdClamp(sy,0,N-1); tx=pdClamp(tx,0,N-1); ty=pdClamp(ty,0,N-1);
+  const tc=i=>{ const t=W.t[i], P=PD_TP[t]; if(mode==="car") return t===PD_T.ROAD||t===PD_T.YARD?1:Infinity; if(!P.p) return Infinity;
+    if(mode==="npc") return t===PD_T.PATH||t===PD_T.ROAD||t===PD_T.YARD?0.7:P.c*3.5; return P.c; };
+  if(tc(pdIdx(tx,ty))===Infinity){ // nearest passable to target
+    let best=null; for(let r=1;r<6&&!best;r++) for(let dy=-r;dy<=r;dy++) for(let dx=-r;dx<=r;dx++){ const X=tx+dx,Y=ty+dy; if(pdIn(X,Y)&&tc(pdIdx(X,Y))<Infinity){ best=[X,Y]; break; } } if(!best) return null; [tx,ty]=best; }
+  const heap=[], push=(i,f)=>{ heap.push([f,i]); let k=heap.length-1; while(k>0){ const p=(k-1)>>1; if(heap[p][0]<=heap[k][0]) break; [heap[p],heap[k]]=[heap[k],heap[p]]; k=p; } },
+    pop=()=>{ const top=heap[0], last=heap.pop(); if(heap.length){ heap[0]=last; let k=0; for(;;){ const l=2*k+1,r=l+1; let m=k; if(l<heap.length&&heap[l][0]<heap[m][0]) m=l; if(r<heap.length&&heap[r][0]<heap[m][0]) m=r; if(m===k) break; [heap[m],heap[k]]=[heap[k],heap[m]]; k=m; } } return top; };
+  const s=pdIdx(sx,sy), g=pdIdx(tx,ty); cost[s]=0; push(s,0); let it=0;
+  while(heap.length&&it++<14000){ const [,i]=pop(); if(closed[i]) continue; closed[i]=1; if(i===g) break; const x=i%N, y=(i/N)|0;
+    for(let dy=-1;dy<=1;dy++) for(let dx=-1;dx<=1;dx++){ if(!dx&&!dy) continue; const X=x+dx,Y=y+dy; if(!pdIn(X,Y)) continue; const j=pdIdx(X,Y); if(closed[j]) continue;
+      const c=tc(j); if(c===Infinity) continue; if(dx&&dy&&(tc(pdIdx(x+dx,y))===Infinity||tc(pdIdx(x,y+dy))===Infinity)) continue;
+      const nc=cost[i]+c*(dx&&dy?1.414:1); if(nc<cost[j]){ cost[j]=nc; from[j]=i; push(j,nc+Math.hypot(X-tx,Y-ty)*(mode==="npc"?0.7:mode==="car"?1:0.8)); } } }
+  if(from[g]<0&&g!==s) return null;
+  const out=[]; for(let i=g;i!==s&&i>=0;i=from[i]) out.push([i%N+0.5,((i/N)|0)+0.5]); out.reverse(); return out;
+}
+
+/* ---------- environment ---------- */
+function pdTemp(t){ const e=PD.env;
+  if(e.hours&&e.hours.length){ const h=(t/60)%24, arr=e.hours; let best=arr[0]; arr.forEach(x=>{ if(Math.abs(((+x[0]-h+36)%24)-12)>Math.abs(((+best[0]-h+36)%24)-12)) best=x; }); return +best[1]-(e.cloud<0.3?1:0); }
+  if(t>=e.sunrise) return e.low+(t-e.sunrise)/60*1.4;
+  const f=pdClamp((t-870)/(e.sunrise-870),0,1); return e.high-0.5-(e.high-0.5-e.low)*Math.pow(f,0.65); }
+function pdDaylight(t){ const e=PD.env, night=0.035+0.2*gmMoonLight(e.moon)*(1-e.cloud*0.85);
+  const ramp=(x,a,b,v0,v1)=>v0+(v1-v0)*pdClamp((x-a)/(b-a),0,1);
+  if(t<e.sunset-30) return 1; if(t<e.sunset) return ramp(t,e.sunset-30,e.sunset,1,0.62); if(t<e.sunset+40) return ramp(t,e.sunset,e.sunset+40,0.62,0.16); if(t<e.sunset+80) return ramp(t,e.sunset+40,e.sunset+80,0.16,night);
+  if(t<e.sunrise-70) return night; if(t<e.sunrise-35) return ramp(t,e.sunrise-70,e.sunrise-35,night,0.18); if(t<e.sunrise) return ramp(t,e.sunrise-35,e.sunrise,0.18,0.62); return ramp(t,e.sunrise,e.sunrise+30,0.62,1); }
+const pdRaining=()=>PD.env.rainAt!=null&&PD.t>=PD.env.rainAt&&PD.t<PD.env.rainEnd;
+const pdGusting=()=>PD.env.gustAt!=null&&PD.t>=PD.env.gustAt&&PD.t<PD.env.gustAt+240;
+function pdWindNow(){ const e=PD.env; return e.windAvg*(pdGusting()?1.6:1)*(0.85+0.3*pdNoise(PD.t/30,0,PD.seed%999)); }
+function pdFlaskHeat(){ return Math.max(0.3,Math.min(1,1-(PD.t-PD.r.flaskAt)/60/22)); }
+
+/* ---------- body model ---------- */
+function pdThermalCache(force){
+  if(!force&&PD._thAt!=null&&Math.abs(PD.t-PD._thAt)<8&&PD._thKey===pdThKey()) return PD._th;
+  const c=S.classes.find(x=>x.id===PD.classId)||cls(), K=pdKitCached(), items={}, inCamp=PD.p.state==="shelter"||PD.p.state==="sleep";
+  Object.entries(c.items).forEach(([id,q])=>{ const it=item(id); if(!it) return;
+    if(it.kind==="layer"&&!PD.p.worn[id]) return;
+    if(it.kind==="shelter"&&!(inCamp&&PD.camp&&PD.camp.sh.includes(id))) return;
+    if(it.kind==="pad"&&!inCamp) return; items[id]=q; });
+  const site=PD.camp&&inCamp?PD.camp.site:null, wind=pdWindNow()*(site?site.wind:pdWindShelter(PDW,PD.p.x,PD.p.y,PD.env.windDir));
+  const T=pdTemp(PD.t)-(site&&site.frost?1.5:0)+(PD.camp&&PD.camp.awning&&inCamp?0.5:0);
+  const m=Object.assign({},c,{items,worn:{},wx:Object.assign({},c.wx,{low:T,windAvg:wind,rain:pdRaining()&&!(PD.camp&&PD.camp.awning)?1:0,humid:PD.env.humid})});
+  const th=thermal(m,{noCalib:true});
+  PD._th={rating:th.rating,margin:th.margin,T,wind}; PD._thAt=PD.t; PD._thKey=pdThKey(); return PD._th;
+}
+const pdThKey=()=>Object.keys(PD.p.worn).sort().join(",")+"|"+PD.p.state+"|"+(PD.camp?PD.camp.sh.join(",")+PD.camp.awning:"")+"|"+pdRaining();
+let PD_K=null; function pdKitCached(){ if(!PD_K||PD_K.c.id!==PD.classId){ PD_K=pdKit(S.classes.find(x=>x.id===PD.classId)||cls()); } return PD_K; }
+function pdWornWarmth(){ return Object.keys(PD.p.worn).reduce((s,id)=>{ const it=item(id); return s+(it?+it.warmth||0:0); },0); }
+function pdBody(dt){
+  const b=PD.b, p=PD.p, e=PD.env, inBag=p.state==="shelter"||p.state==="sleep", K=pdKitCached();
+  const moving=p.path.length>0, busy=!!p.busy;
+  let target;
+  if(inBag){ const th=pdThermalCache(); target=70+th.margin*4; }
+  else {
+    const T=pdTemp(PD.t), wind=pdWindNow()*pdWindShelter(PDW,p.x,p.y,e.windDir), chill=Math.min(8,wind/3);
+    const wet=pdRaining()&&!(K.poncho||K.shelters.some(s=>+s.rain>=2))?4:0;
+    const act=moving?(p.sneak?6:11):busy?4:0;
+    const margin=T-chill-wet+act-(12-pdWornWarmth()*1.3-(K.hat?1:0)-(K.gloves?0.5:0)); // everyday clothes are comfortable standing still at ~12°C
+    target=70+margin*3.2;
+    if(moving&&margin>4) b.sweat=pdClamp(b.sweat+dt*(margin-4)*0.35); else b.sweat=pdClamp(b.sweat-dt*0.12);
+    if(wet) b.dry=pdClamp(b.dry-dt*0.25);
+  }
+  if(PD.t<b.heatUntil) target+=8;
+  if(b.hunger>360) target-=4; if(b.sweat>30) target-=(b.sweat-30)/8; if(b.dry<50) target-=(50-b.dry)/6;
+  if(PD.camp&&PD.camp.site.damp>0.5&&inBag) target-=3;
+  target=pdClamp(target,2,100);
+  b.warmth+= (target-b.warmth)*(1-Math.exp(-dt/(inBag?45:30)));
+  if(inBag&&target>92){ b.sweat=pdClamp(b.sweat+dt*0.15); }
+  // energy, hunger, thirst, bladder
+  const sleeping=p.state==="sleep";
+  const sleepQ=sleeping?(b.warmth>=52?1:b.warmth>=42?0.6:b.warmth>=36?0.25:0)*(PD.camp?0.75+PD.camp.site.comfort*0.25:0.6)*(b.bladder>92?0.2:1):0;
+  b.energy=pdClamp(b.energy+dt*(sleeping?0.2*sleepQ:moving?-(0.05+PD_K.packKg*0.006)*(PD_TP[pdAt(PDW,p.x,p.y)].c):-0.025)-(b.thirst<25?dt*0.03:0));
+  b.slept+=sleeping?dt*sleepQ:0;
+  b.hunger+=dt; b.thirst=pdClamp(b.thirst-dt*(moving?0.06:0.02)); b.bladder=pdClamp(b.bladder+dt*(0.045+(pdTemp(PD.t)<5?0.015:0)));
+  if(inBag&&PD.camp&&["bivvy","tent"].includes(PD.camp.type)&&!PD.camp.vented&&e.humid>=80) b.dry=pdClamp(b.dry-dt*0.02);
+  if(pdRaining()&&inBag&&PD.camp){ const prot=Math.max(...PD.camp.sh.map(id=>+(item(id)||{}).rain||0))+(PD.camp.awning?1:0); if(prot<2) b.dry=pdClamp(b.dry-dt*(2-prot)*0.08); }
+  // morale drifts toward comfort
+  let mood=55+(b.warmth-55)*0.4+(b.dry-70)*0.2+(b.energy-50)*0.1-(b.hunger>360?8:0)-(b.bladder>85?6:0);
+  if(e.bugs>=1&&!p.headnet&&(PD.t<e.sunset+90||PD.t>e.sunrise-60)&&pdNearWater(p.x,p.y,18)&&!(inBag&&PD.camp&&PD.camp.sh.some(id=>(+(item(id)||{}).bug||0)>=2))) mood-=e.bugs*12;
+  b.morale+=(pdClamp(mood)-b.morale)*(1-Math.exp(-dt/90));
+  PD.stats.minW=Math.min(PD.stats.minW,b.warmth);
+}
+function pdNearWater(x,y,r){ for(let a=0;a<12;a++) for(let d=2;d<=r;d+=4) if(pdAt(PDW,x+Math.cos(a/12*6.283)*d,y+Math.sin(a/12*6.283)*d)===PD_T.WATER) return true; return false; }
+
+/* ---------- lights and visibility ---------- */
+function pdLights(){
+  const L=[], p=PD.p, dark=pdDaylight(PD.t)<0.5;
+  if(p.torch!=="off"&&PD.r.torch>0&&p.state!=="sleep") L.push({x:p.x,y:p.y,dir:p.dir,r:p.torch==="red"?6:15,a:p.torch==="red"?1.2:0.7,col:p.torch==="red"?"255,40,30":"255,248,225",i:p.torch==="red"?0.35:1,src:"player",cone:p.state!=="shelter"});
+  PD.npcs.forEach(n=>{ if(n.torch&&dark) L.push({x:n.x,y:n.y,dir:n.dir,r:n.k==="keeper"?24:15,a:n.k==="keeper"?0.35:0.55,col:"255,245,215",i:1,src:"npc",npc:n,cone:true});
+    if(n.k==="car"&&dark) L.push({x:n.x,y:n.y,dir:n.dir,r:32,a:0.32,col:"255,250,220",i:1,src:"npc",npc:n,cone:true,car:true}); });
+  if(dark&&PD.t<1410) PDW.objs.forEach(o=>{ if(o.lit&&(o.k==="house"||o.k==="boat"||o.k==="pub")) L.push({x:o.x,y:o.y,r:o.k==="pub"?9:5,col:"255,190,110",i:0.5,src:"window"}); });
+  if(PD.camp&&PD.camp.flame&&PD.t<PD.camp.flame) L.push({x:PD.camp.x+0.8,y:PD.camp.y+0.6,r:3.5,col:"255,150,60",i:0.7,src:"stove"});
+  if(PD.flags.phoneUntil&&PD.t<PD.flags.phoneUntil) L.push({x:p.x,y:p.y,r:2,col:"160,200,255",i:0.4,src:"phone"});
+  return L;
+}
+function pdLightAt(x,y,L,excludeSrc){ let v=pdDaylight(PD.t); (L||pdLights()).forEach(l=>{ if(l.src===excludeSrc) return; const d=Math.hypot(x-l.x,y-l.y); if(d>l.r) return;
+  if(l.cone&&d>0.6&&Math.abs(pdAng(Math.atan2(y-l.y,x-l.x),l.dir))>l.a) return; if(pdLOS(PDW,l.x,l.y,x,y)<0.3) return; v+=l.i*(1-d/l.r); }); return Math.min(1.5,v); }
+function pdPlayerVis(L){
+  const p=PD.p, inCamp=p.state==="shelter"||p.state==="sleep", K=pdKitCached();
+  const t=pdAt(PDW,p.x,p.y); let cover=PD_TP[t].cv; if(p.sneak||inCamp) [[1,0],[-1,0],[0,1],[0,-1]].forEach(([a,b])=>{ cover=Math.max(cover,PD_TP[pdAt(PDW,p.x+a,p.y+b)].cv*0.55); });
+  let base=1; if(inCamp){ const c=PD.camp; base=0.22+[0.05,0.15,0.3,0.5][Math.min(3,c.vis)]+({bivvy:0,poncho:0.05,tarp:0.1,tent:0.2,hammock:0.25}[c.type]||0.1); if(c.hidden) base*=0.6; }
+  else if(p.sneak) base=0.55; if(!inCamp&&!p.sneak&&p.path.length) base*=1.25;
+  const light=pdLightAt(p.x,p.y,L,"player")+(p.torch==="white"&&p.state!=="sleep"?0.25:0);
+  return {v:Math.min(1.5,light*(1-cover*0.85)*base),beacon:p.state!=="sleep"&&PD.r.torch>0?(p.torch==="white"?1:p.torch==="red"?0.12:0):0,cover,light};
+}
+
+/* ---------- noise ---------- */
+function pdNoise_(x,y,r,src,kind,label){
+  PD.noises.push({x,y,r,src,kind,label,t:PD.t,born:performance.now()}); if(PD.noises.length>40) PD.noises.shift();
+  if(src==="player"){ PD.npcs.forEach(n=>{ if(!n.person||n.state==="leave"||n.state==="confront") return; const d=pdDist(n,{x,y}); if(d<r*(n.k==="keeper"?1.4:1)){ const ch=(1-d/r)*(n.k==="keeper"||n.k==="farmer"?1:0.7);
+        if(pdRand()<ch){ n.notice=Math.max(n.notice,0.25); if(n.state!=="investigate"&&n.state!=="search"){ n.state="investigate"; n.goal={x,y}; n.path=pdPath(n.x,n.y,x,y,"npc")||[]; PD.stats.heard++; pdMsg(`${pdWho(n)} stops. Did they hear that?`,"warn",Math.atan2(n.y-PD.p.y,n.x-PD.p.x)); } } } });
+    PD.animals.forEach(a=>{ if(pdDist(a,{x,y})<r*1.3&&["deer","fox","badger","pony","cow"].includes(a.k)&&a.state!=="flee"){ a.state="flee"; a.path=[]; } }); }
+  else if(PD.p.state==="sleep"){ const d=Math.hypot(x-PD.p.x,y-PD.p.y); if(d<r*1.1) pdWake(label||"a noise", Math.atan2(y-PD.p.y,x-PD.p.x)); }
+}
+const pdWho=n=>({walker:n.boater?"The boater":"The dog walker",jogger:"The jogger",farmer:"The farmer",keeper:"The gamekeeper",teens:"One of the lads",angler:"The angler",landowner:"The farmer"}[n.k]||"Someone");
+function pdWake(why,dir){ if(PD.p.state!=="sleep") return; setTimeout(()=>PD&&pdTip("wake","Woken up. Deal with it (layers, food, a wee, check the noise) or just tap 💤 Sleep again."),20); PD.p.state="shelter"; PD.lastWake={why,t:PD.t}; PD.stats.disturb++; PD.speed="walk"; pdMsg(`You wake: ${why}.`,"warn",dir); }
+
+/* ---------- spawning ---------- */
+function pdEdgeFor(kind){ const W=PDW; let list=W.entries.filter(e=>kind==="car"?e[2]===PD_T.ROAD:true); if(kind!=="car"&&list.some(e=>e[2]===PD_T.PATH)&&pdRand()<0.75) list=list.filter(e=>e[2]===PD_T.PATH); if(!list.length) list=pdBorderPassable(W); return list[Math.floor(pdRand()*list.length)]; }
+function pdSpawn(s){
+  const W=PDW, add=n=>{ n.id=PD.nid++; PD.npcs.push(n); return n; }, addA=a=>{ a.id=PD.nid++; PD.animals.push(a); return a; };
+  const dark=pdDaylight(PD.t)<0.45;
+  const route=(kind,via)=>{ const a=pdEdgeFor(kind); let b=pdEdgeFor(kind), tries=0; while(b&&a&&Math.hypot(a[0]-b[0],a[1]-b[1])<40&&tries++<8) b=pdEdgeFor(kind); if(!a||!b) return null;
+    const p1=via?pdPath(a[0]+0.5,a[1]+0.5,via[0],via[1],kind==="car"?"car":"npc"):null, p2=pdPath(via?via[0]:a[0]+0.5,via?via[1]:a[1]+0.5,b[0]+0.5,b[1]+0.5,kind==="car"?"car":"npc");
+    if(!p2) return null; return {start:[a[0]+0.5,a[1]+0.5],path:(p1||[]).concat(p2)}; };
+  if(["walker","jogger","farmer","teens","keeper"].includes(s.k)) pdTip("people","Someone's about. The pale cone in front of them is what they can see. Stay out of it, keep to cover, or 🤫 sneak. They also hear noise (the rings).");
+  switch(s.k){
+    case"walker":case"jogger":{ const r=route(s.k); if(!r) return; const n=add({k:s.k,person:true,x:r.start[0],y:r.start[1],path:r.path,dir:0,speed:s.k==="jogger"?38:s.drunk?9:14,torch:dark&&pdRand()<0.85,notice:0,state:"walk",boater:!!s.boater,drunk:!!s.drunk,local:s.boater?"boater":"dogwalker"});
+      if(s.dog){ add({k:"dog",x:n.x,y:n.y,path:[],dir:0,speed:22,owner:n.id,state:"heel",leash:pdRand()<0.35,col:["#7a5230","#222","#c9a46a","#eee"][Math.floor(pdRand()*4)]}); }
+      if(s.drunk) pdNoise_(n.x,n.y,30,"npc","voices","singing"); break; }
+    case"car":{ const r=route("car"); if(!r) return; add({k:"car",x:r.start[0],y:r.start[1],path:r.path,dir:0,speed:110,state:"walk",col:["#555","#8a1f1f","#1f3a6a","#ddd","#2f4f2f"][Math.floor(pdRand()*5)]}); pdNoise_(r.start[0],r.start[1],40,"npc","car","a car"); break; }
+    case"farmer":case"landowner":{ const yard=W.objs.find(o=>o.k==="house"||o.k==="barn")||{x:50,y:50}; const tgt=s.k==="landowner"&&PD.camp?[PD.camp.x,PD.camp.y]:[yard.x,yard.y];
+      const r=route(W.hasRoads?"car":"walker",null); const n=add({k:s.k,person:true,x:r?r.start[0]:2,y:r?r.start[1]:50,path:[],dir:0,speed:13,torch:true,notice:0,state:"walk",local:"farmer",lamp:true});
+      n.path=pdPath(n.x,n.y,tgt[0],tgt[1],"npc")||[]; n.then="patrol"; n.patrolAround=tgt; n.ttl=PD.t+(s.k==="landowner"?70:55); pdMsg(s.k==="landowner"?"A lamp is sweeping the field edges. Someone is looking for you.":"Headlights at the farm. The farmer's doing his rounds.","warn"); break; }
+    case"keeper":{ const woods=[]; for(let i=0;i<W.t.length;i+=7) if(W.t[i]===PD_T.WOOD) woods.push(i); if(!woods.length) return; const e=pdEdgeFor("walker"); const w=woods[Math.floor(pdRand()*woods.length)];
+      const n=add({k:"keeper",person:true,x:e[0]+0.5,y:e[1]+0.5,path:pdPath(e[0]+0.5,e[1]+0.5,w%PD_W,(w/PD_W)|0,"npc")||[],dir:0,speed:9,torch:true,lamp:true,notice:0,state:"walk",then:"patrol",patrolAround:[w%PD_W,(w/PD_W)|0],ttl:PD.t+120,local:"ranger"}); pdMsg("A strong lamp flicks on in the woods. Gamekeeper.","warn"); break; }
+    case"angler":{ const bank=[]; for(let y=1;y<PD_W-1;y++) for(let x=1;x<PD_W-1;x++) if(W.t[pdIdx(x,y)]!==PD_T.WATER&&PD_TP[W.t[pdIdx(x,y)]].p&&[[1,0],[-1,0],[0,1],[0,-1]].some(([a,b])=>W.t[pdIdx(x+a,y+b)]===PD_T.WATER)) bank.push([x,y]);
+      if(!bank.length) return; const tg=bank[Math.floor(pdRand()*bank.length)], e=pdEdgeFor("walker"); add({k:"angler",person:true,x:e[0]+0.5,y:e[1]+0.5,path:pdPath(e[0]+0.5,e[1]+0.5,tg[0]+0.5,tg[1]+0.5,"npc")||[],dir:0,speed:12,torch:pdDaylight(PD.t)<0.4,notice:0,state:"walk",then:"sit",ttl:PD.t+240,local:"angler"}); break; }
+    case"teens":{ const b=W.objs.find(o=>o.k==="bench"); if(!b) return; const e=pdEdgeFor("walker"); for(let i=0;i<3;i++) add({k:"teens",person:true,x:e[0]+0.5+i*0.4,y:e[1]+0.5,path:pdPath(e[0]+0.5,e[1]+0.5,b.x+i*0.6,b.y+0.5,"npc")||[],dir:0,speed:12,torch:false,phone:true,notice:0,state:"walk",then:"hang",ttl:PD.t+130+i*5}); pdMsg("Voices and tinny music, heading for the bench.","warn"); break; }
+    case"fox":{ const e=pdBorderPassable(W)[Math.floor(pdRand()*pdBorderPassable(W).length)]; addA({k:"fox",x:e[0]+0.5,y:e[1]+0.5,path:[],speed:20,state:"wander",ttl:PD.t+100}); break; }
+    case"badger":{ let w=null; for(let k=0;k<300&&!w;k++){ const i=Math.floor(pdRand()*W.t.length); if(W.t[i]===PD_T.WOOD) w=[i%PD_W+0.5,((i/PD_W)|0)+0.5]; } if(w) addA({k:"badger",x:w[0],y:w[1],path:[],speed:8,state:"wander",ttl:PD.t+90}); break; }
+    case"deer":{ let w=null; for(let k=0;k<500&&!w;k++){ const i=Math.floor(pdRand()*W.t.length), x=i%PD_W, y=(i/PD_W)|0; if(W.t[i]!==PD_T.WOOD&&PD_TP[W.t[i]].p&&[[3,0],[-3,0],[0,3],[0,-3]].some(([a,b])=>pdAt(W,x+a,y+b)===PD_T.WOOD)) w=[x+0.5,y+0.5]; }
+      if(w) for(let i=0;i<1+Math.floor(pdRand()*3);i++) addA({k:"deer",x:w[0]+i*1.2,y:w[1]+i*0.6,path:[],speed:6,state:"graze",ttl:PD.t+80}); break; }
+    case"owl":{ const near=W.trees.filter(t=>Math.hypot(t.x-PD.p.x,t.y-PD.p.y)<40&&Math.hypot(t.x-PD.p.x,t.y-PD.p.y)>12); const t=near[Math.floor(pdRand()*near.length)]; if(!t) return;
+      pdNoise_(t.x,t.y,26,"animal","owl","a tawny owl"); PD.flags.owlHeard=(PD.flags.owlHeard||0)+1; if(PD.flags.owlHeard===2) pdMoment("owl","Twit… and a long, wavering hoo back. Two tawny owls, talking across the dark."); pdAudio("owl",t); break; }
+    case"barnowl": addA({k:"barnowl",x:-2,y:PD.p.y-10+pdRand()*20,path:[],speed:40,state:"fly",dir:0,ttl:PD.t+20}); break;
+    case"star": PD.flags.star={t:PD.t,x:pdRand(),y:pdRand()*0.5,until:PD.t+(PD.speed==="sleep"?0:2.5)}; break;
+    case"aurora": PD.flags.aurora=PD.t+90; pdMoment("aurora","The northern sky is glowing green. The aurora, over England. You'll tell people about this for years.",14); break;
+    case"ponies": for(let i=0;i<5;i++) addA({k:"pony",x:20+pdRand()*60,y:20+pdRand()*60,path:[],speed:4,state:"graze",ttl:1e9,col:["#5a3a22","#2a1a10","#8a6a4a"][i%3]}); break;
+    case"cattle":{ let f=null; for(let k=0;k<400&&!f;k++){ const x=10+Math.floor(pdRand()*80), y=10+Math.floor(pdRand()*80), t=W.t[pdIdx(x,y)]; if((t===PD_T.GRASS||t===PD_T.MEADOW)&&Math.hypot(x-W.entry[0],y-W.entry[1])>20) f=[x,y]; }
+      if(f) for(let i=0;i<7;i++) addA({k:"cow",x:f[0]+pdRand()*8-4,y:f[1]+pdRand()*8-4,path:[],speed:5,state:"graze",ttl:1e9,home:f}); break; }
+    case"chorus": pdNoise_(PD.p.x+8,PD.p.y-6,40,"animal","birds","the dawn chorus"); pdMoment("chorus","Dawn chorus: a robin, then a blackbird, then everything at once.",4); break;
+    case"engine": { const b=W.objs.find(o=>o.k==="boat"); if(b) pdNoise_(b.x,b.y,34,"npc","engine","a boat engine coughing into life"); break; }
+    case"kingfisher": PD.flags.kingfisher=PD.t+6; break;
+  }
+}
+function pdTip(id,text){ S.pdTips=S.pdTips||{}; if(S.pdTips[id]) return; S.pdTips[id]=1; pdMsg("💡 "+text,"tip"); }
+function pdMoment(id,text,morale=6){ if(PD.stats.moments[id]) return; PD.stats.moments[id]={t:PD.t,text}; PD.b.morale=pdClamp(PD.b.morale+morale); pdMsg("✨ "+text,"moment"); }
+
+/* ---------- people and animal AI ---------- */
+function pdMoveAlong(n,dt){ let d=n.speed*dt; while(d>0&&n.path&&n.path.length){ const [tx,ty]=n.path[0], dx=tx-n.x, dy=ty-n.y, L=Math.hypot(dx,dy);
+    if(L<1e-3){ n.path.shift(); continue; } n.dir=Math.atan2(dy,dx); if(L<=d){ n.x=tx; n.y=ty; d-=L; n.path.shift(); } else { n.x+=dx/L*d; n.y+=dy/L*d; d=0; } } }
+function pdNPCs(dt,L,vis){
+  const p=PD.p, inCamp=p.state==="shelter"||p.state==="sleep";
+  for(const n of PD.npcs){
+    if(n.k==="dog"){ const o=PD.npcs.find(x=>x.id===n.owner); if(!o||o.gone){ n.gone=true; continue; }
+      const dp=Math.hypot(p.x-n.x,p.y-n.y), smell=(n.leash?3:7)+(PD.camp&&!PD.camp.stashed?3:0)+(Math.abs(pdAng(Math.atan2(n.y-p.y,n.x-p.x),PD.env.windDir))<0.8?4:0);
+      if(n.state!=="sniff"&&!n.leash&&dp<smell&&!o.gone&&PD.t>(n.cool||0)){ n.state="sniff"; n.until=PD.t+3; pdNoise_(n.x,n.y,30,"npc","bark","a dog barking"); pdAudio("bark",n); o.notice=Math.max(o.notice,0.6); if(o.state==="walk"){ o.state="investigate"; o.goal={x:n.x,y:n.y}; o.path=pdPath(o.x,o.y,n.x,n.y,"npc")||[]; } pdMsg("A dog has found you. It's barking its head off.","danger",Math.atan2(n.y-p.y,n.x-p.x)); }
+      if(n.state==="sniff"){ n.path=[[p.x+Math.cos(PD.t)*1.2,p.y+Math.sin(PD.t)*1.2]]; pdMoveAlong(n,dt); if(PD.t>n.until){ n.state="heel"; n.cool=PD.t+30; } continue; }
+      // wander around the owner
+      if(!n.path.length||pdRand()<dt*0.3){ const a=pdRand()*6.283, r=n.leash?1:2+pdRand()*5; n.path=[[o.x+Math.cos(a)*r,o.y+Math.sin(a)*r]]; }
+      pdMoveAlong(n,dt*(Math.hypot(o.x-n.x,o.y-n.y)>8?1.8:1)); continue; }
+    if(n.state==="walk"&&!n.path.length){ if(n.then==="patrol"&&PD.t<n.ttl){ const a=pdRand()*6.283, c=n.patrolAround; n.path=pdPath(n.x,n.y,c[0]+Math.cos(a)*14,c[1]+Math.sin(a)*14,"npc")||[]; }
+      else if(n.then==="sit"&&PD.t<n.ttl){ n.state="sit"; } else if(n.then==="hang"&&PD.t<n.ttl){ n.state="hang"; } else n.gone=true; }
+    if(n.state==="sit"||n.state==="hang"){ if(n.k==="teens"&&pdRand()<dt*0.5) pdNoise_(n.x,n.y,28,"npc","music","music and shrieks of laughter"); if(n.k==="angler"&&pdRand()<dt*0.1) pdNoise_(n.x,n.y,8,"npc","cast","the whizz of a fishing line");
+      n.dir+=Math.sin(PD.t/3+n.id)*0.01; if(PD.t>n.ttl){ n.state="leave"; const e=pdEdgeFor("walker"); n.path=pdPath(n.x,n.y,e[0]+0.5,e[1]+0.5,"npc")||[]; } }
+    if(n.state==="investigate"){ if(!n.path.length){ n.state="search"; n.until=PD.t+2.5; } }
+    if(n.state==="search"){ n.dir+=dt*2.2; if(PD.t>n.until){ n.state="walk"; n.notice*=0.6; const e=pdEdgeFor(n.k==="car"?"car":"walker"); n.path=pdPath(n.x,n.y,e[0]+0.5,e[1]+0.5,"npc")||[]; } }
+    if(n.state==="approach"){ n.path=Math.hypot(p.x-n.x,p.y-n.y)>1.6?(pdPath(n.x,n.y,p.x,p.y,"npc")||[]):[]; if(Math.hypot(p.x-n.x,p.y-n.y)<2.2){ n.state="confront"; pdConfront(n); } }
+    if(n.state==="leave"&&!n.path.length) n.gone=true;
+    if(n.state!=="confront"&&n.state!=="sit"&&n.state!=="hang") pdMoveAlong(n,dt*(n.state==="search"?0:1)*(n.drunk?0.8+0.4*Math.sin(PD.t*3):1));
+    if(n.k==="car"&&!n.path.length) n.gone=true;
+    if(n.ttl&&PD.t>n.ttl+60) n.gone=true;
+    // --- sight ---
+    if(!n.person||n.state==="leave"||n.state==="confront"||PD.ended) continue;
+    const dx=p.x-n.x, dy=p.y-n.y, d=Math.hypot(dx,dy); if(d>48){ n.notice=Math.max(0,n.notice-dt*0.12); continue; }
+    const diff=Math.abs(pdAng(Math.atan2(dy,dx),n.dir)), los=d<1.5?1:pdLOS(PDW,n.x,n.y,p.x,p.y);
+    let rate=0;
+    if(vis.beacon>0&&los>0.2&&diff<1.7) rate+=0.9*vis.beacon*los*(1-d/52);
+    const range=4+28*Math.min(1,pdDaylight(PD.t))+(n.torch&&diff<0.6?(n.lamp?24:15):0);
+    if(d<range&&diff<(pdDaylight(PD.t)>0.5?1.4:1.1)) rate+=1.5*vis.v*los*(1-d/range);
+    if(d<2.5&&!inCamp) rate+=1.2;
+    rate*={easy:0.6,normal:1,hard:1.35}[PD.diff]||1; if(PD.env.legal) rate*=0.5;
+    n.notice=pdClamp(n.notice+(rate>0?rate*dt:-0.12*dt),0,1.2);
+    if(n.notice>=1&&!n.spotted){ n.spotted=true; PD.stats.spotted++; pdSpotted(n,d); }
+  }
+  PD.npcs=PD.npcs.filter(n=>!n.gone);
+}
+function pdSpotted(n,d){
+  const p=PD.p; PD.heat=pdClamp(PD.heat+(PD.env.legal?4:{walker:10,jogger:8,farmer:30,landowner:40,keeper:35,teens:12,angler:6}[n.k]||10)); PD.stats.maxHeat=Math.max(PD.stats.maxHeat,PD.heat);
+  if(p.state==="sleep") pdWake("a torch beam on your face",Math.atan2(n.y-p.y,n.x-p.x));
+  const curious={walker:0.45,jogger:0.2,farmer:0.95,landowner:1,keeper:1,teens:0.7,angler:0.3}[n.k]??0.5;
+  if(d<12||pdRand()<curious){ n.state="approach"; pdMsg(`${pdWho(n)} has seen you and is coming over.`,"danger",Math.atan2(n.y-p.y,n.x-p.x)); }
+  else { pdMsg(`${pdWho(n)} has clocked you. They look twice, then carry on.`,"warn",Math.atan2(n.y-p.y,n.x-p.x)); n.state="walk"; if(PD.heat>=55&&PDW.flags.farm&&!PD.flags.landownerSent){ PD.flags.landownerSent=true; PD.sched.push({at:PD.t+40+pdRand()*50,k:"landowner"}); PD.sched.sort((a,b)=>a.at-b.at); } }
+}
+function pdAnimals(dt,L){
+  const p=PD.p;
+  for(const a of PD.animals){
+    if(a.k==="barnowl"){ a.x+=a.speed*dt; a.y+=Math.sin(a.x/6)*0.3; if(a.x>PD_W+3) a.gone=true; if(Math.abs(a.x-p.x)<12&&p.state!=="sleep") pdMoment("barnowl","A barn owl drifts over the field, white and completely silent."); continue; }
+    if(a.state==="flee"){ if(!a.path.length){ const ang=Math.atan2(a.y-p.y,a.x-p.x); a.path=[[a.x+Math.cos(ang)*25,a.y+Math.sin(ang)*25]]; } pdMoveAlong(a,dt*3); if(!a.path.length) a.gone=a.k!=="pony"&&a.k!=="cow"; if(!a.gone&&!a.path.length) a.state="graze"; continue; }
+    const dp=Math.hypot(p.x-a.x,p.y-a.y);
+    if(a.k==="fox"){ const food=PD.camp&&!PD.camp.stashed&&PD.r.snacks>0;
+      if(a.state==="wander"){ if(food&&Math.hypot(PD.camp.x-a.x,PD.camp.y-a.y)<30&&!PD.flags.raided){ a.state="raid"; a.path=pdPath(a.x,a.y,PD.camp.x+1,PD.camp.y+0.5,"player")||[]; }
+        else if(!a.path.length){ a.path=pdPath(a.x,a.y,a.x+pdRand()*30-15,a.y+pdRand()*30-15,"player")||[]; } }
+      if(a.state==="raid"&&!a.path.length){ PD.flags.raided=true; PD.r.snacks=Math.max(0,PD.r.snacks-1); PD.stats.lnt-=0.5; PD.stats.lntWhy.push("A fox shredded food wrappers round your camp"); pdNoise_(a.x,a.y,10,"animal","rustle","rustling right by your pack"); pdMsg("A fox has its head in your food. Wrappers everywhere.","danger"); a.state="flee"; }
+      if(dp<14&&pdLightAt(a.x,a.y,L)>0.3&&p.state!=="sleep") pdMoment("fox","Two green eyes in the torchlight. A fox, totally unbothered by you.",3);
+      if(PD.t>a.ttl) a.state="flee"; }
+    else if(a.k==="badger"){ if(!a.path.length) a.path=pdPath(a.x,a.y,a.x+pdRand()*16-8,a.y+pdRand()*16-8,"player")||[]; if(dp<10&&p.state!=="sleep"&&pdLightAt(a.x,a.y,L)>0.2) pdMoment("badger","A badger trundles past, snuffling, striped face down. It doesn't care about you at all.",6); if(PD.t>a.ttl) a.state="flee"; }
+    else if(a.k==="deer"){ if(dp<16&&p.path.length&&!p.sneak){ a.state="flee"; continue; } if(dp<18&&!p.path.length&&p.state!=="sleep"){ a.watch=(a.watch||0)+dt; if(a.watch>3) pdMoment("deer","Roe deer at the wood edge, grazing in the half light. You don't move. Neither do they, for a long time.",10); } if(PD.t>a.ttl) a.state="flee"; }
+    else if(a.k==="pony"||a.k==="cow"){ if(!a.path.length&&pdRand()<dt*0.2){ const h=a.home||[a.x,a.y]; a.path=pdPath(a.x,a.y,h[0]+pdRand()*14-7,h[1]+pdRand()*14-7,"player")||[]; }
+      if(a.k==="cow"&&dp<10&&pdDaylight(PD.t)>0.3&&pdRand()<dt*0.3) a.path=[[p.x+pdRand()*2-1,p.y+pdRand()*2-1]]; if(a.k==="pony"&&dp<12) pdMoment("ponies","Dartmoor ponies, shaggy and unimpressed, cropping the grass a few metres away.",5);
+      if(a.k==="cow"&&dp<3&&PD.camp&&p.state!=="free"&&pdRand()<dt*0.05){ pdNoise_(a.x,a.y,10,"animal","cow","heavy breathing, right outside"); PD.b.morale-=4; } }
+    if(a.k!=="pony"&&a.k!=="cow") pdMoveAlong(a,dt);
+    else pdMoveAlong(a,dt*0.5);
+  }
+  PD.animals=PD.animals.filter(a=>!a.gone);
+}
+
+/* ---------- confrontations (dialogue) ---------- */
+function pdConfront(n){
+  const mood=(S.gameLocals||{})[n.local]||0, inCamp=PD.p.state!=="free", night=pdDaylight(PD.t)<0.3, dawn=PD.t>PD.env.sunrise-60;
+  const D={npc:n.id,choices:[]};
+  const say=(t)=>D.text=t;
+  if(n.k==="walker"||n.k==="jogger"){
+    say(mood>=2?`It's the dog walker from before. "Oh, it's you again! Same spot? Fair play."`:mood<=-1?`The dog walker shines a torch straight at you. "You again. I told you last time."`:night?`A torch in your face. "Bloody hell! You scared me. What are you doing out here?"`:`"Alright? Camping, are you?" They're looking at your kit, not you.`);
+    D.choices=[{l:"Honest and friendly: one night, gone by eight, no trace",e:{heat:mood>=0?-6:4,morale:4,local:1},r:mood>=0?`"Fair enough. Mind the frost."`:`"Hm. Well. Make sure you are."`},
+      {l:"\"Just resting, heading off soon\"",e:{heat:8,morale:-2},r:"They don't believe you. They walk off, glancing back."},
+      {l:"Offer the dog a bit of flapjack",req:PD.r.snacks>0,e:{heat:-10,morale:6,snack:-1,local:1},r:"The dog adores you. The owner relaxes. \"He's a terrible judge of character, mind.\""}];
+  } else if(n.k==="farmer"||n.k==="landowner"){
+    say(mood>=2?`The farmer's lamp finds you. "Oh, it's you. Leave the gate as you found it and you're alright."`:mood<=-1?`"YOU. I've told you before. Off my land. Now."`:`A lamp in your face. "This is private land. What do you think you're doing?"`);
+    D.choices=mood>=2?[{l:"Thank him, promise no trace",e:{heat:-20,morale:8,local:1},r:"He nods and goes back to the truck. Permission, of a sort."}]:
+      [{l:"Apologise, ask if you can stay till first light",e:{heat:-5,morale:-2,local:mood>=0?1:0,ask:true},r:""},
+       {l:"Apologise and pack up straight away",e:{heat:-30,morale:-8,mustMove:true,local:1},r:"\"Appreciated.\" He waits while you start packing."},
+       {l:"Argue about access rights",e:{heat:25,morale:-6,mustMove:true,local:-1},r:"It doesn't go well. \"Off. Now. Or I ring the police.\""}];
+  } else if(n.k==="keeper"){
+    say(`A powerful lamp, and a man with a shotgun bag. "You're disturbing my birds. Who said you could be in here?"`);
+    D.choices=[{l:"Apologise, move out of the wood",e:{heat:-20,morale:-6,mustMove:true},r:"He watches you go. You'll need somewhere new."},
+      {l:"Explain you'll be gone at dawn, no fire, no trace",e:{heat:5,ask:true},r:""}];
+  } else if(n.k==="teens"){
+    say(`"Ayy, it's a tramp! You living out here, mate?" Phones out, filming.`);
+    D.choices=[{l:"Laugh it off, chat for a bit",e:{heat:-4,morale:2,time:10},r:"They lose interest in two minutes. \"Sick, actually.\""},
+      {l:"Ignore them",e:{heat:10,morale:-6},r:"They hang about for ages, shining phone torches at you."}];
+  } else { say(`"Morning. Wild camping? Good spot, that." The angler goes back to his line.`); D.choices=[{l:"Chat about the fishing",e:{heat:-5,morale:6,local:1},r:"Pike, apparently. Nothing yet."}]; }
+  PD.dialog=D; PD.speed="walk"; pdUIDialog&&pdUIDialog();
+}
+function pdChoose(i){
+  const D=PD.dialog; if(!D) return; const ch=D.choices[i], n=PD.npcs.find(x=>x.id===D.npc), e=ch.e||{};
+  PD.heat=pdClamp(PD.heat+(e.heat||0)); PD.b.morale=pdClamp(PD.b.morale+(e.morale||0)); if(e.snack) PD.r.snacks=Math.max(0,PD.r.snacks+e.snack);
+  if(e.local&&n&&n.local){ S.gameLocals=S.gameLocals||{}; S.gameLocals[n.local]=pdClamp((S.gameLocals[n.local]||0)+e.local,-3,5); }
+  let res=ch.r;
+  if(e.ask){ const ok=pdRand()<(0.35+((S.gameLocals||{})[n&&n.local]||0)*0.15+(PD.stats.lnt>=4?0.1:0)); res=ok?"A long pause. \"Gone by seven. And I mean gone.\" You can stay.":"\"No. Pack up and go.\" Not up for discussion."; if(!ok){ e.mustMove=true; PD.heat=pdClamp(PD.heat+10); } }
+  if(e.mustMove){ PD.flags.mustMove={at:PD.t,from:PD.camp?[PD.camp.x,PD.camp.y]:[PD.p.x,PD.p.y],by:PD.t+60,who:n?n.k:"farmer"}; res+=" You need to pack up and move well away (or walk out) within the hour."; }
+  if(n){ n.state="leave"; n.spotted=true; const ex=pdEdgeFor(n.k==="car"?"car":"walker"); n.path=pdPath(n.x,n.y,ex[0]+0.5,ex[1]+0.5,"npc")||[]; PD.npcs.filter(d=>d.owner===n.id).forEach(d=>d.state="heel"); }
+  pdMsg(res,"story"); PD.dialog=null;
+}
+
+/* ---------- player actions ---------- */
+function pdWalkTo(x,y){ const p=PD.p; if(p.busy||PD.dialog||PD.ended) return false; if(p.state!=="free"){ pdMsg("You're in your shelter. Get out first.","info"); return false; }
+  const path=pdPath(p.x,p.y,x,y,"player"); if(!path||!path.length) { pdMsg("You can't get there from here.","info"); return false; } p.path=path; return true; }
+function pdBusy(label,mins,act,o={}){ PD.p.busy=Object.assign({label,until:PD.t+mins,start:PD.t,act},o); PD.p.path=[]; }
+function pdAction(id,arg){
+  const p=PD.p, K=pdKitCached(), b=PD.b, r=PD.r, c=PD.camp, inCamp=p.state==="shelter"||p.state==="sleep", dark=pdDaylight(PD.t)<0.4;
+  if(PD.dialog||PD.ended) return;
+  if(p.busy&&id!=="cancel") return;
+  const atCamp=c&&Math.hypot(p.x-c.x,p.y-c.y)<2.2;
+  switch(id){
+    case"cancel": if(p.busy&&p.busy.act!=="pitch"&&p.busy.act!=="pack") p.busy=null; break;
+    case"sneak": p.sneak=!p.sneak; break;
+    case"torch": { if(!K.light) return pdMsg("You didn't bring a torch.","info"); if(r.torch<=0) return pdMsg("The torch is flat.","info"); p.torch=p.torch==="off"?"white":p.torch==="white"&&K.red?"red":"off"; break; }
+    case"pitch": { if(c) return pdMsg("You've already pitched.","info"); const site=pdSite(PDW,p.x-0.5,p.y-0.5,PD.env); if(!site.ok) return pdMsg(site.why,"info");
+      const sh=arg&&arg.sh||[K.main&&K.main.id].filter(Boolean); if(!sh.length) return pdMsg("You've no shelter in this kit. You'll be sleeping out in the open.","info");
+      const types=sh.map(id=>(item(id)||{}).shelter), type=types.includes("tent")?"tent":types.includes("hammock")?"hammock":types.includes("bivvy")?"bivvy":types[0];
+      if(type==="hammock"&&!site.hammock){ if(!(arg&&arg.ground)) { pdMsg("No pair of trees the right distance apart for the hammock. Pitch again to lie it on the ground like a bivvy (cold underneath), or find two trees about 4 m apart.","warn"); PD.flags.hammockGround=true; return; } }
+      const base={bivvy:3,tent:12,tarp:14,hammock:14,poncho:10}[type]||8;
+      const pegged=types.some(t=>["tent","tarp","poncho"].includes(t));
+      let mins=base*(dark&&p.torch==="off"?1.7:1)*(b.warmth<45?1.3:1)*(pegged&&site.hard>=2&&!K.metalPegs?1.4:1);
+      pdBusy(type==="bivvy"?"Rolling out the bivvy":`Pitching the ${type}`,Math.round(mins),"pitch",{site,sh,type,door:arg&&arg.door!=null?arg.door:PD.env.windDir+Math.PI,pegged});
+      break; }
+    case"enter": if(!c||!atCamp) return; p.state="shelter"; p.path=[]; p.x=c.x+0.5; p.y=c.y+0.5; pdThermalCache(true); pdNoise_(p.x,p.y,3,"player","rustle"); break;
+    case"exit": if(!inCamp) return; p.state="free"; PD.speed="walk"; pdThermalCache(true); pdNoise_(p.x,p.y,4,"player","rustle"); break;
+    case"sleep": if(!inCamp) return; if(b.bladder>92) return pdMsg("You're bursting. You won't sleep like this.","warn"); p.state="sleep"; PD.speed="sleep"; if(p.torch!=="off") p.torch="off"; pdMsg("You close your eyes.","info"); break;
+    case"stash": if(!c) return; c.stashed=!c.stashed; pdBusy(c.stashed?"Stashing the food in the pack":"Getting the food out",2,"misc"); pdNoise_(p.x,p.y,3,"player","rustle"); break;
+    case"hide": if(!c||c.hidden) return; c.hidden=true; pdBusy("Hiding the bright stuff",6,"misc"); break;
+    case"awning": { const pv=K.poncho&&!c.sh.includes(K.poncho.id)?K.poncho:K.tarp&&!c.sh.includes(K.tarp.id)?K.tarp:null; if(!c||!pv) return; pdBusy("Rigging the "+pv.shelter+" over the head end",Math.round((dark&&p.torch==="off"?14:9)*(c.site.hard>=2&&!K.metalPegs?1.3:1)),"awning",{id:pv.id}); break; }
+    case"vent": if(!c) return; c.vented=!c.vented; pdMsg(c.vented?"Hood cracked open. Less drip, a bit colder.":"Hood closed up.","info"); pdThermalCache(true); break;
+    case"eat": if(r.snacks<=0) return pdMsg("No food left.","info"); r.snacks--; b.hunger=0; b.heatUntil=Math.max(b.heatUntil,PD.t+80); b.energy=pdClamp(b.energy+8); b.morale=pdClamp(b.morale+3); pdBusy("Eating",4,"misc"); pdNoise_(p.x,p.y,4,"player","wrapper","a crinkly wrapper"); break;
+    case"cook": if(!K.stove) return; if(r.water<0.5) return pdMsg("Not enough water to cook.","warn"); if(r.hot<=0) return pdMsg("No hot meals left.","info"); r.water-=0.5; r.hot--; pdBusy("Cooking",22,"cook"); if(c) c.flame=PD.t+22; break;
+    case"boil": if(!K.stove||!K.flasks) return; if(r.water<0.5) return pdMsg("Not enough water.","warn"); r.water-=0.5; pdBusy("Boiling water for the flask",10,"boil"); if(c) c.flame=PD.t+10; break;
+    case"flask": if(r.flask<=0) return pdMsg("The flask's empty.","info"); { const h=pdFlaskHeat(); r.flask--; b.warmth=pdClamp(b.warmth+11*h); b.morale=pdClamp(b.morale+6*h); b.heatUntil=Math.max(b.heatUntil,PD.t+25*h); pdMsg(h>0.7?"Hot tea in the dark. A small miracle.":`It's only ${h>0.45?"warm":"lukewarm"} now, but it helps.`,"info"); pdBusy("Drinking",3,"misc"); } break;
+    case"drink": if(r.water<0.2) return pdMsg("You're out of water.","warn"); r.water=Math.max(0,r.water-0.25); b.thirst=pdClamp(b.thirst+28); b.bladder=pdClamp(b.bladder+10); pdBusy("Drinking",2,"misc"); break;
+    case"wear": { const it=item(arg); if(!it) return; if(p.worn[arg]) delete p.worn[arg]; else p.worn[arg]=1; pdBusy(p.worn[arg]?"Pulling on the "+K.name(it):"Taking off the "+K.name(it),inCamp?5:3,"misc"); pdNoise_(p.x,p.y,4,"player","rustle","rustling nylon"); pdThermalCache(true); break; }
+    case"headnet": p.headnet=!p.headnet; break;
+    case"wee": { if(inCamp) return pdMsg("Get out of the shelter first.","info"); if(b.bladder<25) return pdMsg("You don't need to.","info");
+      const wd=(()=>{ for(let d=1;d<=15;d++) for(let a=0;a<12;a++) if(pdAt(PDW,p.x+Math.cos(a/12*6.283)*d,p.y+Math.sin(a/12*6.283)*d)===PD_T.WATER) return d; return 99; })();
+      if(wd<10){ PD.stats.lnt-=0.5; PD.stats.lntWhy.push("Weed close to water"); } if(c&&Math.hypot(p.x-c.x,p.y-c.y)<4){ PD.stats.lnt-=0.25; PD.stats.lntWhy.push("Weed right next to camp"); }
+      b.bladder=0; pdBusy("Having a wee",2,"misc"); pdNoise_(p.x,p.y,2,"player","splash"); break; }
+    case"phone": if(r.phone<=2) return pdMsg("Phone's dead.","warn"); r.phone-=3; PD.flags.phoneUntil=PD.t+2; pdMsg(pdForecastText(),"info"); break;
+    case"charge": if(r.bank<=0||r.phone>70) return; r.bank--; r.phone=Math.min(100,r.phone+45); pdMsg("Phone charging from the power bank.","info"); break;
+    case"filter": { if(!K.filter) return; if(!pdNearWater(p.x,p.y,2)) return pdMsg("Get right by the water first.","info"); pdBusy("Filtering water",8,"filter"); break; }
+    case"tap": r.water=Math.max(K.waterCap,0.5); b.thirst=pdClamp(b.thirst+20); pdMsg("Bottles full.","info"); break;
+    case"socks": if(!K.socks||PD.flags.socks) return; PD.flags.socks=true; b.sweat=0; b.dry=pdClamp(b.dry+15); pdBusy("Changing into dry socks and base layer",6,"misc"); pdNoise_(p.x,p.y,3,"player","rustle"); break;
+    case"towel": if(!K.towel||PD.flags.towelAt>PD.t-90) return; PD.flags.towelAt=PD.t; b.dry=pdClamp(b.dry+8); pdBusy("Wiping off the condensation",4,"misc"); break;
+    case"stars": if(PD.env.cloud>0.6) return pdMsg("Thick cloud. No stars tonight.","info"); pdBusy("Lying back, looking up",12,"stars"); break;
+    case"pack": { if(!c||!atCamp&&!inCamp) return; p.state="free"; pdBusy("Packing up",Math.round((dark&&p.torch==="off"?14:9)*(K.drybag?0.85:1)*(PD.b.warmth<45?1.3:1)),"pack"); break; }
+    case"leave": { if(c) return pdMsg("Pack up first. You're not leaving kit behind.","warn"); PD.flags.leaving=true; const e=PDW.entry; pdWalkTo(e[0]+0.5,e[1]+0.5); break; }
+  }
+}
+function pdFinishBusy(){
+  const p=PD.p, B=p.busy, K=pdKitCached(); p.busy=null;
+  if(B.act==="pitch"){ const s=B.site, loose=B.pegged&&s.hard>=2&&!K.metalPegs&&pdRand()<0.55;
+    PD.camp={x:s.x,y:s.y,site:s,sh:B.sh,type:B.type,door:B.door,awning:false,vented:false,stashed:false,hidden:false,loose,vis:Math.max(...B.sh.map(id=>visOf(item(id))??1)),col:pdColour(item(B.sh[0])),pitchedAt:PD.t,hammock:s.hammock||null};
+    if(s.waterDist<60){ PD.stats.lnt-=0.5; PD.stats.lntWhy.push(`Camped ${s.waterDist} m from water (60 m is the rule)`); }
+    setTimeout(()=>PD&&pdTip("camp","Camp's up. Open 🎒 Kit to stash your food, hide bright kit and sort layers. Once it's dark, ⛺ Get in and 💤 Sleep. Things will wake you."),20);
+    pdMsg(`${B.type==="bivvy"?"Bivvy down":"Pitched"}.${loose?" The pegs won't bite in this ground. It's not as tight as you'd like.":""} ${s.hidden>=70?"Nicely hidden.":s.hidden<45?"You're quite visible from the path here.":""}`,"info"); pdThermalCache(true); }
+  else if(B.act==="awning"){ PD.camp.awning=true; PD.camp.sh=PD.camp.sh.concat(B.id); pdMsg("Low awning over the head end. Drizzle and frost stay off your face.","info"); pdThermalCache(true); }
+  else if(B.act==="cook"){ PD.b.hunger=0; PD.b.heatUntil=PD.t+120; PD.b.morale=pdClamp(PD.b.morale+12); PD.b.energy=pdClamp(PD.b.energy+15); pdMsg("Hot food. Everything is better now.","info"); }
+  else if(B.act==="boil"){ PD.r.flask=Math.max(PD.r.flask,pdKitCached().flasks*2); PD.r.flaskAt=PD.t; pdMsg("Flask full of boiling water.","info"); }
+  else if(B.act==="filter"){ PD.r.water=Math.max(K.waterCap,0.5); pdMsg("Bottles full. Tastes of nothing, which is the point.","info"); }
+  else if(B.act==="stars"){ PD.b.morale=pdClamp(PD.b.morale+8); pdMoment("stargazing","Lying on your back, looking up. More stars than you've seen in years. The Plough, Orion, a satellite crawling across.",4);
+    if(PD.env.cloud<0.5&&pdRand()<0.6) PD.flags.star={t:PD.t,x:pdRand(),y:pdRand()*0.5,until:PD.t+3}; }
+  else if(B.act==="pack"){ const c=PD.camp; if(PD.flags.raided&&!PD.flags.cleaned){ PD.flags.cleaned=true; PD.stats.lnt+=0.25; } PD.campHist=(PD.campHist||[]).concat([[c.x,c.y,c.pitchedAt,PD.t]]); PD.camp=null; pdMsg(PD.t>PD.env.sunrise-60?"Packed. Check the ground twice. Now walk out.":"Packed up.","info");
+    if(PD.flags.mustMove) PD.flags.mustMove.packed=true; }
+}
+function pdForecastText(){ const e=PD.env, bits=[`${pdHM(PD.t)}. ${Math.round(pdTemp(PD.t))}°C now, ${Math.round(e.low)}°C by dawn.`];
+  if(e.rainAt!=null) bits.push(PD.t<e.rainAt?`Rain from about ${pdHM(e.rainAt)}.`:PD.t<e.rainEnd?`Rain until about ${pdHM(e.rainEnd)}.`:"Rain's passed.");
+  if(e.gustAt!=null) bits.push(PD.t<e.gustAt?`Gusts up to ${Math.round(e.windAvg*1.6)} mph from ${pdHM(e.gustAt)}.`:"Gusty.");
+  bits.push(`Sunrise ${pdHM(e.sunrise)}. Battery ${Math.round(PD.r.phone)}%.`); return bits.join(" "); }
+
+/* ---------- main step ---------- */
+function pdStep(dtReal){
+  if(!PD||PD.ended||PD.paused||PD.dialog) return;
+  let dt=dtReal*PD_SPEED[PD.speed]; if(PD.speed==="walk"&&!PD.p.path.length&&!PD.p.busy&&PD.p.state==="free") dt*=1; // idle time still runs
+  if(PD.p.busy&&PD.speed==="walk") dt*=4; // busy work passes faster
+  while(dt>0){ const d=Math.min(dt,0.5); dt-=d; pdTick(d); if(PD.ended||PD.dialog) break; }
+}
+function pdTick(dt){
+  const p=PD.p, e=PD.env;
+  PD.t+=dt;
+  // schedule
+  while(PD.sched.length&&PD.sched[0].at<=PD.t){ pdSpawn(PD.sched.shift()); }
+  // player movement
+  if(p.path.length&&!p.busy){ const t=pdAt(PDW,p.x,p.y), sp=13/PD_TP[t].c*(p.sneak?0.5:1)*(PD.b.energy<25?0.75:1); const ox=p.x, oy=p.y; pdMoveAlong(p,dt*sp); const moved=Math.hypot(p.x-ox,p.y-oy); p.moved+=moved; p.still=0;
+    if(p.moved-p.lastStep>0.9){ p.lastStep=p.moved; const nz=PD_TP[pdAt(PDW,p.x,p.y)].no*(p.sneak?0.35:1)*(PD.twists.includes("frost")&&PD.t>1440?1.4:1); pdNoise_(p.x,p.y,3.2*nz,"player","step"); }
+    if(PD.stats.trail.length===0||Math.hypot(PD.stats.trail[PD.stats.trail.length-1][0]-p.x,PD.stats.trail[PD.stats.trail.length-1][1]-p.y)>2) PD.stats.trail.push([+p.x.toFixed(1),+p.y.toFixed(1)]);
+    if(!p.path.length&&PD.flags.leaving&&!PD.camp&&(p.x<1.6||p.y<1.6||p.x>PD_W-1.6||p.y>PD_W-1.6)) pdEnd(PD.t>e.sunrise-60?"dawn":"walkedhome");
+  } else p.still+=dt;
+  if(p.busy){ if(p.busy.act==="pitch"&&p.busy.pegged&&pdRand()<dt*0.5){ const h=p.busy.site.hard; if(h>=1.5) pdNoise_(p.x,p.y,4+h*4,"player","peg","hammering pegs"); }
+    if(p.busy.act==="cook"&&pdRand()<dt*0.4) pdNoise_(p.x,p.y,7,"player","stove","the stove roaring");
+    if(PD.t>=p.busy.until) pdFinishBusy(); }
+  // body + world
+  pdBody(dt);
+  const L=pdLights(), vis=pdPlayerVis(L); PD._vis=vis; PD._L=L;
+  pdNPCs(dt,L,vis); pdAnimals(dt,L);
+  // camp events
+  const c=PD.camp;
+  if(c&&c.loose&&pdGusting()&&!PD.flags.flapped&&pdRand()<dt*0.05){ PD.flags.flapped=true; pdNoise_(c.x,c.y,14,"camp","flap","a loose corner slapping in the wind"); pdMsg("A gust rips a corner loose. It's slapping like a sail. Get out and re-peg it, or put up with it.","danger"); if(p.state==="sleep") pdWake("your shelter flapping in the gusts"); PD.flags.flapping=true; }
+  if(PD.flags.flapping&&p.state==="sleep"&&pdRand()<dt*0.08) pdWake("the flapping again");
+  if(p.state==="sleep"){ const b=PD.b; if(b.warmth<36&&pdRand()<dt*0.06) pdWake("cold. Properly cold"); else if(b.bladder>94) pdWake("you're bursting"); else if(pdRaining()&&!PD.flags.rainWoke){ PD.flags.rainWoke=true; pdWake("rain pattering on the "+(c?c.type:"bag")); }
+    else if(PD.t>e.sunrise-20&&!PD.flags.alarm){ PD.flags.alarm=true; pdWake("first light"); }
+    else if(e.bugs>=2&&!(c&&c.sh.some(id=>(+(item(id)||{}).bug||0)>=2))&&!p.headnet&&PD.t>e.sunrise-70&&pdRand()<dt*0.05) pdWake("midges, in your ears and eyelids");
+    // snoring: a real risk with people about
+    if(b.energy<60&&pdRand()<dt*0.04) pdNoise_(p.x,p.y,7,"player","snore","your own snoring"); }
+  // rain start message
+  if(pdRaining()&&!PD.flags.rainMsg){ PD.flags.rainMsg=true; pdMsg("It's started raining.","info"); }
+  if(PD.t>=e.sunrise&&!PD.flags.sunMsg){ PD.flags.sunMsg=true; pdMoment("sunrise",PD.env.cloud<0.6?"The sun comes up over the hedges and everything steams. Worth it.":"Grey light comes up through the cloud. Morning, at last.",6); pdMsg("It's light. Pack up and get out before the dog walkers.","info"); }
+  // must-move deadline
+  const mm=PD.flags.mustMove; if(mm&&!mm.done){ if(mm.packed&&Math.hypot(p.x-mm.from[0],p.y-mm.from[1])>40){ mm.done=true; pdMsg("Far enough. Find somewhere new.","info"); } else if(PD.t>mm.by){ pdEnd("movedon"); return; } }
+  // body limits
+  const b=PD.b;
+  if(b.warmth<=4){ pdEnd("bailed"); return; } if(b.energy<=0){ pdEnd("exhausted"); return; } if(b.morale<=2){ pdEnd("calledit"); return; }
+  if(PD.t>e.sunrise+200&&!PD.ended){ pdEnd(PD.camp?"overslept":"dawn"); return; }
+  PD.r.phone=Math.max(0,PD.r.phone-dt*(0.02+(pdTemp(PD.t)<3&&p.state==="free"?0.05:0)));
+  if(p.torch!=="off"&&p.state!=="sleep"){ PD.r.torch=Math.max(0,PD.r.torch-dt*(p.torch==="white"?0.18:0.06)); if(PD.r.torch<=0){ p.torch="off"; pdMsg("The torch fades to nothing.","warn"); } }
+  PD.noises=PD.noises.filter(n=>performance.now()-n.born<2200);
+}
+
+/* ---------- endings and score ---------- */
+function pdEnd(kind){
+  if(PD.ended) return; const b=PD.b, st=PD.stats, e=PD.env, dark=(e.sunrise-e.sunset)/60;
+  const g=(v,cuts)=>v>=cuts[0]?"A":v>=cuts[1]?"B":v>=cuts[2]?"C":v>=cuts[3]?"D":"E";
+  const grades={Warmth:g(st.minW,[60,48,38,25]),Sleep:g(b.slept/60/Math.max(1,dark-2),[0.75,0.55,0.35,0.15]),Stealth:e.legal?(st.spotted?"B":"A"):g(100-st.maxHeat-st.spotted*12,[90,70,50,30]),"Leave No Trace":kind==="dawn"?g(st.lnt,[4,3.5,2.75,2]):"–",Weight:g(-PD_K.packKg,[-8,-11,-14,-17])};
+  if(kind!=="dawn"){ grades.Sleep=grades.Sleep==="A"?"B":grades.Sleep; }
+  const score=Object.values(grades).filter(v=>v!=="–").reduce((s,v)=>s+"EDCBA".indexOf(v),0), stars=kind==="dawn"?Math.max(1,Math.min(5,Math.round(score/4))):Math.max(0,Math.min(2,Math.round(score/8)));
+  PD.ended={kind,t:PD.t,grades,stars,moments:Object.keys(st.moments)};
+  const J=S.pd=S.pd||{runs:0,dawns:0,journal:[],best:{},ach:{},seen:{}};
+  J.runs++; if(kind==="dawn") J.dawns++; Object.keys(st.moments).forEach(m=>J.seen[m]=(J.seen[m]||0)+1);
+  const key=(PD.preset||"real:"+PD.label)+"|"+PD.classId; if(!J.best[key]||stars>J.best[key].stars) J.best[key]={stars,date:todayISO(),grades};
+  J.journal.unshift({date:todayISO(),night:PD.date,loc:PD.label,cls:PD.className,kind,stars,grades,moments:Object.keys(st.moments),line:pdJournalLine(kind)}); J.journal=J.journal.slice(0,60);
+  PD.newAch=pdAchCheck(J); S.pdSave=null; save();
+}
+const PD_ENDS={dawn:["🌅","You made it","Night done, kit packed, gone without a trace."],walkedhome:["🚶","Walked out","You called it and walked home. That's a skill too."],bailed:["🥶","Too cold","Your body made the decision. You packed up shivering and walked out."],exhausted:["😮‍💨","Exhausted","Nothing left in the tank. You walked out on fumes."],calledit:["🌧️","Called it","The night won this one. Home, kettle, bed."],movedon:["🔦","Moved on","You didn't get far enough away in time. Night over."],overslept:["😴","Overslept","Dog walkers found your camp at nine. Awkward."]};
+function pdJournalLine(kind){ const m=Object.values(PD.stats.moments).map(x=>x.text); if(m.length) return m[Math.floor(pdRand()*m.length)];
+  return kind==="dawn"?"A quiet night. Sometimes that's the best kind.":kind==="bailed"?"Too cold. Next time, more insulation.":"Not this time."; }
+const PD_ACH=[
+ {id:"first",n:"First night out",d:"Finish any night",t:J=>J.runs>=1},
+ {id:"dawn",n:"Made it",d:"Reach morning and walk out",t:(J,P)=>P.ended.kind==="dawn"},
+ {id:"ghost",n:"Ghost",d:"Reach morning without anyone spotting you",t:(J,P)=>P.ended.kind==="dawn"&&!P.stats.spotted},
+ {id:"five",n:"Five-star night",d:"Get 5 stars",t:(J,P)=>P.ended.stars>=5},
+ {id:"owl",n:"Owl ears",d:"Hear two tawny owls talking",t:J=>J.seen.owl},
+ {id:"deer",n:"Still as a tree",d:"Watch deer at dawn without spooking them",t:J=>J.seen.deer},
+ {id:"barnowl",n:"White ghost",d:"See a barn owl",t:J=>J.seen.barnowl},
+ {id:"fox",n:"Fox spotter",d:"Catch a fox in the torchlight",t:J=>J.seen.fox},
+ {id:"badger",n:"Brock",d:"See a badger",t:J=>J.seen.badger},
+ {id:"wish",n:"Make a wish",d:"Catch a shooting star",t:J=>J.seen.star},
+ {id:"aurora",n:"Lights in the north",d:"See the aurora",t:J=>J.seen.aurora},
+ {id:"hard",n:"Iron night",d:"Reach morning on Hardcore",t:(J,P)=>P.ended.kind==="dawn"&&P.diff==="hard"},
+ {id:"lnt",n:"Leave No Trace",d:"Get an A for Leave No Trace",t:(J,P)=>P.ended.grades["Leave No Trace"]==="A"},
+ {id:"real",n:"Real world",d:"Finish a night on the real map",t:(J,P)=>P.src==="real"},
+ {id:"all4",n:"All weathers",d:"Reach morning at all four locations",t:J=>["towpath","hill","river","moor"].every(k=>Object.keys(J.best).some(b=>b.startsWith(k+"|")&&J.best[b].stars>=1))},
+ {id:"moments",n:"Collector",d:"See 8 different wild moments",t:J=>Object.keys(J.seen).length>=8}
+];
+function pdAchCheck(J){ return PD_ACH.filter(a=>!J.ach[a.id]&&a.t(J,PD)).map(a=>{ J.ach[a.id]=todayISO(); return a; }); }
+
+/* ---------- save / load ---------- */
+function pdSerialize(){ const o=Object.assign({},PD); o.dialog=null; o._th=null; o._L=null; o._vis=null; o.noises=[];
+  o.world=PDW.kind==="real"?{kind:"real",t:btoa(String.fromCharCode.apply(null,PDW.t)),elev:Array.from(PDW.elev,v=>Math.round(v)),trees:PDW.trees,objs:PDW.objs,names:PDW.names,flags:PDW.flags,entry:PDW.entry,spot:PDW.spot,origin:PDW.origin,label:PDW.label}:{kind:PDW.kind};
+  return o; }
+function pdSaveNow(){ if(!PD||PD.ended) return; try{ S.pdSave=pdSerialize(); save(); }catch(e){} }
+function pdLoadSave(){ const o=S.pdSave; if(!o||o.v!==3) return false; try{
+  if(o.world.kind==="real"){ const W=pdNewWorld("real"); const bin=atob(o.world.t); for(let i=0;i<bin.length;i++) W.t[i]=bin.charCodeAt(i); o.world.elev.forEach((v,i)=>W.elev[i]=v); Object.assign(W,{trees:o.world.trees,objs:o.world.objs,names:o.world.names,flags:o.world.flags,entry:o.world.entry,spot:o.world.spot,origin:o.world.origin,label:o.world.label}); pdFinish(W,pdRng(o.seed)); PDW=W; }
+  else PDW=pdGenerate(o.world.kind,o.seed);
+  PD=Object.assign({},o); delete PD.world; PD_K=null; PD.p.speed=1; pdThermalCache(true); return true; }catch(e){ S.pdSave=null; return false; } }
+/* ============================================================
+   PITCH DARK (game): RENDERER (canvas, top-down, with night lighting)
+   ============================================================ */
+const PD_TS=16; // ground canvas pixels per tile
+let PDR=null;
+function pdRenderInit(canvas){
+  const W=PDW, g=document.createElement("canvas"); g.width=PD_W*PD_TS; g.height=PD_W*PD_TS; const x=g.getContext("2d");
+  pdPaintGround(x,W); const tr=document.createElement("canvas"); tr.width=g.width; tr.height=g.height; pdPaintTrees(tr.getContext("2d"),W);
+  const lc=document.createElement("canvas");
+  PDR={canvas,ctx:canvas.getContext("2d"),ground:g,trees:tr,lc,lx:lc.getContext("2d"),cam:{x:PD.p.x,y:PD.p.y},Z:12,shake:0,stars:[],frame:0};
+  pdResize();
+}
+function pdResize(){ if(!PDR) return; const c=PDR.canvas, dpr=Math.min(2,window.devicePixelRatio||1), w=c.clientWidth||360, h=c.clientHeight||640;
+  c.width=Math.round(w*dpr); c.height=Math.round(h*dpr); PDR.dpr=dpr; PDR.w=w; PDR.h=h; PDR.lc.width=Math.ceil(w/2); PDR.lc.height=Math.ceil(h/2); }
+const pdRGB=(c,j=0)=>`rgb(${pdClamp(c[0]+j,0,255)|0},${pdClamp(c[1]+j,0,255)|0},${pdClamp(c[2]+j,0,255)|0})`;
+function pdPaintGround(x,W){
+  const T=PD_TS, R=pdRng(PD.seed^77), month=PD.env.month, autumn=month>=10&&month<=11, winter=month===12||month<=2, summer=month>=6&&month<=8;
+  const tint=c=>winter?[c[0]*0.92+10,c[1]*0.86+8,c[2]*0.9+8]:autumn?[c[0]*1.02+6,c[1]*0.95,c[2]*0.85]:summer?[c[0]*1.02,c[1]*1.06,c[2]*0.95]:c;
+  // pass 1: base
+  const field=(tx,ty,c,t)=>{ if(t!==PD_T.GRASS&&t!==PD_T.CROP&&t!==PD_T.MEADOW) return c; const n=pdNoise(tx/14,ty/14,PD.seed%311)-0.5, m=pdNoise(tx/30,ty/30,PD.seed%97)-0.5; return [c[0]+n*30+m*12,c[1]+n*22-m*8,c[2]+n*10]; };
+  W.fcol=(tx,ty,t)=>tint(field(tx,ty,PD_TP[t].col,t));
+  for(let ty=0;ty<PD_W;ty++) for(let tx=0;tx<PD_W;tx++){ const t=W.t[pdIdx(tx,ty)]; x.fillStyle=pdRGB(W.fcol(tx,ty,t),(pdHash(tx,ty,5)-0.5)*12); x.fillRect(tx*T,ty*T,T,T); }
+  // pass 2: organic blobs so tiles don't look like squares (soft natural edges)
+  const order=[PD_T.GRASS,PD_T.GARDEN,PD_T.CROP,PD_T.MEADOW,PD_T.HEATH,PD_T.BOG,PD_T.SCRUB,PD_T.WOOD,PD_T.ROCK];
+  order.push(PD_T.WATER);
+  order.forEach(v=>{ for(let ty=0;ty<PD_W;ty++) for(let tx=0;tx<PD_W;tx++){ if(W.t[pdIdx(tx,ty)]!==v) continue; x.fillStyle=pdRGB(W.fcol(tx,ty,v),(pdHash(tx,ty,9)-0.5)*(v===PD_T.WATER?4:14));
+    if(v===PD_T.WATER){ x.beginPath(); x.arc((tx+0.5)*T,(ty+0.5)*T,T*0.72,0,6.283); x.fill(); continue; }
+    for(let k=0;k<2;k++){ x.beginPath(); x.arc((tx+0.5+(R()-0.5)*0.6)*T,(ty+0.5+(R()-0.5)*0.6)*T,T*(0.55+R()*0.3),0,6.283); x.fill(); } } });
+  // pass 3: texture
+  for(let ty=0;ty<PD_W;ty++) for(let tx=0;tx<PD_W;tx++){ const t=W.t[pdIdx(tx,ty)], X=tx*T, Y=ty*T, h=k=>pdHash(tx,ty,k);
+    if(t===PD_T.GRASS||t===PD_T.GARDEN){ for(let k=0;k<4;k++){ x.fillStyle=h(k)<0.5?"rgba(255,255,200,0.08)":"rgba(0,30,0,0.12)"; x.fillRect(X+h(k+10)*T,Y+h(k+20)*T,1.5,1.5); } if(summer&&h(3)<0.06){ x.fillStyle=["#f4f0e0","#f2d14a","#c99ad8"][Math.floor(h(4)*3)]; x.fillRect(X+h(5)*T,Y+h(6)*T,2,2); } }
+    else if(t===PD_T.CROP){ const a=pdNoise(tx/18,ty/18,PD.seed%97)>0.5; x.strokeStyle="rgba(60,40,20,0.28)"; x.lineWidth=1.2; x.beginPath(); for(let k=0;k<3;k++){ if(a){ x.moveTo(X,Y+k*4+2); x.lineTo(X+T,Y+k*4+2); } else { x.moveTo(X+k*4+2,Y); x.lineTo(X+k*4+2,Y+T); } } x.stroke(); }
+    else if(t===PD_T.MEADOW){ x.strokeStyle="rgba(200,220,120,0.22)"; x.lineWidth=1; x.beginPath(); for(let k=0;k<5;k++){ const px=X+h(k)*T, py=Y+h(k+5)*T; x.moveTo(px,py); x.lineTo(px+(h(k+9)-0.5)*3,py-4); } x.stroke(); }
+    else if(t===PD_T.WOOD){ for(let k=0;k<5;k++){ x.fillStyle=autumn||winter?`rgba(${120+h(k)*60|0},${70+h(k+3)*30|0},30,0.35)`:"rgba(20,30,15,0.3)"; x.fillRect(X+h(k)*T,Y+h(k+7)*T,2,1.5); } }
+    else if(t===PD_T.SCRUB){ for(let k=0;k<3;k++){ x.fillStyle="rgba(25,45,20,0.6)"; x.beginPath(); x.arc(X+h(k)*T,Y+h(k+4)*T,2.5+h(k+8)*2,0,6.283); x.fill(); } if(month>=8&&month<=9&&h(2)<0.4){ x.fillStyle="#2a1030"; x.fillRect(X+h(11)*T,Y+h(12)*T,2,2); } }
+    else if(t===PD_T.HEATH){ for(let k=0;k<5;k++){ x.fillStyle=month>=8&&month<=9?"rgba(170,90,160,0.55)":"rgba(80,55,50,0.4)"; x.fillRect(X+h(k)*T,Y+h(k+6)*T,2,2); } }
+    else if(t===PD_T.ROCK){ x.fillStyle="rgba(255,255,255,0.12)"; x.fillRect(X+1,Y+1,T*0.6,T*0.4); x.strokeStyle="rgba(0,0,0,0.25)"; x.beginPath(); x.moveTo(X+h(1)*T,Y); x.lineTo(X+h(2)*T,Y+T); x.stroke(); }
+    else if(t===PD_T.BOG){ x.fillStyle="rgba(40,70,90,0.55)"; x.beginPath(); x.ellipse(X+h(1)*T,Y+h(2)*T,3,2,0,0,6.283); x.fill(); if(h(3)<0.3){ x.fillStyle="#eee"; x.fillRect(X+h(4)*T,Y+h(5)*T,1.5,1.5); } }
+    else if(t===PD_T.PATH){ for(let k=0;k<3;k++){ x.fillStyle="rgba(90,75,55,0.4)"; x.fillRect(X+h(k)*T,Y+h(k+3)*T,1.5,1.5); } }
+    else if(t===PD_T.ROAD){ const n=[[1,0],[-1,0],[0,1],[0,-1]].map(([a,b])=>pdAt(W,tx+a,ty+b)!==PD_T.ROAD); x.fillStyle="rgba(200,200,190,0.35)"; if(n[0]) x.fillRect(X+T-1.5,Y,1.5,T); if(n[1]) x.fillRect(X,Y,1.5,T); if(n[2]) x.fillRect(X,Y+T-1.5,T,1.5); if(n[3]) x.fillRect(X,Y,T,1.5); }
+    else if(t===PD_T.YARD){ if(h(1)<0.3){ x.fillStyle="rgba(50,40,30,0.25)"; x.beginPath(); x.ellipse(X+h(2)*T,Y+h(3)*T,4,2.5,h(4)*3,0,6.283); x.fill(); } }
+    else if(t===PD_T.WATER){ const edge=[[1,0],[-1,0],[0,1],[0,-1]].some(([a,b])=>pdAt(W,tx+a,ty+b)!==PD_T.WATER&&pdIn(tx+a,ty+b)); x.fillStyle=edge?"rgba(120,160,150,0.25)":"rgba(10,30,60,0.25)"; x.fillRect(X,Y,T,T); }
+  }
+  // hedges: bumpy, with highlights
+  for(let ty=0;ty<PD_W;ty++) for(let tx=0;tx<PD_W;tx++){ if(W.t[pdIdx(tx,ty)]!==PD_T.HEDGE) continue; const X=(tx+0.5)*T, Y=(ty+0.5)*T;
+    x.fillStyle="rgba(0,0,0,0.28)"; x.beginPath(); x.arc(X+3,Y+3,T*0.78,0,6.283); x.fill();
+    for(let k=0;k<3;k++){ const ox=(pdHash(tx,ty,k)-0.5)*T*0.7, oy=(pdHash(tx,ty,k+3)-0.5)*T*0.7, r=T*(0.45+pdHash(tx,ty,k+6)*0.3); const gr=x.createRadialGradient(X+ox-r*0.3,Y+oy-r*0.3,1,X+ox,Y+oy,r);
+      gr.addColorStop(0,autumn?"#6a6a2a":winter?"#3e4a32":"#3f6a32"); gr.addColorStop(1,winter?"#1e261a":"#1a3216"); x.fillStyle=gr; x.beginPath(); x.arc(X+ox,Y+oy,r,0,6.283); x.fill(); } }
+  // walls
+  for(let ty=0;ty<PD_W;ty++) for(let tx=0;tx<PD_W;tx++){ if(W.t[pdIdx(tx,ty)]!==PD_T.WALL) continue; x.fillStyle="#8a877e"; x.fillRect(tx*T+2,ty*T+2,T-4,T-4); x.fillStyle="rgba(255,255,255,0.2)"; x.fillRect(tx*T+2,ty*T+2,T-4,2); }
+  // buildings: roofs with ridge shading
+  for(let ty=0;ty<PD_W;ty++) for(let tx=0;tx<PD_W;tx++){ if(W.t[pdIdx(tx,ty)]!==PD_T.BUILD) continue; const X=tx*T, Y=ty*T, roofs=["#8a4a3a","#5a5e66","#6a3a30","#4a4e56"], rc=roofs[Math.floor(pdNoise(tx/6,ty/6,3)*4)%4];
+    x.fillStyle=rc; x.fillRect(X,Y,T,T); const up=pdAt(W,tx,ty-1)!==PD_T.BUILD, dn=pdAt(W,tx,ty+1)!==PD_T.BUILD, lf=pdAt(W,tx-1,ty)!==PD_T.BUILD, rt=pdAt(W,tx+1,ty)!==PD_T.BUILD;
+    x.fillStyle="rgba(255,255,255,0.12)"; if(up) x.fillRect(X,Y,T,3); x.fillStyle="rgba(0,0,0,0.3)"; if(dn) x.fillRect(X,Y+T-3,T,3); if(rt) x.fillRect(X+T-2,Y,2,T); if(lf){ x.fillStyle="rgba(255,255,255,0.08)"; x.fillRect(X,Y,2,T); }
+    x.strokeStyle="rgba(0,0,0,0.12)"; x.beginPath(); x.moveTo(X,Y+T/2); x.lineTo(X+T,Y+T/2); x.stroke();
+    if(dn){ x.fillStyle="rgba(0,0,0,0.25)"; x.fillRect(X+2,Y+T,T,3); } }
+  // hillshade from elevation
+  for(let ty=1;ty<PD_W-1;ty++) for(let tx=1;tx<PD_W-1;tx++){ const dx=W.elev[pdIdx(tx+1,ty)]-W.elev[pdIdx(tx-1,ty)], dy=W.elev[pdIdx(tx,ty+1)]-W.elev[pdIdx(tx,ty-1)], s=(-dx-dy)*0.06;
+    if(Math.abs(s)>0.01){ x.fillStyle=s>0?`rgba(255,255,220,${Math.min(0.18,s)})`:`rgba(0,0,20,${Math.min(0.25,-s)})`; x.fillRect(tx*T,ty*T,T,T); } }
+}
+function pdPaintTrees(x,W){
+  const T=PD_TS, month=PD.env.month, bare=month===12||month<=3, autumn=month>=10&&month<=11;
+  W.trees.slice().sort((a,b)=>a.y-b.y).forEach((t,i)=>{ const X=t.x*T, Y=t.y*T, r=t.r*T*0.62, h=k=>pdHash(i,k,11);
+    x.fillStyle="rgba(0,0,0,0.3)"; x.beginPath(); x.ellipse(X+r*0.45,Y+r*0.45,r*0.95,r*0.8,0,0,6.283); x.fill();
+    const evergreen=t.thorn?false:h(1)<0.15, isBare=bare&&!evergreen&&!t.thorn;
+    if(isBare){ x.strokeStyle="rgba(70,55,45,0.85)"; x.lineCap="round"; const n=5+Math.floor(h(2)*4); for(let k=0;k<n;k++){ const a=k/n*6.283+h(k+3), L=r*(0.7+h(k+9)*0.4);
+        x.lineWidth=2.2; x.beginPath(); x.moveTo(X,Y); const mx=X+Math.cos(a)*L*0.55, my=Y+Math.sin(a)*L*0.55; x.lineTo(mx,my); x.stroke(); x.lineWidth=1; x.beginPath(); x.moveTo(mx,my); x.lineTo(X+Math.cos(a+0.35)*L,Y+Math.sin(a+0.35)*L); x.moveTo(mx,my); x.lineTo(X+Math.cos(a-0.3)*L,Y+Math.sin(a-0.3)*L); x.stroke(); }
+      x.fillStyle="#4a3a30"; x.beginPath(); x.arc(X,Y,2.5,0,6.283); x.fill(); return; }
+    const lobes=t.willow?6:4; for(let k=0;k<lobes;k++){ const a=k/lobes*6.283+h(k), ox=Math.cos(a)*r*0.35, oy=Math.sin(a)*r*0.35, rr=r*(0.6+h(k+4)*0.25);
+      const g=x.createRadialGradient(X+ox-rr*0.35,Y+oy-rr*0.35,1,X+ox,Y+oy,rr);
+      const base=t.willow?["#8aa04a","#4a6a2a"]:t.thorn?["#4a5a34","#25301c"]:evergreen?["#2f5030","#142414"]:autumn?(h(7)<0.5?["#c08a3a","#6a4020"]:["#a0a040","#4a5020"]):["#4f7a3a","#1f3a1a"];
+      g.addColorStop(0,base[0]); g.addColorStop(1,base[1]); x.fillStyle=g; x.beginPath(); x.arc(X+ox,Y+oy,rr,0,6.283); x.fill(); } });
+}
+
+/* ---------- per-frame drawing ---------- */
+function pdDraw(now){
+  if(!PDR||!PD) return; const R=PDR, x=R.ctx, dpr=R.dpr, Z=R.Z, w=R.w, h=R.h, p=PD.p, rt=now/1000; R.frame++;
+  // camera follows the player smoothly
+  R.cam.x+=(p.x-R.cam.x)*0.12; R.cam.y+=(p.y-R.cam.y)*0.12;
+  const hx=w/2/Z, hy=h/2/Z; R.cam.x=hx*2>=PD_W?PD_W/2:Math.max(hx,Math.min(PD_W-hx,R.cam.x)); R.cam.y=hy*2>=PD_W?PD_W/2:Math.max(hy-3,Math.min(PD_W-hy+5,R.cam.y));
+  const ox=R.cam.x*Z-w/2, oy=R.cam.y*Z-h/2, S_=(X,Y)=>[X*Z-ox,Y*Z-oy];
+  x.setTransform(dpr,0,0,dpr,0,0); x.imageSmoothingEnabled=true;
+  x.fillStyle="#0b130d"; x.fillRect(0,0,w,h);
+  const sc=Z/PD_TS; x.drawImage(R.ground,ox/sc,oy/sc,w/sc,h/sc,0,0,w,h);
+  // water shimmer
+  const tx0=Math.max(0,Math.floor(ox/Z)), ty0=Math.max(0,Math.floor(oy/Z)), tx1=Math.min(PD_W-1,Math.ceil((ox+w)/Z)), ty1=Math.min(PD_W-1,Math.ceil((oy+h)/Z));
+  x.strokeStyle="rgba(200,230,255,0.25)"; x.lineWidth=1; x.beginPath();
+  for(let ty=ty0;ty<=ty1;ty++) for(let tx=tx0;tx<=tx1;tx++){ if(PDW.t[pdIdx(tx,ty)]!==PD_T.WATER) continue; const ph=rt*0.8+pdHash(tx,ty,2)*6.28; if(Math.sin(ph)>0.6){ const [sx,sy]=S_(tx+0.2+pdHash(tx,ty,4)*0.5,ty+0.3+pdHash(tx,ty,5)*0.4); x.moveTo(sx,sy); x.lineTo(sx+Z*0.35,sy); } }
+  x.stroke();
+  if(PD.flags.kingfisher&&PD.t<PD.flags.kingfisher){ const wt=[]; for(let ty=ty0;ty<=ty1;ty+=2) for(let tx=tx0;tx<=tx1;tx+=2) if(PDW.t[pdIdx(tx,ty)]===PD_T.WATER) wt.push([tx,ty]); if(wt.length){ const k=wt[Math.floor((rt*3)%wt.length)]; const [sx,sy]=S_(k[0]+0.5,k[1]+0.5); x.fillStyle="#1fa0e0"; x.beginPath(); x.ellipse(sx,sy,4,2,0.3,0,6.283); x.fill(); x.fillStyle="#e07a1f"; x.fillRect(sx-1,sy+1,3,2); if(Math.hypot(k[0]-p.x,k[1]-p.y)<20&&p.state!=="sleep") pdMoment("kingfisher","A flash of electric blue low over the water. Kingfisher.",6); } }
+  // frost / footprints
+  if(PD.twists.includes("frost")&&PD.t>1440-60){ x.fillStyle=`rgba(210,225,255,${Math.min(0.16,(PD.t-1380)/600)})`; x.fillRect(0,0,w,h);
+    x.fillStyle="rgba(60,70,90,0.35)"; PD.stats.trail.slice(-60).forEach(([tx,ty],i)=>{ const [sx,sy]=S_(tx,ty); x.fillRect(sx-1.5+(i%2)*3,sy-1,2.2,3); }); }
+  // trees (canopy) under everything that moves
+  x.drawImage(R.trees,ox/sc,oy/sc,w/sc,h/sc,0,0,w,h);
+  // objects
+  PDW.objs.forEach(o=>{ const [sx,sy]=S_(o.x,o.y); if(sx<-60||sy<-60||sx>w+60||sy>h+60) return; pdDrawObj(x,o,sx,sy,Z,rt); });
+  // spot marker from the real map pick
+  if(PDW.spot&&!PD.camp&&!PD.campHist){ const [sx,sy]=S_(PDW.spot[0]+0.5,PDW.spot[1]+0.5); x.strokeStyle="rgba(255,210,120,0.7)"; x.setLineDash([4,4]); x.lineWidth=2; x.beginPath(); x.arc(sx,sy,Z*1.4+Math.sin(rt*3)*2,0,6.283); x.stroke(); x.setLineDash([]); }
+  // camp
+  if(PD.camp) pdDrawCamp(x,S_,Z,rt);
+  // trail of where you've been (faint)
+  // path preview
+  if(p.path.length){ x.strokeStyle="rgba(255,255,255,0.35)"; x.setLineDash([3,5]); x.lineWidth=2; x.beginPath(); const [a,b]=S_(p.x,p.y); x.moveTo(a,b); p.path.forEach(q=>{ const [c,d]=S_(q[0],q[1]); x.lineTo(c,d); }); x.stroke(); x.setLineDash([]); const lq=p.path[p.path.length-1], [ex,ey]=S_(lq[0],lq[1]); x.fillStyle="rgba(255,255,255,0.6)"; x.beginPath(); x.arc(ex,ey,3,0,6.283); x.fill(); }
+  // animals and people
+  PD.animals.forEach(a=>{ const [sx,sy]=S_(a.x,a.y); if(sx>-40&&sy>-40&&sx<w+40&&sy<h+40) pdDrawAnimal(x,a,sx,sy,Z,rt); });
+  const dl=pdDaylight(PD.t);
+  PD.npcs.forEach(n=>{ if(!n.person||n.state==="leave"||dl<0.3) return; const [sx,sy]=S_(n.x,n.y); const rr=(4+28*Math.min(1,dl))*Z*0.6, a=dl>0.5?1.1:0.9;
+    const g=x.createRadialGradient(sx,sy,0,sx,sy,rr); const c=n.notice>0.5?"255,150,60":"255,240,170"; g.addColorStop(0,`rgba(${c},${0.16+n.notice*0.12})`); g.addColorStop(1,`rgba(${c},0)`); x.fillStyle=g; x.beginPath(); x.moveTo(sx,sy); x.arc(sx,sy,rr,n.dir-a,n.dir+a); x.closePath(); x.fill(); });
+  PD.npcs.forEach(n=>{ const [sx,sy]=S_(n.x,n.y); if(sx>-60&&sy>-60&&sx<w+60&&sy<h+60) pdDrawNPC(x,n,sx,sy,Z,rt); });
+  if(p.state==="free"){ const [sx,sy]=S_(p.x,p.y); pdDrawPerson(x,sx,sy,Z,p.dir,p.path.length?rt:0,{body:pdKitCached().packCol==="camo"?"#4c5a30":"#3a4a3a",pack:pdKitCached().packCol,player:true,sneak:p.sneak}); if(p.busy) pdDrawBusy(x,sx,sy,Z); }
+  // midges
+  const e=PD.env; if(e.bugs>=1&&!p.headnet&&(PD.t<e.sunset+90||PD.t>e.sunrise-60)&&pdNearWater(p.x,p.y,18)){ const [sx,sy]=S_(p.x,p.y); x.fillStyle="rgba(20,20,20,0.7)"; for(let i=0;i<20*e.bugs;i++){ const a=rt*2+i, r=Z*(0.5+(i%5)*0.25); x.fillRect(sx+Math.cos(a*1.3+i)*r,sy+Math.sin(a*1.7+i*2)*r,1.5,1.5); } }
+  // lighting
+  pdDrawLight(x,S_,Z,w,h,rt);
+  // glow-worms show in the dark
+  if((e.month===6||e.month===7)&&pdDaylight(PD.t)<0.15&&p.torch==="off"){ let n=0; for(let ty=ty0;ty<=ty1;ty+=1) for(let tx=tx0;tx<=tx1;tx+=1){ if(PDW.t[pdIdx(tx,ty)]!==PD_T.MEADOW||pdHash(tx,ty,33)>0.03) continue; const [sx,sy]=S_(tx+0.5,ty+0.5); const a=0.5+0.5*Math.sin(rt*1.5+tx); x.fillStyle=`rgba(150,255,120,${a})`; x.beginPath(); x.arc(sx,sy,2,0,6.283); x.fill(); n++; } if(n>3&&p.state!=="sleep") pdMoment("glowworms","Tiny green lights in the grass. Glow-worms. You'd never have seen them with the torch on.",8); }
+  // weather overlays
+  if(pdRaining()){ const n=e.rain>=2?160:80; x.strokeStyle="rgba(180,200,230,0.35)"; x.lineWidth=1; x.beginPath(); for(let i=0;i<n;i++){ const px=(pdHash(i,R.frame%60,1)*w+rt*40)%w, py=(pdHash(i,7,2)*h+rt*700+i*37)%h; x.moveTo(px,py); x.lineTo(px-3,py+12); } x.stroke(); }
+  if(PD.twists.includes("fog")&&(PD.t>e.sunrise-120)){ const a=Math.min(0.35,(PD.t-(e.sunrise-120))/300); for(let i=0;i<5;i++){ const gx=((rt*8+i*170)%(w+300))-150, gy=(i*137)%h; const g=x.createRadialGradient(gx,gy,10,gx,gy,180); g.addColorStop(0,`rgba(220,225,230,${a})`); g.addColorStop(1,"rgba(220,225,230,0)"); x.fillStyle=g; x.fillRect(gx-180,gy-180,360,360); } }
+  // aurora
+  if(PD.flags.aurora&&PD.t<PD.flags.aurora){ const g=x.createLinearGradient(0,0,0,h*0.45); g.addColorStop(0,`rgba(80,255,150,${0.18+0.08*Math.sin(rt)})`); g.addColorStop(1,"rgba(80,255,150,0)"); x.fillStyle=g; x.fillRect(0,0,w,h*0.45); }
+  // shooting star
+  const st=PD.flags.star; if(st&&PD.t<st.until&&p.state!=="sleep"){ const f=(PD.t-st.t)/(st.until-st.t), sx=st.x*w+f*w*0.4, sy=st.y*h+f*h*0.2; const g=x.createLinearGradient(sx,sy,sx-80,sy-40); g.addColorStop(0,"rgba(255,255,255,0.95)"); g.addColorStop(1,"rgba(255,255,255,0)"); x.strokeStyle=g; x.lineWidth=2; x.beginPath(); x.moveTo(sx,sy); x.lineTo(sx-80,sy-40); x.stroke(); PDR.starHit={x:sx,y:sy,until:st.until}; }
+  // sound ripples
+  PD.noises.forEach(n=>{ const age=(performance.now()-n.born)/2200; if(age>1) return; const [sx,sy]=S_(n.x,n.y);
+    const col=n.src==="player"?"255,255,255":n.kind==="owl"||n.kind==="birds"?"190,220,140":n.kind==="bark"||n.kind==="flap"?"255,120,90":"255,210,120";
+    x.strokeStyle=`rgba(${col},${(1-age)*(n.src==="player"?0.55:0.3)})`; x.lineWidth=1.5; x.beginPath(); x.arc(sx,sy,Math.max(2,n.r*Z*age),0,6.283); x.stroke();
+    if(n.src!=="player"&&(sx<0||sy<0||sx>w||sy>h)){ const a=Math.atan2(sy-h/2,sx-w/2), ex=w/2+Math.cos(a)*(w/2-22), ey=h/2+Math.sin(a)*(h/2-70); x.fillStyle=`rgba(${col},${1-age})`; x.font="bold 16px system-ui"; x.textAlign="center"; x.fillText(n.kind==="owl"?"🦉":n.kind==="bark"?"🐕":n.kind==="car"?"🚗":"?",ex,ey+5); } });
+  // vignette
+  const vg=x.createRadialGradient(w/2,h/2,Math.min(w,h)*0.35,w/2,h/2,Math.max(w,h)*0.75); vg.addColorStop(0,"rgba(0,0,0,0)"); vg.addColorStop(1,"rgba(0,0,0,0.45)"); x.fillStyle=vg; x.fillRect(0,0,w,h);
+}
+function pdDrawLight(x,S_,Z,w,h,rt){
+  const R=PDR, lx=R.lx, L=PD._L||pdLights(), d=pdDaylight(PD.t), lw=R.lc.width, lh=R.lc.height, k=lw/w;
+  if(d>=0.98) return;
+  const dusk=d>0.15&&d<0.75, A=Math.min(0.86,(1-d)*0.95);
+  lx.globalCompositeOperation="source-over"; lx.clearRect(0,0,lw,lh);
+  lx.fillStyle=dusk?`rgba(${30+d*40|0},${18+d*10|0},${40+d*10|0},${A})`:`rgba(6,12,30,${A})`; lx.fillRect(0,0,lw,lh);
+  lx.globalCompositeOperation="destination-out";
+  const hole=(X,Y,r,a,dir,ang)=>{ const [sx,sy]=S_(X,Y), cx=sx*k, cy=sy*k, rr=r*Z*k; const g=lx.createRadialGradient(cx,cy,0,cx,cy,rr); g.addColorStop(0,`rgba(0,0,0,${a})`); g.addColorStop(0.6,`rgba(0,0,0,${a*0.6})`); g.addColorStop(1,"rgba(0,0,0,0)"); lx.fillStyle=g;
+    lx.beginPath(); if(ang!=null){ lx.moveTo(cx,cy); lx.arc(cx,cy,rr,dir-ang,dir+ang); lx.closePath(); } else lx.arc(cx,cy,rr,0,6.283); lx.fill(); };
+  // your own eyes adjust: a little patch of visibility around you
+  const p=PD.p; hole(p.x,p.y,3.2+gmMoonLight(PD.env.moon)*(1-PD.env.cloud)*3,0.45,0,null);
+  L.forEach(l=>{ const fl=l.src==="stove"?0.85+0.15*Math.sin(rt*20):1; if(l.cone){ hole(l.x,l.y,l.r,Math.min(0.95,l.i*0.95)*fl,l.dir,l.a); hole(l.x,l.y,1.6,0.6,0,null); } else hole(l.x,l.y,l.r,Math.min(0.9,l.i*1.2)*fl,0,null); });
+  x.drawImage(R.lc,0,0,lw,lh,0,0,w,h);
+  // coloured glow on top
+  x.globalCompositeOperation="lighter";
+  L.forEach(l=>{ const [sx,sy]=S_(l.x,l.y), rr=l.r*Z*(l.cone?1:0.9); const g=x.createRadialGradient(sx,sy,0,sx,sy,rr); g.addColorStop(0,`rgba(${l.col},${(l.cone?0.16:0.28)*l.i})`); g.addColorStop(1,`rgba(${l.col},0)`); x.fillStyle=g; x.beginPath(); if(l.cone){ x.moveTo(sx,sy); x.arc(sx,sy,rr,l.dir-l.a,l.dir+l.a); x.closePath(); } else x.arc(sx,sy,rr,0,6.283); x.fill();
+    if(l.cone||l.src==="window"){ x.fillStyle=`rgba(${l.col},0.9)`; x.beginPath(); x.arc(sx,sy,l.src==="window"?1.6:2.2,0,6.283); x.fill(); } });
+  // eyes in the dark
+  PD.animals.forEach(a=>{ if(!["fox","badger","deer","cow","pony"].includes(a.k)) return; const lit=pdLightAt(a.x,a.y,L)>0.25&&d<0.4; if(!lit) return; const [sx,sy]=S_(a.x,a.y); x.fillStyle=a.k==="fox"?"rgba(160,255,140,0.95)":"rgba(255,240,170,0.9)"; x.beginPath(); x.arc(sx+Math.cos(a.dir||0)*Z*0.4-2,sy+Math.sin(a.dir||0)*Z*0.4,1.6,0,6.283); x.arc(sx+Math.cos(a.dir||0)*Z*0.4+2,sy+Math.sin(a.dir||0)*Z*0.4,1.6,0,6.283); x.fill(); });
+  x.globalCompositeOperation="source-over";
+}
+function pdDrawPerson(x,sx,sy,Z,dir,walkT,o){
+  const s=Z/15; x.save(); x.translate(sx,sy); x.rotate(dir+Math.PI/2);
+  x.fillStyle="rgba(0,0,0,0.35)"; x.beginPath(); x.ellipse(2*s,2*s,7*s,5*s,0,0,6.283); x.fill();
+  const sw=walkT?Math.sin(walkT*9)*2.2*s:0;
+  x.fillStyle="#2a2a2a"; x.beginPath(); x.ellipse(-3.2*s,-sw*0.6,1.8*s,2.6*s,0,0,6.283); x.ellipse(3.2*s,sw*0.6,1.8*s,2.6*s,0,0,6.283); x.fill();
+  x.fillStyle=o.body||"#445"; x.beginPath(); x.ellipse(0,0,6.2*s*(o.sneak?0.9:1),4*s,0,0,6.283); x.fill();
+  if(o.pack){ if(o.pack==="camo"){ x.fillStyle="#4c5a30"; x.fillRect(-4*s,1.5*s,8*s,5.5*s); x.fillStyle="#2f3a1e"; x.fillRect(-3*s,2.5*s,3*s,2*s); x.fillStyle="#6a5a3a"; x.fillRect(1*s,4*s,2.5*s,2*s); } else { x.fillStyle=o.pack; x.fillRect(-4*s,1.5*s,8*s,5.5*s); } x.fillStyle="rgba(255,255,255,0.12)"; x.fillRect(-4*s,1.5*s,8*s,1.2*s); }
+  x.fillStyle=o.hivis?"#d7e21b":o.hat||"#2b2b2b"; x.beginPath(); x.arc(0,-1*s,3.2*s,0,6.283); x.fill();
+  x.fillStyle=o.player?"#e8c9a8":"#d9b48f"; x.beginPath(); x.arc(0,-3.6*s,1.4*s,0,6.283); x.fill();
+  x.restore();
+  if(o.player){ x.strokeStyle="rgba(255,230,150,0.55)"; x.lineWidth=1.2; x.beginPath(); x.arc(sx,sy,Z*0.62,0,6.283); x.stroke(); }
+}
+function pdDrawBusy(x,sx,sy,Z){ const b=PD.p.busy, f=pdClamp((PD.t-b.start)/Math.max(0.1,b.until-b.start),0,1); x.strokeStyle="rgba(0,0,0,0.5)"; x.lineWidth=4; x.beginPath(); x.arc(sx,sy-Z*1.3,7,0,6.283); x.stroke(); x.strokeStyle="#ffd27a"; x.lineWidth=3; x.beginPath(); x.arc(sx,sy-Z*1.3,7,-Math.PI/2,-Math.PI/2+f*6.283); x.stroke(); }
+function pdDrawNPC(x,n,sx,sy,Z,rt){
+  if(n.k==="car"){ x.save(); x.translate(sx,sy); x.rotate(n.dir); const s=Z/15; x.fillStyle="rgba(0,0,0,0.4)"; x.fillRect(-15*s+2,-8*s+2,30*s,16*s); x.fillStyle=n.col; x.beginPath(); x.roundRect(-15*s,-8*s,30*s,16*s,4*s); x.fill(); x.fillStyle="rgba(20,30,40,0.85)"; x.fillRect(3*s,-6*s,6*s,12*s); x.fillRect(-11*s,-6*s,4*s,12*s); x.fillStyle="#ffe9a0"; x.fillRect(14*s,-7*s,1.5*s,3*s); x.fillRect(14*s,4*s,1.5*s,3*s); x.restore(); return; }
+  if(n.k==="dog"){ const s=Z/15, wag=Math.sin(rt*14)*0.6; x.save(); x.translate(sx,sy); x.rotate(n.dir); x.fillStyle="rgba(0,0,0,0.3)"; x.beginPath(); x.ellipse(1,1,6*s,3*s,0,0,6.283); x.fill(); x.fillStyle=n.col; x.beginPath(); x.ellipse(0,0,5*s,2.6*s,0,0,6.283); x.fill(); x.beginPath(); x.arc(5*s,0,2.2*s,0,6.283); x.fill();
+    x.strokeStyle=n.col; x.lineWidth=1.5*s; x.beginPath(); x.moveTo(-5*s,0); x.lineTo(-8*s,wag*4*s); x.stroke(); x.restore();
+    if(n.state==="sniff"){ x.fillStyle="#fff"; x.font=`bold ${12}px system-ui`; x.textAlign="center"; x.fillText("WOOF",sx,sy-Z*0.9); } return; }
+  const look={walker:{body:n.boater?"#2a3a5a":"#5a4030",hat:"#3a2a2a"},jogger:{body:"#c03030",hat:"#222",hivis:true},farmer:{body:"#3a4a2a",hat:"#5a4a3a"},landowner:{body:"#3a4a2a",hat:"#5a4a3a"},keeper:{body:"#4a5a3a",hat:"#6a5a3a"},teens:{body:["#222","#6a2a6a","#2a4a8a"][n.id%3],hat:"#111"},angler:{body:"#3a5a3a",hat:"#6a6a3a"}}[n.k]||{body:"#555"};
+  pdDrawPerson(x,sx,sy,Z,n.dir,n.path&&n.path.length?rt+n.id:0,look);
+  if(n.notice>0.25&&!n.spotted){ x.fillStyle=n.notice>0.7?"#ffb74d":"#fff59d"; x.font="bold 15px system-ui"; x.textAlign="center"; x.fillText(n.notice>0.7?"?!":"?",sx,sy-Z*1.05); }
+  if(n.spotted&&n.state!=="leave"){ x.fillStyle="#ff5252"; x.font="bold 16px system-ui"; x.textAlign="center"; x.fillText("!",sx,sy-Z*1.05); }
+  if(n.phone&&pdDaylight(PD.t)<0.4){ x.fillStyle="rgba(170,210,255,0.9)"; x.fillRect(sx+3,sy-2,2,3); }
+}
+function pdDrawAnimal(x,a,sx,sy,Z,rt){
+  const s=Z/15, mv=a.path&&a.path.length; x.save(); x.translate(sx,sy); x.rotate(a.dir||0);
+  x.fillStyle="rgba(0,0,0,0.3)"; x.beginPath(); x.ellipse(1.5,1.5,7*s,3.5*s,0,0,6.283); x.fill();
+  if(a.k==="fox"){ x.fillStyle="#c8642a"; x.beginPath(); x.ellipse(0,0,5.5*s,2.6*s,0,0,6.283); x.fill(); x.beginPath(); x.arc(5.5*s,0,2.3*s,0,6.283); x.fill(); x.beginPath(); x.moveTo(6*s,-2*s); x.lineTo(8*s,-3.5*s); x.lineTo(7*s,-1*s); x.moveTo(6*s,2*s); x.lineTo(8*s,3.5*s); x.lineTo(7*s,1*s); x.fill();
+    x.fillStyle="#c8642a"; x.beginPath(); x.ellipse(-8*s,Math.sin(rt*4)*s,4.5*s,2*s,0,0,6.283); x.fill(); x.fillStyle="#f4eee4"; x.beginPath(); x.arc(-12*s,Math.sin(rt*4)*s,1.6*s,0,6.283); x.fill(); }
+  else if(a.k==="badger"){ x.fillStyle="#777a80"; x.beginPath(); x.ellipse(0,0,6*s,3.6*s,0,0,6.283); x.fill(); x.fillStyle="#eee"; x.beginPath(); x.ellipse(6*s,0,2.8*s,2*s,0,0,6.283); x.fill(); x.fillStyle="#111"; x.fillRect(4.5*s,-1.4*s,4*s,0.9*s); x.fillRect(4.5*s,0.6*s,4*s,0.9*s); }
+  else if(a.k==="deer"){ x.fillStyle="#8a5a36"; x.beginPath(); x.ellipse(0,0,7*s,3*s,0,0,6.283); x.fill(); x.beginPath(); x.ellipse(7.5*s,0,2.6*s,1.6*s,0,0,6.283); x.fill(); x.fillStyle="#f0e8dc"; x.beginPath(); x.arc(-6.5*s,0,1.8*s,0,6.283); x.fill(); x.fillStyle="#6a4428"; x.beginPath(); x.ellipse(8*s,-2.2*s,1*s,1.8*s,0.4,0,6.283); x.ellipse(8*s,2.2*s,1*s,1.8*s,-0.4,0,6.283); x.fill(); }
+  else if(a.k==="cow"){ x.fillStyle="#f2f0ea"; x.beginPath(); x.ellipse(0,0,10*s,5*s,0,0,6.283); x.fill(); x.fillStyle="#1a1a1a"; x.beginPath(); x.ellipse(-3*s,-1*s,3*s,2.5*s,0.4,0,6.283); x.ellipse(4*s,2*s,2.5*s,2*s,0,0,6.283); x.fill(); x.fillStyle="#222"; x.beginPath(); x.ellipse(10*s,0,3*s,2.6*s,0,0,6.283); x.fill(); }
+  else if(a.k==="pony"){ x.fillStyle=a.col; x.beginPath(); x.ellipse(0,0,9*s,4*s,0,0,6.283); x.fill(); x.beginPath(); x.ellipse(9*s,0,3.5*s,2*s,0,0,6.283); x.fill(); x.fillStyle="#1a120a"; x.fillRect(-1*s,-1*s,8*s,2*s); x.beginPath(); x.ellipse(-10*s,0,3*s,1.2*s,0,0,6.283); x.fill(); }
+  else if(a.k==="barnowl"){ const f=Math.sin(rt*10)*0.5+0.5; x.fillStyle="#f4ece0"; x.beginPath(); x.ellipse(0,0,3*s,2.4*s,0,0,6.283); x.fill(); x.beginPath(); x.moveTo(0,0); x.lineTo(-2*s,-9*s*(0.6+f*0.4)); x.lineTo(3*s,-1*s); x.moveTo(0,0); x.lineTo(-2*s,9*s*(0.6+f*0.4)); x.lineTo(3*s,1*s); x.fill(); x.fillStyle="#d8b890"; x.beginPath(); x.arc(3*s,0,1.8*s,0,6.283); x.fill(); }
+  x.restore();
+}
+function pdCamo(x,cx,cy,w,h,seed){ x.fillStyle="#56603a"; x.fillRect(cx-w/2,cy-h/2,w,h); const c=["#3a4228","#6a5a3a","#2a301e","#7a7048"]; for(let i=0;i<10;i++){ x.fillStyle=c[i%4]; x.beginPath(); x.ellipse(cx-w/2+pdHash(i,seed,1)*w,cy-h/2+pdHash(i,seed,2)*h,w*0.16,h*0.1,pdHash(i,seed,3)*3,0,6.283); x.fill(); } }
+function pdDrawCamp(x,S_,Z,rt){
+  const c=PD.camp, [sx,sy]=S_(c.x+0.5,c.y+0.5), s=Z/15, flap=PD.flags.flapping?Math.sin(rt*18)*3*s:0, col=c.col;
+  x.save(); x.translate(sx,sy); x.rotate(c.door+Math.PI/2);
+  if(c.type==="hammock"&&c.hammock){ x.restore(); const [a,b]=c.hammock, [ax,ay]=S_(a.x,a.y), [bx,by]=S_(b.x,b.y); x.strokeStyle="#c8b890"; x.lineWidth=1.5; x.beginPath(); x.moveTo(ax,ay); x.quadraticCurveTo((ax+bx)/2+4,(ay+by)/2+6,bx,by); x.stroke(); x.fillStyle=col==="camo"?"#4c5a30":col; x.beginPath(); x.ellipse((ax+bx)/2,(ay+by)/2+3,Math.hypot(bx-ax,by-ay)*0.38,4*s,Math.atan2(by-ay,bx-ax),0,6.283); x.fill(); x.save(); x.translate(sx,sy); }
+  else {
+    x.fillStyle="rgba(0,0,0,0.35)"; x.beginPath(); x.ellipse(3*s,3*s,c.type==="tent"?16*s:8*s,c.type==="tent"?20*s:18*s,0,0,6.283); x.fill();
+    if(c.type==="tent"){ x.strokeStyle="rgba(230,220,200,0.6)"; x.lineWidth=0.8; [[-14,-18],[14,-18],[-14,18],[14,18]].forEach(([a,b])=>{ x.beginPath(); x.moveTo(a*0.7*s,b*0.7*s); x.lineTo(a*s,b*s); x.stroke(); });
+      if(col==="camo") pdCamo(x,0,0,22*s,30*s,3); else { x.fillStyle=col; x.beginPath(); x.roundRect(-11*s,-15*s,22*s,30*s,5*s); x.fill(); }
+      x.fillStyle="rgba(255,255,255,0.12)"; x.fillRect(-11*s,-15*s,11*s,30*s); x.strokeStyle="rgba(0,0,0,0.35)"; x.beginPath(); x.moveTo(0,-15*s); x.lineTo(0,15*s); x.stroke(); x.fillStyle="rgba(0,0,0,0.4)"; x.fillRect(-5*s,-16*s+flap,10*s,3*s); }
+    else if(c.type==="tarp"||c.type==="poncho"){ if(col==="camo") pdCamo(x,0,0,24*s,24*s,5); else { x.fillStyle=col; x.fillRect(-12*s,-12*s,24*s,24*s); } x.strokeStyle="rgba(0,0,0,0.3)"; x.beginPath(); x.moveTo(-12*s,-12*s+flap); x.lineTo(12*s,12*s); x.stroke(); }
+    else { // bivvy
+      if(col==="camo") pdCamo(x,0,0,11*s,30*s,7); else { x.fillStyle=col; x.beginPath(); x.roundRect(-5.5*s,-15*s,11*s,30*s,5.5*s); x.fill(); }
+      x.fillStyle="rgba(255,255,255,0.1)"; x.fillRect(-5.5*s,-15*s,5*s,30*s);
+      if(PD.p.state!=="free"){ x.fillStyle="#2b2b2b"; x.beginPath(); x.arc(0,-11*s,3*s,0,6.283); x.fill(); } }
+    if(c.awning){ const pc=pdKitCached().poncho||pdKitCached().tarp; const pcol=pc?pdColour(pc):"#4c5a30"; if(pcol==="camo") pdCamo(x,0,-14*s+flap,18*s,12*s,9); else { x.fillStyle=pcol; x.fillRect(-9*s,-20*s+flap,18*s,12*s); } x.strokeStyle="rgba(220,210,180,0.5)"; x.lineWidth=0.8; x.beginPath(); x.moveTo(-9*s,-20*s); x.lineTo(-13*s,-25*s); x.moveTo(9*s,-20*s); x.lineTo(13*s,-25*s); x.stroke(); }
+  }
+  // pack beside the shelter (unless stashed inside)
+  if(!c.stashed){ const pc=pdKitCached().packCol; x.fillStyle=pc==="camo"?"#4c5a30":pc; x.fillRect(9*s,4*s,6*s,8*s); if(!c.hidden){ x.fillStyle="#e8681a"; x.fillRect(9*s,11*s,6*s,2*s); } }
+  if(c.flame&&PD.t<c.flame){ x.fillStyle="#555"; x.beginPath(); x.arc(-12*s,6*s,2.5*s,0,6.283); x.fill(); x.fillStyle=`rgba(80,150,255,${0.7+0.3*Math.sin(rt*30)})`; x.beginPath(); x.arc(-12*s,6*s,1.8*s,0,6.283); x.fill(); }
+  x.restore();
+  if(PD.p.state==="sleep"){ x.fillStyle="rgba(255,255,255,0.8)"; x.font=`bold ${10+Math.sin(rt*2)*2}px system-ui`; x.textAlign="center"; x.fillText("z z",sx+8,sy-Z*1.2-((rt*8)%10)); }
+  if(PD.p.busy&&PD.p.state!=="free") pdDrawBusy(x,sx,sy,Z);
+}
+function pdDrawObj(x,o,sx,sy,Z,rt){
+  const s=Z/15;
+  if(o.k==="boat"){ x.save(); x.translate(sx,sy); x.rotate(o.ang||0); x.fillStyle="rgba(0,0,0,0.3)"; x.fillRect(-30*s+2,-4*s+2,60*s,8*s); x.fillStyle=o.col; x.beginPath(); x.roundRect(-30*s,-4*s,60*s,8*s,3*s); x.fill(); x.fillStyle="#2a2a2a"; x.fillRect(-24*s,-2.5*s,44*s,5*s); x.fillStyle="#d8c060"; x.fillRect(-30*s,-1*s,4*s,2*s);
+    for(let i=0;i<5;i++){ x.fillStyle=o.lit&&pdDaylight(PD.t)<0.5&&PD.t<1410?"#ffcf6a":"#567"; x.fillRect((-20+i*9)*s,-4.2*s,3*s,1.2*s); } x.fillStyle="#888"; x.beginPath(); x.arc(18*s,0,1.5*s,0,6.283); x.fill(); x.restore(); }
+  else if(o.k==="bench"){ x.save(); x.translate(sx,sy); x.fillStyle="rgba(0,0,0,0.3)"; x.fillRect(-7*s+2,-2*s+2,14*s,5*s); x.fillStyle="#7a5a3a"; x.fillRect(-7*s,-2*s,14*s,4*s); x.fillStyle="#5a4028"; x.fillRect(-7*s,-3*s,14*s,1.2*s); x.restore(); }
+  else if(o.k==="gate"){ x.strokeStyle="#9a9a90"; x.lineWidth=1.5; x.beginPath(); for(let i=0;i<3;i++){ x.moveTo(sx-6*s,sy-3*s+i*3*s); x.lineTo(sx+6*s,sy-3*s+i*3*s); } x.stroke(); }
+  else if(o.k==="trig"){ x.fillStyle="rgba(0,0,0,0.35)"; x.fillRect(sx-3*s+2,sy-3*s+2,6*s,6*s); x.fillStyle="#e8e6df"; x.fillRect(sx-3*s,sy-3*s,6*s,6*s); x.fillStyle="#888"; x.fillRect(sx-1*s,sy-1*s,2*s,2*s); }
+  else if(o.k==="car"){ x.fillStyle="rgba(0,0,0,0.35)"; x.fillRect(sx-8*s+2,sy-15*s+2,16*s,30*s); x.fillStyle="#3a4a5a"; x.beginPath(); x.roundRect(sx-8*s,sy-15*s,16*s,30*s,4*s); x.fill(); x.fillStyle="rgba(20,30,40,0.8)"; x.fillRect(sx-6*s,sy-8*s,12*s,5*s); }
+  else if(o.k==="lock"){ x.fillStyle="#4a3a2a"; x.fillRect(sx-1.5*s,sy-12*s,3*s,24*s); x.fillStyle="#ddd"; x.fillRect(sx-0.5*s,sy-12*s,1*s,24*s); }
+  else if(o.k==="bridge"){ x.fillStyle="#7a5a3a"; x.fillRect(sx-14*s,sy-3*s,28*s,6*s); x.fillStyle="#5a4028"; x.fillRect(sx-14*s,sy-3.5*s,28*s,1.2*s); x.fillRect(sx-14*s,sy+2.5*s,28*s,1.2*s); }
+  else if(o.k==="stones"){ x.fillStyle="#9a988e"; for(let i=-2;i<=2;i++){ x.beginPath(); x.ellipse(sx+i*3.5*s,sy+(i%2)*s,2.2*s,1.8*s,0,0,6.283); x.fill(); } }
+  else if(o.k==="tap"){ x.fillStyle="#4a7ab0"; x.beginPath(); x.arc(sx,sy,3*s,0,6.283); x.fill(); }
+  else if(o.k==="pub"){ x.fillStyle="#d8b860"; x.font="bold 11px system-ui"; x.textAlign="center"; x.fillText("🍺",sx,sy+4); }
+}
+
+/* ---------- small map for the end screen ---------- */
+function pdMiniMap(cv){
+  const s=Math.min(cv.width,cv.height)/(PD_W*PD_TS), x=cv.getContext("2d"); x.drawImage(PDR?PDR.ground:(()=>{ const g=document.createElement("canvas"); g.width=g.height=PD_W*PD_TS; pdPaintGround(g.getContext("2d"),PDW); return g; })(),0,0,cv.width,cv.height);
+  if(PDR) x.drawImage(PDR.trees,0,0,cv.width,cv.height);
+  x.fillStyle="rgba(5,10,25,0.35)"; x.fillRect(0,0,cv.width,cv.height);
+  const k=cv.width/PD_W; x.strokeStyle="#ffd27a"; x.lineWidth=2; x.beginPath(); PD.stats.trail.forEach(([a,b],i)=>i?x.lineTo(a*k,b*k):x.moveTo(a*k,b*k)); x.stroke();
+  (PD.campHist||[]).forEach(([a,b])=>{ x.font="16px system-ui"; x.textAlign="center"; x.fillText("⛺",(a+0.5)*k,(b+0.5)*k+5); });
+}
+/* ============================================================
+   PITCH DARK (game): UI, input, audio, start + end screens
+   ============================================================ */
+let PD_RAF=null, PD_LAST=0, PD_HUDAT=0, PD_SAVEAT=0, PD_REAL=null;
+const pdEl=id=>document.getElementById(id);
+
+/* ---------- audio: small procedural soundscape ---------- */
+const PDA={on:true,ctx:null};
+function pdAudioInit(){ if(PDA.ctx||!PDA.on) return; try{ const C=window.AudioContext||window.webkitAudioContext; if(!C) return; const a=PDA.ctx=new C();
+  const len=a.sampleRate*2, buf=a.createBuffer(1,len,a.sampleRate), d=buf.getChannelData(0); for(let i=0;i<len;i++) d[i]=Math.random()*2-1; PDA.noise=buf;
+  const mk=(type,f)=>{ const s=a.createBufferSource(); s.buffer=buf; s.loop=true; const fl=a.createBiquadFilter(); fl.type=type; fl.frequency.value=f; const g=a.createGain(); g.gain.value=0; s.connect(fl); fl.connect(g); g.connect(a.destination); s.start(); return {g,fl}; };
+  PDA.wind=mk("lowpass",400); PDA.rain=mk("highpass",2500); }catch(e){ PDA.ctx=null; } }
+function pdAudioTick(){ const a=PDA.ctx; if(!a||!PD) return; const on=PDA.on&&!PD.paused&&!PD.ended, inside=PD.p.state!=="free";
+  const w=pdWindNow(); PDA.wind.g.gain.setTargetAtTime(on?Math.min(0.22,w/90)*(inside?0.55:1):0,a.currentTime,0.4); PDA.wind.fl.frequency.setTargetAtTime(250+w*14+Math.sin(a.currentTime*0.7)*60,a.currentTime,0.5);
+  PDA.rain.g.gain.setTargetAtTime(on&&pdRaining()?(PD.env.rain>=2?0.12:0.06)*(inside?1.3:1):0,a.currentTime,0.6); }
+function pdBeep(f0,f1,dur,type="sine",vol=0.15,delay=0){ const a=PDA.ctx; if(!a||!PDA.on) return; const o=a.createOscillator(), g=a.createGain(), t=a.currentTime+delay; o.type=type; o.frequency.setValueAtTime(f0,t); o.frequency.exponentialRampToValueAtTime(Math.max(20,f1),t+dur); g.gain.setValueAtTime(0.0001,t); g.gain.exponentialRampToValueAtTime(vol,t+0.03); g.gain.exponentialRampToValueAtTime(0.0001,t+dur); o.connect(g); g.connect(a.destination); o.start(t); o.stop(t+dur+0.05); }
+function pdThud(vol=0.1,f=900,dur=0.06,delay=0){ const a=PDA.ctx; if(!a||!PDA.on) return; const s=a.createBufferSource(); s.buffer=PDA.noise; const fl=a.createBiquadFilter(); fl.type="bandpass"; fl.frequency.value=f; const g=a.createGain(), t=a.currentTime+delay; g.gain.setValueAtTime(vol,t); g.gain.exponentialRampToValueAtTime(0.0001,t+dur); s.connect(fl); fl.connect(g); g.connect(a.destination); s.start(t,Math.random()); s.stop(t+dur+0.02); }
+function pdAudio(kind,pos){ if(!PDA.ctx||!PD) return; const d=pos?Math.hypot(pos.x-PD.p.x,pos.y-PD.p.y):0, v=Math.max(0.02,1-d/45);
+  if(kind==="owl"){ pdBeep(520,470,0.35,"sine",0.12*v); pdBeep(500,380,0.9,"sine",0.1*v,0.5); }
+  else if(kind==="bark"){ for(let i=0;i<3;i++) pdThud(0.25*v,500,0.12,i*0.25); }
+  else if(kind==="step") pdThud(0.05,PD.twists.includes("frost")?2200:1100,0.05);
+  else if(kind==="car") pdThud(0.08*v,120,1.6);
+  else if(kind==="peg") pdThud(0.2,1600,0.05);
+  else if(kind==="voices"||kind==="music") pdBeep(300,320,0.4,"triangle",0.04*v);
+}
+function pdAudioNoise(n){ if(n.src==="player"&&n.kind==="step") return pdAudio("step"); if(n.kind==="peg") return pdAudio("peg"); if(n.kind==="car") return pdAudio("car",n); if(n.kind==="music"||n.kind==="voices") return pdAudio("music",n); }
+
+/* ---------- game screen ---------- */
+function pdOpen(){
+  let root=pdEl("pd"); if(!root){ root=document.createElement("div"); root.id="pd"; root.className="pd"; document.body.appendChild(root); }
+  root.innerHTML=`<canvas id="pdC"></canvas>
+   <div class="pd-top"><div class="pd-clock"><b id="pdTime">--:--</b><span id="pdPhase"></span></div><div class="pd-wx" id="pdWx"></div><div class="grow"></div>
+     <button class="pd-ib" id="pdZoom" aria-label="Zoom">🔍</button><button class="pd-ib" id="pdSpd" aria-label="Speed">⏩</button><button class="pd-ib" id="pdSnd" aria-label="Sound">${PDA.on?"🔊":"🔇"}</button><button class="pd-ib" id="pdMenu" aria-label="Menu">☰</button></div>
+   <div class="pd-left"><div id="pdBodyW"></div><div class="pd-eye" id="pdEye"></div><div class="pd-res" id="pdRes"></div></div>
+   <div class="pd-obj" id="pdObj"></div><div class="pd-msg" id="pdMsg"></div>
+   <div class="pd-bar" id="pdBar"></div>
+   <div class="pd-sheet" id="pdSheet" hidden></div>
+   <div class="pd-modal" id="pdModal" hidden></div>`;
+  document.body.classList.add("pd-on");
+  const cv=pdEl("pdC"); pdRenderInit(cv);
+  cv.addEventListener("pointerdown",pdTap);
+  pdEl("pdZoom").onclick=()=>{ PDR.Z=PDR.Z===12?8:PDR.Z===8?18:12; };
+  pdEl("pdSpd").onclick=()=>{ if(PD.speed==="sleep") return; PD.speed=PD.speed==="fast"?"walk":"fast"; pdHud(true); };
+  pdEl("pdSnd").onclick=()=>{ PDA.on=!PDA.on; S.pdSound=PDA.on; save(); if(PDA.on) pdAudioInit(); pdEl("pdSnd").textContent=PDA.on?"🔊":"🔇"; };
+  pdEl("pdMenu").onclick=pdMenu;
+  pdEl("pdMsg").onclick=pdLogView;
+  window.addEventListener("resize",pdResize);
+  PD_LAST=performance.now(); cancelAnimationFrame(PD_RAF); PD_RAF=requestAnimationFrame(pdLoop);
+  pdAudioInit(); pdHud(true);
+}
+function pdClose(){ cancelAnimationFrame(PD_RAF); PD_RAF=null; const r=pdEl("pd"); if(r) r.remove(); document.body.classList.remove("pd-on"); window.removeEventListener("resize",pdResize); if(PDA.ctx){ try{ PDA.wind.g.gain.value=0; PDA.rain.g.gain.value=0; }catch(e){} } }
+function pdLoop(now){
+  if(!pdEl("pd")) return; const dt=Math.min(0.1,(now-PD_LAST)/1000); PD_LAST=now;
+  if(PD&&!PD.ended){ const nb=PD.noises.length; pdStep(dt); if(PD.noises.length>nb) PD.noises.slice(nb).forEach(pdAudioNoise); }
+  pdDraw(now);
+  if(now-PD_HUDAT>120){ PD_HUDAT=now; pdHud(); pdAudioTick(); }
+  if(now-PD_SAVEAT>10000){ PD_SAVEAT=now; pdSaveNow(); }
+  if(PD&&PD.ended&&!pdEl("pdEnd")) pdEndScreen();
+  if(PD&&PD.dialog&&pdEl("pdModal").hidden) pdUIDialog();
+  PD_RAF=requestAnimationFrame(pdLoop);
+}
+document.addEventListener("visibilitychange",()=>{ if(document.hidden&&PD&&pdEl("pd")){ pdSaveNow(); } });
+
+/* ---------- input ---------- */
+function pdTap(e){
+  if(!PD||PD.ended) return; pdAudioInit(); if(PDA.ctx&&PDA.ctx.state==="suspended") PDA.ctx.resume();
+  const r=PDR.canvas.getBoundingClientRect(), sx=e.clientX-r.left, sy=e.clientY-r.top;
+  const st=PDR.starHit; if(st&&PD.t<st.until&&Math.hypot(sx-st.x,sy-st.y)<60){ pdMoment("star","A shooting star, right across the sky. You made a wish. Obviously.",8); PD.flags.star=null; PDR.starHit=null; return; }
+  const Z=PDR.Z, tx=PDR.cam.x+(sx-PDR.w/2)/Z, ty=PDR.cam.y+(sy-PDR.h/2)/Z;
+  if(PD.camp&&Math.hypot(tx-(PD.camp.x+0.5),ty-(PD.camp.y+0.5))<1.4&&PD.p.state==="free"&&Math.hypot(PD.p.x-PD.camp.x,PD.p.y-PD.camp.y)<2.5){ pdAction("enter"); pdHud(true); return; }
+  if(PD.p.state==="sleep") return;
+  if(PD.p.state==="shelter"){ pdToast("You're in your shelter. Tap 🚪 Get out first."); return; }
+  if(pdWalkTo(tx,ty)) PD.p.dir=Math.atan2(ty-PD.p.y,tx-PD.p.x);
+  pdHud(true);
+}
+function pdToast(t){ pdMsg(t,"info"); pdHud(true); }
+
+/* ---------- HUD ---------- */
+function pdBodySVG(){
+  const b=PD.b, K=pdKitCached(), col=v=>v>=65?"#7cc46a":v>=50?"#c8d45a":v>=38?"#f0b04a":v>=25?"#ef7a3a":"#5aa0ff";
+  const core=b.warmth, hands=b.warmth-(K.gloves?4:12)-(pdTemp(PD.t)<3&&PD.p.state==="free"?8:0), feet=b.warmth-14-(b.dry<60?8:0)+(PD.flags.socks?6:0), head=b.warmth-(K.hat?2:10);
+  return `<svg viewBox="0 0 40 70" class="pd-sil" aria-label="Body warmth">
+    <circle cx="20" cy="8" r="6" fill="${col(head)}"/><rect x="12" y="15" width="16" height="22" rx="5" fill="${col(core)}"/>
+    <rect x="5" y="17" width="6" height="17" rx="3" fill="${col(hands+6)}"/><rect x="29" y="17" width="6" height="17" rx="3" fill="${col(hands+6)}"/>
+    <circle cx="8" cy="37" r="3" fill="${col(hands)}"/><circle cx="32" cy="37" r="3" fill="${col(hands)}"/>
+    <rect x="13" y="37" width="6" height="22" rx="3" fill="${col(feet+8)}"/><rect x="21" y="37" width="6" height="22" rx="3" fill="${col(feet+8)}"/>
+    <ellipse cx="15" cy="62" rx="4" ry="2.6" fill="${col(feet)}"/><ellipse cx="25" cy="62" rx="4" ry="2.6" fill="${col(feet)}"/>
+    ${b.dry<60?`<text x="34" y="10" font-size="9">💧</text>`:""}${b.sweat>30?`<text x="0" y="10" font-size="8">💦</text>`:""}</svg>`;
+}
+function pdObjective(){ const e=PD.env, p=PD.p, c=PD.camp, toSS=Math.round(e.sunset-PD.t), mm=PD.flags.mustMove;
+  if(mm&&!mm.done) return mm.packed?`Get well away from your old spot (${Math.max(0,Math.round(mm.by-PD.t))} min)`:`Pack up and move on (${Math.max(0,Math.round(mm.by-PD.t))} min)`;
+  if(PD.t>e.sunrise-60) return c?"First light: pack up 📦":"Walk out to the edge of the map 🌅";
+  if(!c) return toSS>0?`Find a hidden, sheltered spot · sunset in ${toSS>=60?Math.floor(toSS/60)+"h"+String(toSS%60).padStart(2,"0"):toSS+" min"}`:"It's dark. Find somewhere and pitch";
+  if(p.state==="free") return pdDaylight(PD.t)>0.5?"Wait for dark, sort camp from 🎒, then get in":"Get in your shelter ⛺";
+  if(p.state==="shelter") return PD.b.warmth<50?"Cold: layers on, eat, hot drink (🎒)":`Sleep till first light (${pdHM(e.sunrise-30)})`;
+  return `Sleeping… first light ${pdHM(e.sunrise-30)}`; }
+function pdBar(v,cls){ return `<div class="pd-m ${cls}"><i style="width:${pdClamp(v)}%"></i></div>`; }
+function pdHud(force){
+  if(!PD||!pdEl("pd")) return; const b=PD.b, p=PD.p, e=PD.env, r=PD.r, K=pdKitCached();
+  pdEl("pdTime").textContent=pdHM(PD.t); pdEl("pdObj").textContent="🎯 "+pdObjective();
+  const ph=PD.t<e.sunset-20?"Afternoon":PD.t<e.sunset+45?"Dusk":PD.t<e.sunrise-60?"Night":PD.t<e.sunrise+30?"Dawn":"Morning";
+  pdEl("pdPhase").textContent=ph+(PD.speed==="sleep"?" · 💤":PD.speed==="fast"?" · ⏩":"");
+  const moonP=e.moon, moonIcon=["🌑","🌒","🌓","🌔","🌕","🌖","🌗","🌘"][Math.round(moonP*8)%8], w=pdWindNow();
+  pdEl("pdWx").innerHTML=`<span>${Math.round(pdTemp(PD.t))}°C</span><span title="wind"><i class="pd-arrow" style="transform:rotate(${(e.windDir+Math.PI)*180/Math.PI+90}deg)">➤</i>${Math.round(w)}</span><span>${pdRaining()?"🌧️":e.cloud>0.7?"☁️":pdDaylight(PD.t)<0.3?moonIcon:"⛅"}</span>`;
+  pdEl("pdBodyW").innerHTML=pdBodySVG()+`<div class="pd-ms">${pdBar(b.warmth,"w")}${pdBar(b.energy,"e")}${pdBar(b.dry,"d")}${pdBar(b.morale,"m")}</div>`;
+  const st=[]; if(b.hunger>360) st.push("🍫"); if(b.thirst<30) st.push("🥤"); if(b.bladder>75) st.push("🚻"); if(b.warmth<38) st.push("🥶"); if(PD.heat>40) st.push("🚨");
+  const v=PD._vis||{v:0,beacon:0}, lvl=v.beacon>=1?3:v.v>0.55?2:v.v>0.2?1:0;
+  pdEl("pdEye").innerHTML=`<div class="pd-gem g${lvl}">${["🌑","👁️","👁️","🔦"][lvl]}</div><span>${["Hidden","Visible","Exposed","Lit up"][lvl]}</span>${st.length?`<div class="pd-st">${st.join(" ")}</div>`:""}`;
+  pdEl("pdRes").innerHTML=`🥤${r.water.toFixed(1)} 🍫${r.snacks}${K.flasks?` ☕${r.flask}`:""} 📱${Math.round(r.phone)}%${K.light?` 🔦${Math.round(r.torch)}%`:""}`;
+  const last=PD.msgs[PD.msgs.length-1]; if(last&&(PD._newMsg||force)){ PD._newMsg=false; const m=pdEl("pdMsg"); m.className="pd-msg k-"+last.kind; m.innerHTML=`<span class="pd-mt">${pdHM(last.t)}</span> ${esc(last.text)}`; m.classList.remove("pop"); void m.offsetWidth; m.classList.add("pop"); }
+  // action bar
+  const near=PD.camp&&Math.hypot(p.x-PD.camp.x,p.y-PD.camp.y)<2.5, B=[];
+  const btn=(id,label,cls="")=>`<button class="pd-b ${cls}" data-pd="${id}">${label}</button>`;
+  if(p.busy){ const f=pdClamp((PD.t-p.busy.start)/Math.max(0.1,p.busy.until-p.busy.start)*100); B.push(`<div class="pd-busy"><span>${esc(p.busy.label)}…</span><div class="pd-m"><i style="width:${f}%"></i></div></div>`); }
+  else if(p.state==="sleep") B.push(btn("wake","⏸ Wake up","wide"));
+  else if(p.state==="shelter"){ B.push(btn("sleep","💤 Sleep","pri")); if(K.light) B.push(btn("torch",p.torch==="off"?"🔦 Off":p.torch==="red"?"🔴 Red":"🔦 On")); B.push(btn("kit","🎒 Kit")); if(e.cloud<0.6&&pdDaylight(PD.t)<0.2) B.push(btn("stars","⭐ Stars")); B.push(btn("exit","🚪 Get out")); }
+  else { if(K.light) B.push(btn("torch",p.torch==="off"?"🔦 Off":p.torch==="red"?"🔴 Red":"🔦 On"));
+    B.push(btn("sneak",p.sneak?"🤫 Sneaking":"🚶 Walking",p.sneak?"on":""));
+    if(near) B.push(btn("enter","⛺ Get in","pri")); else if(!PD.camp) B.push(btn("pitchq","⛺ Pitch here","pri"));
+    B.push(btn("kit","🎒 Kit"));
+    if(near) B.push(btn("pack","📦 Pack up")); else if(!PD.camp) B.push(btn("leave",PD.t>e.sunrise-60?"🌅 Walk out":"🚶 Walk out",PD.t>e.sunrise-60?"pri":"")); }
+  const html=B.join(""); if(html!==PD._bar){ PD._bar=html; pdEl("pdBar").innerHTML=html; }
+  const sp=pdEl("pdSpd"); if(sp) sp.classList.toggle("on",PD.speed==="fast");
+}
+document.addEventListener("click",e=>{
+  const b=e.target.closest("[data-pd]"); if(!b||!PD) return; const id=b.dataset.pd, arg=b.dataset.arg;
+  pdAudioInit();
+  if(id==="kit") return pdKitSheet();
+  if(id==="pitchq") return pdPitchPreview();
+  if(id==="wake"){ PD.p.state="shelter"; PD.speed="walk"; return pdHud(true); }
+  if(id==="leave"&&!PD.camp&&PD.t<PD.env.sunrise-60){ ask("Walk out and end the night now?",{ok:"Walk out"}).then(ok=>{ if(ok){ pdAction("leave"); pdHud(true); } }); return; }
+  if(id==="sheetClose"){ pdEl("pdSheet").hidden=true; return; }
+  pdAction(id,arg); if(id!=="wear"&&id!=="headnet"&&id!=="vent"&&id!=="stash") pdEl("pdSheet").hidden=true; else pdKitSheet(); pdHud(true);
+});
+
+/* ---------- kit sheet ---------- */
+function pdKitSheet(){
+  const K=pdKitCached(), p=PD.p, r=PD.r, b=PD.b, c=PD.camp, inCamp=p.state!=="free", near=c&&(inCamp||Math.hypot(p.x-c.x,p.y-c.y)<2.5);
+  const A=(id,label,ok=true,note="",arg)=>`<button class="pd-a" data-pd="${id}" ${arg!=null?`data-arg="${arg}"`:""} ${ok?"":"disabled"}><span>${label}</span>${note?`<small>${note}</small>`:""}</button>`;
+  const tap=PDW.objs.find(o=>o.k==="tap"&&Math.hypot(o.x-p.x,o.y-p.y)<3);
+  const s=pdEl("pdSheet"); s.hidden=false;
+  s.innerHTML=`<div class="pd-sh-h"><b>🎒 Your kit</b><span class="muted small">${esc(PD.className)} · ${K.packKg.toFixed(1)} kg</span><button class="pd-ib" data-pd="sheetClose">✕</button></div>
+   <div class="pd-sec"><h4>Body</h4>${A("eat",`🍫 Eat something (${r.snacks} left)`,r.snacks>0,"calories are heat")}${A("drink",`🥤 Drink water (${r.water.toFixed(1)} L)`,r.water>=0.2)}
+     ${K.flasks?A("flask",`☕ Flask (${r.flask} left)`,r.flask>0,r.flask?["barely warm","lukewarm","warm","hot"][Math.min(3,Math.floor(pdFlaskHeat()*4))]:""):""}
+     ${A("wee","🚻 Go for a wee",!inCamp&&b.bladder>=25,b.bladder>75?"bursting":b.bladder<25?"not yet":"well away from water and camp")}
+     ${K.socks?A("socks","🧦 Dry socks + base layer",!PD.flags.socks,"once"):""}${K.towel?A("towel","🧻 Wipe off condensation",true):""}</div>
+   <div class="pd-sec"><h4>Layers</h4>${K.layers.map(l=>A("wear",`${p.worn[l.id]?"✅":"⬜"} ${esc(K.name(l))}`,true,`${l.warmth?l.warmth+"°C":""}${p.worn[l.id]?" · worn":""}`,l.id)).join("")||`<p class="small muted">No layers in this class.</p>`}
+     ${K.headnet?A("headnet",`${p.headnet?"✅":"⬜"} 🦟 Midge head net`,true):""}</div>
+   ${c?`<div class="pd-sec"><h4>Camp</h4>${A("stash",`${c.stashed?"✅":"⬜"} Food stashed in the pack`,near,"stops foxes")}${A("hide","🫥 Hide the bright stuff",near&&!c.hidden,c.hidden?"done":"less visible")}
+     ${(K.poncho&&!c.sh.includes(K.poncho.id))||(K.tarp&&!c.sh.includes(K.tarp.id))?A("awning","🛖 Rig an awning over the head end",near&&!c.awning,c.awning?"done":"keeps rain and frost off"):""}
+     ${["bivvy","tent"].includes(c.type)?A("vent",`${c.vented?"✅":"⬜"} Vent the shelter`,near,"less condensation, a bit colder"):""}
+     ${K.stove?A("cook",`🍲 Cook a hot meal (${r.hot})`,near&&r.hot>0&&r.water>=0.5,"noisy, 20 min"):""}${K.stove&&K.flasks?A("boil","♨️ Boil water for the flask",near&&r.water>=0.5):""}</div>`:""}
+   <div class="pd-sec"><h4>Gear</h4>${A("phone",`📱 Check the forecast (${Math.round(r.phone)}%)`,r.phone>2,"a little light")}${K.bank?A("charge",`🔋 Charge phone (${r.bank} left)`,r.bank>0&&r.phone<70):""}
+     ${K.filter?A("filter","💧 Filter water",pdNearWater(p.x,p.y,2)&&!inCamp,"stand by the water"):""}${tap?A("tap","🚰 Fill up at the tap",true):""}</div>`;
+}
+
+/* ---------- pitch preview ---------- */
+function pdPitchPreview(){
+  const p=PD.p, K=pdKitCached(), s=pdSite(PDW,p.x-0.5,p.y-0.5,PD.env), m=pdEl("pdModal");
+  if(!s.ok){ pdToast(s.why); return; }
+  const words=pdSiteWords(s), notes=[];
+  if(s.frost) notes.push("❄️ A frost hollow: cold air pools here.");
+  if(s.frozen&&K.main&&["tent","tarp","poncho"].includes(K.main.shelter)) notes.push(K.metalPegs?"🔩 Frozen ground, but your metal pegs will bite.":"🔩 Frozen ground: your pegs may not hold.");
+  if(!s.lntOK) notes.push(`🚱 Only ${s.waterDist} m from water. Leave No Trace says 60 m.`);
+  if(s.damp>0.5) notes.push("💧 Damp spot: expect condensation.");
+  if(s.slope>3) notes.push("⛰️ On a slope.");
+  if(K.main&&K.main.shelter==="hammock") notes.push(s.hammock?"🌳 Two good trees for the hammock.":"🌳 No trees the right distance apart for the hammock.");
+  const sh=K.shelters.filter(x=>x.shelter!=="poncho"||K.shelters.length===1);
+  PD._pitch={door:PD.env.windDir+Math.PI,sh:K.main?[K.main.id]:[]};
+  const draw=()=>{ const wd=PD.env.windDir+Math.PI, d=PD._pitch.door, rel=Math.abs(pdAng(d,PD.env.windDir));
+    m.innerHTML=`<div class="pd-card"><h3>⛺ Pitch here?</h3><p class="small muted">${esc(s.name)}${PDW.names.place?" near "+esc(PDW.names.place):""}</p>
+      <div class="pd-rate">${words.map(([k,w,v])=>`<div><span>${k}</span><div class="pd-m ${v>=70?"ok":v>=45?"mid":"bad"}"><i style="width:${v}%"></i></div><b>${w}</b></div>`).join("")}</div>
+      ${notes.length?`<ul class="pd-notes">${notes.map(n=>`<li>${esc(n)}</li>`).join("")}</ul>`:""}
+      ${sh.length>1?`<div class="pd-shs">${sh.map(x=>`<label><input type="checkbox" data-shel="${x.id}" ${PD._pitch.sh.includes(x.id)?"checked":""}> ${esc(K.name(x))}</label>`).join("")}</div>`:""}
+      <div class="pd-door"><button class="pd-ib" data-rot="-1">⟲</button><div class="pd-compass"><span class="pd-tent">⛺</span><i class="pd-wind" style="transform:rotate(${(PD.env.windDir)*180/Math.PI}deg) translate(20px)"><b style="transform:translate(-50%,-50%) rotate(180deg)">➤</b></i><i class="pd-doorI" style="transform:rotate(${d*180/Math.PI}deg) translate(20px)"><b></b></i></div><button class="pd-ib" data-rot="1">⟳</button>
+        <span class="small"><span style="color:#90caf9">➤ wind</span> · <span style="color:#ffb74d">● door</span><br>${rel<0.8?"Door faces into the wind. Cold and draughty.":rel>2.3?"Door away from the wind. 👍":"Door side-on to the wind."}</span></div>
+      <div class="row" style="margin-top:10px"><button class="pri" id="pdDoPitch">Pitch</button><button id="pdNoPitch">Not here</button></div></div>`;
+    m.querySelectorAll("[data-rot]").forEach(b=>b.onclick=()=>{ PD._pitch.door+=(+b.dataset.rot)*Math.PI/4; draw(); });
+    m.querySelectorAll("[data-shel]").forEach(cb=>cb.onchange=()=>{ const id=cb.dataset.shel; PD._pitch.sh=cb.checked?[...new Set(PD._pitch.sh.concat(id))]:PD._pitch.sh.filter(x=>x!==id); });
+    pdEl("pdDoPitch").onclick=()=>{ m.hidden=true; PD.paused=false; if(!PD._pitch.sh.length) return pdToast("Pick a shelter."); if(Math.abs(pdAng(PD._pitch.door,PD.env.windDir))<0.8) PD.flags.doorWind=true; pdAction("pitch",{sh:PD._pitch.sh,door:PD._pitch.door,ground:!!PD.flags.hammockGround}); pdHud(true); };
+    pdEl("pdNoPitch").onclick=()=>{ m.hidden=true; PD.paused=false; }; };
+  PD.paused=true; m.hidden=false; draw();
+}
+
+/* ---------- dialogue ---------- */
+function pdUIDialog(){
+  const D=PD.dialog, m=pdEl("pdModal"); if(!D||!m) return; m.hidden=false;
+  m.innerHTML=`<div class="pd-card pd-talk"><p class="pd-say">${esc(D.text)}</p>${D.choices.map((c,i)=>`<button class="pd-a" data-dch="${i}" ${c.req===false?"disabled":""}><span>${esc(c.l)}</span></button>`).join("")}</div>`;
+  m.querySelectorAll("[data-dch]").forEach(b=>b.onclick=()=>{ pdChoose(+b.dataset.dch); m.hidden=true; pdHud(true); });
+}
+function pdLogView(){ const m=pdEl("pdModal"); PD.paused=true; m.hidden=false; m.innerHTML=`<div class="pd-card"><h3>📜 Tonight so far</h3><div class="pd-log">${PD.msgs.slice().reverse().map(x=>`<p class="k-${x.kind}"><b>${pdHM(x.t)}</b> ${esc(x.text)}</p>`).join("")}</div><button class="pri" id="pdLogX">Back</button></div>`; pdEl("pdLogX").onclick=()=>{ m.hidden=true; PD.paused=false; }; }
+function pdMenu(){ const m=pdEl("pdModal"); PD.paused=true; m.hidden=false;
+  m.innerHTML=`<div class="pd-card"><h3>⏸ Paused</h3><p class="small muted">${esc(PD.label)} · ${esc(PD.className)} · ${pdHM(PD.t)}</p>
+   <div class="pd-help small"><b>How to play</b><br>Tap the map to walk. Find a hidden, sheltered spot and tap ⛺ <b>Pitch here</b>. Get in, sort your layers from 🎒 <b>Kit</b>, then 💤 <b>Sleep</b> through to morning. People on the paths can see you, especially in torchlight, and they hear noise (the white rings). The 👁️ shows how visible you are right now. At first light, 📦 pack up and walk out.</div>
+   <div class="row" style="margin-top:10px;flex-wrap:wrap"><button class="pri" id="pdRes_">▶ Resume</button><button id="pdSaveQuit">💾 Save and exit</button><button class="danger" id="pdGiveUp">🏳 Give up</button></div></div>`;
+  pdEl("pdRes_").onclick=()=>{ m.hidden=true; PD.paused=false; };
+  pdEl("pdSaveQuit").onclick=()=>{ PD.paused=false; pdSaveNow(); pdClose(); renderPlay(); };
+  pdEl("pdGiveUp").onclick=()=>{ m.hidden=true; PD.paused=false; pdEnd("walkedhome"); };
+}
+
+/* ---------- end of night ---------- */
+function pdLessons(){
+  const K=pdKitCached(), st=PD.stats, out=[], c=S.classes.find(x=>x.id===PD.classId), owned=S.inv.filter(usable), inC=id=>c&&c.items[id];
+  const add=(t,it)=>out.push({t,id:it&&!inC(it.id)?it.id:null,n:it?it.name:null});
+  if(st.minW<40){ const lay=owned.filter(i=>i.kind==="layer"&&!inC(i.id)).sort((a,b)=>(+b.warmth||0)-(+a.warmth||0))[0]; add(`You got cold (lowest ${Math.round(st.minW)}). ${Object.keys(PD.p.worn).length<K.layers.length?"You didn't wear all your layers in the bag.":"Your sleep system was short of warmth for this."}`,lay); }
+  if(PD.flags.raided) add("A fox got your food. Stash it inside the pack at night.");
+  if(st.spotted) add(`You were spotted ${st.spotted} time${st.spotted>1?"s":""}. ${PD.stats.maxHeat>50?"Torchlight and paths are what give you away.":"Pitch further from the paths, later, with your torch off or on red."}`,!K.red?owned.find(i=>isLight(i)&&redOf(i)):null);
+  if(PD.flags.flapped) add("Your pitch came loose in the gusts. Metal pegs bite into hard ground.",owned.find(i=>RX.ypeg.test(i.name)));
+  if(PD.b.dry<55) add("You got damp. Vent the shelter, and keep a dry layer in a dry bag.",!K.drybag?owned.find(i=>RX.drybag.test(i.name)):null);
+  if(PD.r.phone<5) add("Your phone died. Keep it in the bag with you and bring a power bank.",!K.bank?owned.find(i=>RX.power.test(i.name)):null);
+  if(PD.env.bugs>=2&&!K.headnet) add("Midges. A head net weighs nothing.",owned.find(i=>RX.headnet.test(i.name)));
+  if(PD.flags.doorWind) add("Your door faced into the wind. Turn it away and you lose less heat.");
+  st.lntWhy.forEach(w=>add("Leave No Trace: "+w+"."));
+  if(!out.length) add("A clean night. Nothing to change.");
+  return out;
+}
+function pdEndScreen(){
+  const E=PD.ended, m=pdEl("pdModal"), d=PD_ENDS[E.kind]||PD_ENDS.walkedhome, L=pdLessons();
+  m.hidden=false; m.id="pdModal"; m.innerHTML=`<div class="pd-card pd-endc" id="pdEnd"><div class="pd-endh"><span class="pd-bigi">${d[0]}</span><div><h2>${d[1]}</h2><div class="pd-stars">${"★".repeat(E.stars)}${"☆".repeat(5-E.stars)}</div></div></div>
+    <p>${esc(d[2])}</p>
+    <canvas id="pdMini" width="300" height="300" class="pd-mini"></canvas>
+    <div class="ggrades">${Object.entries(E.grades).map(([k,v])=>`<div class="gg g${v}"><b>${v}</b><span>${k}</span></div>`).join("")}</div>
+    <p class="small muted">${esc(PD.label)} · ${esc(PD.className)} · slept ${(PD.b.slept/60).toFixed(1)} h · spotted ${PD.stats.spotted}× · lowest warmth ${Math.round(PD.stats.minW)}</p>
+    ${E.moments.length?`<h3>✨ Moments</h3><ul class="pd-notes">${E.moments.map(k=>`<li>${esc(PD.stats.moments[k].text)}</li>`).join("")}</ul>`:""}
+    ${(PD.newAch||[]).length?`<div class="gach">${PD.newAch.map(a=>`<div>🏅 <b>${esc(a.n)}</b><br><span class="small muted">${esc(a.d)}</span></div>`).join("")}</div>`:""}
+    <h3>📝 Night Notes</h3>${L.map((l,i)=>`<div class="item"><div class="nm"><span>${esc(l.t)}</span></div>${l.id?`<button class="tog pri" data-pdpack="${l.id}">+ Pack ${esc(l.n.replace(/\s*\(.*?\)\s*/g," ").slice(0,22))}</button>`:""}</div>`).join("")}
+    <div class="row" style="margin-top:12px;flex-wrap:wrap"><button class="pri" id="pdAgain">▶ Another night</button><button id="pdBack">Back to the app</button></div></div>`;
+  pdMiniMap(pdEl("pdMini"));
+  m.querySelectorAll("[data-pdpack]").forEach(b=>b.onclick=()=>{ const c=S.classes.find(x=>x.id===PD.classId); if(c){ c.items[b.dataset.pdpack]=1; save(); b.outerHTML=`<span class="chip ok">packed ✓</span>`; } });
+  pdEl("pdAgain").onclick=()=>{ pdClose(); PD=null; renderPlay(); };
+  pdEl("pdBack").onclick=()=>{ pdClose(); PD=null; renderPlay(); };
+}
+
+/* ---------- start screen (Play tab) ---------- */
+function pdStartHTML(){
+  const opts=S.classes.map(c=>`<option value="${c.id}" ${c.id===(S.pdClass||S.active)?"selected":""}>${esc(c.name)}</option>`).join(""), loc=S.pdLoc||"towpath", J=S.pd||{runs:0,journal:[],ach:{},seen:{}};
+  const locs=[["towpath","🛶","Off the Towpath","Hurleston canal, November, −1°C"],["hill","🌬️","Storm Hill","Exposed hill farm, October, gusts and rain"],["river","🦟","Midsummer River","Meadows and willows, June, midges"],["moor","🐴","Dartmoor Commons","Legal wild camp, tors and ponies"],["real","🗺️","Real map","Anywhere in the UK, real forecast"]];
+  const c=S.classes.find(x=>x.id===(S.pdClass||S.active))||cls(), K=pdKit(c);
+  return `<div class="card pd-hero"><h2>🌑 Pitch Dark</h2><p class="muted" style="margin:-4px 0 8px"><i>One night out, with your real kit.</i></p>
+    <p class="small">Walk in at dusk, find a hidden spot, pitch, and get through the night. Dog walkers, farmers, foxes, frost and your own snoring are all against you. Your kit decides how warm, dry and hidden you are.</p></div>
+   ${S.pdSave&&S.pdSave.v===3?`<div class="card row" style="justify-content:space-between"><span>🌙 Night in progress: <b>${esc(S.pdSave.label)}</b>, ${pdHM(S.pdSave.t)}</span><button class="pri" id="pdResume">▶ Resume</button></div>`:""}
+   <div class="card"><h3 style="margin-top:0">Where</h3><div class="pd-locs">${locs.map(([k,i,n,s])=>`<button class="pd-loc ${loc===k?"on":""}" data-pdloc="${k}"><span class="pd-li">${i}</span><b>${n}</b><small>${s}</small>${(J.best&&Object.keys(J.best).some(b=>b.startsWith(k+"|")))?`<em>${"★".repeat(Math.max(...Object.entries(J.best).filter(([b])=>b.startsWith(k+"|")).map(([,v])=>v.stars)))}</em>`:""}</button>`).join("")}</div>
+     ${loc==="real"?pdRealHTML():""}</div>
+   <div class="card"><div class="grid2"><label>Loadout<select id="pdClass">${opts}</select></label>
+     <label>Difficulty<select id="pdDiff"><option value="easy" ${S.pdDiff==="easy"?"selected":""}>Gentle</option><option value="normal" ${!S.pdDiff||S.pdDiff==="normal"?"selected":""}>Wild camper</option><option value="hard" ${S.pdDiff==="hard"?"selected":""}>Hardcore</option></select></label></div>
+     <p class="small muted" style="margin:6px 0 0">${K.packKg.toFixed(1)} kg · shelter: ${K.main?esc(K.name(K.main)):"none"} · ${K.light?(K.red?"red-light torch":"torch"):"no torch"} · ${K.snacks} snacks${K.flasks?` · ${K.flasks} flask${K.flasks>1?"s":""}`:""}${K.stove?" · stove":""}</p>
+     <div class="row" style="margin-top:10px"><button class="pri" id="pdGo" ${loc==="real"&&!(PD_REAL&&PD_REAL.ready)?"disabled":""}>▶ Start the night</button><button id="pdDaily">📅 Daily challenge</button></div></div>
+   ${pdRecordHTML(J)}
+   <p class="small muted center"><a href="#" id="pdClassic">Classic story mode</a></p>`;
+}
+function pdRecordHTML(J){ if(!J.runs) return ""; const got=PD_ACH.filter(a=>J.ach[a.id]);
+  return `<details class="card sec" data-sec="pdRec" ${isOpen("pdRec",false)?"open":""}><summary><span class="st">📓 Journal</span><span class="sm">${J.dawns}/${J.runs} nights · ${got.length}/${PD_ACH.length} badges · ${Object.keys(J.seen).length} moments</span></summary>
+    ${J.journal.slice(0,8).map(j=>`<div class="pd-j"><b>${esc(j.loc)}</b> <span class="small muted">${j.date} · ${esc(j.cls)}</span> <span class="pd-stars s">${"★".repeat(j.stars)}</span><br><i class="small">“${esc(j.line)}”</i></div>`).join("")}
+    <h3>Badges</h3><div class="gach">${PD_ACH.map(a=>`<div class="${J.ach[a.id]?"":"dim"}">${J.ach[a.id]?"🏅":"🔒"} <b>${esc(a.n)}</b><br><span class="small muted">${esc(a.d)}</span></div>`).join("")}</div></details>`; }
+function pdRealHTML(){
+  const R=PD_REAL, M=S.gameMap||{}, days=[0,1,2,3,4,5,6].map(i=>{ const d=addDays(todayISO(),i); return `<option value="${d}" ${M.date===d?"selected":""}>${i===0?"Tonight":i===1?"Tomorrow":dayLabel(d)}</option>`; }).join("");
+  return `<div style="margin-top:10px"><p class="small muted">Tap the map where you'd camp. The game builds the 400 m around it from real OpenStreetMap data: woods, hedges, water, paths, roads, buildings and height.</p>
+    <div id="gmSetupMap" class="gmapbox"></div>
+    <div class="row" style="margin-top:8px;flex-wrap:wrap"><label class="tog btn" style="cursor:pointer">📂 GPX route<input type="file" id="gmGpx" accept=".gpx,application/gpx+xml" hidden></label><button class="tog" id="gmNear">📍 Near me</button>${gmRouteFor(cls())?`<button class="tog" id="gmRouteEnd">⛺ Route end</button>`:""}</div>
+    <label style="margin-top:8px">Night of<select id="gmDate">${days}<option value="typical" ${M.date==="typical"?"selected":""}>Typical for this month</option></select></label>
+    <div id="gmSite">${R?R.ready?gmSiteCard(R.site):R.err?`<div class="small warn" style="margin-top:8px">${esc(R.err)} <button class="tog" id="pdRetry">Try again</button></div>`:`<div class="small muted" style="margin-top:8px" id="pdLoadTxt">Fetching map data…</div>`:`<div class="small muted" style="margin-top:8px">No spot picked yet.</div>`}</div></div>`;
+}
+function pdRenderStart(){
+  const root=$("#playRoot"); if(!root) return; root.innerHTML=pdStartHTML();
+  if((S.pdLoc||"towpath")==="real"){ gmMountSetupPD(); }
+}
+function gmMountSetupPD(){ const el=$("#gmSetupMap"); if(!el) return; gmSetupMap&&gmSetupMap.destroy(); const M=S.gameMap=S.gameMap||{}, r=gmRouteFor(cls());
+  gmSetupMap=new GMap(el,{lat:M.lat??53.067,lon:M.lon??-2.522,z:M.z??13,layer:M.layer,onTap:([lat,lon])=>pdPickReal(lat,lon),onMove:m=>{M.lat=m.lat;M.lon=m.lon;M.z=m.z;M.layer=m.layer;save();}});
+  gmDrawSetup(); if(PD_REAL&&PD_REAL.lat){ gmSetupMap.marks.push({lat:PD_REAL.lat,lon:PD_REAL.lon,icon:"⛺",color:"#37474f",r:13}); gmSetupMap.render(); } if(r&&M.lat==null) gmSetupMap.fit(r.pts.map(p=>[p[0],p[1]])); }
+async function pdPickReal(lat,lon){
+  const M=S.gameMap=S.gameMap||{}; M.spot=[+lat.toFixed(5),+lon.toFixed(5)]; save();
+  const my=PD_REAL={lat,lon,ready:false,t0:Date.now()}; gmDrawSetup(); if(gmSetupMap){ gmSetupMap.marks.push({lat,lon,icon:"⛺",color:"#37474f",r:13}); gmSetupMap.render(); }
+  const box=$("#gmSite"); if(box) box.innerHTML=`<div class="small muted" style="margin-top:8px" id="pdLoadTxt">Fetching map data…</div>`; const go=$("#pdGo"); if(go) go.disabled=true;
+  const tick=setInterval(()=>{ const t=$("#pdLoadTxt"); if(!t||PD_REAL!==my||my.ready||my.err) return clearInterval(tick); const s=Math.round((Date.now()-my.t0)/1000); t.innerHTML=`Fetching map data from OpenStreetMap${my.server?` (backup server ${my.server})`:""}… ${s}s${s>=10?` <button class="tog" id="pdGen">Use a made-up area instead</button>`:""}`; },1000);
+  try{ const [osm,elev]=await Promise.all([pdOverpass(pdAreaQuery(lat,lon),i=>my.server=i),pdElevGrid(lat,lon)]); if(PD_REAL!==my) return;
+    my.els=osm.elements; my.elev=elev; const e5=elev?[elev[24],elev[3],elev[45],elev[21],elev[27]]:null; my.site=gmAnalyse(lat,lon,my.els,e5); my.ready=true; }
+  catch(e){ if(PD_REAL!==my) return; my.err=(e.message||"Couldn't load the map data")+". Check your signal."; }
+  clearInterval(tick); if((S.pdLoc||"towpath")==="real"&&$("#gmSite")){ $("#gmSite").innerHTML=my.ready?gmSiteCard(my.site):`<div class="small warn" style="margin-top:8px">${esc(my.err)} <button class="tog" id="pdRetry">Try again</button> <button class="tog" id="pdGen">Use a made-up area</button></div>`; const g=$("#pdGo"); if(g) g.disabled=!my.ready; }
+}
+async function pdStartReal(classId,diff){
+  const R=PD_REAL, M=S.gameMap||{}, c=S.classes.find(x=>x.id===classId)||cls(), seed=Math.floor(Math.random()*1e9);
+  const W=R.generated?pdGenerate(R.generated,seed):pdFromOSM(R.lat,R.lon,R.els,R.elev,seed);
+  if(R.generated){ W.label="near "+(R.site&&R.site.village&&R.site.village.name||"your spot"); W.spot=[50,50]; }
+  // GPX: enter where the route comes into the area
+  const r=gmRouteFor(c); let walkInKm=1.2, routeName=null;
+  if(r&&!R.generated){ const bb=pdBBox(R.lat,R.lon); const inside=r.pts.findIndex(p=>p[0]>bb[0]&&p[0]<bb[2]&&p[1]>bb[1]&&p[1]<bb[3]);
+    if(inside>=0){ const p=r.pts[inside], cosl=Math.cos(R.lat*Math.PI/180), tx=Math.round((p[1]-R.lon)*111320*cosl/PD_TILE+PD_W/2), ty=Math.round((R.lat-p[0])*110540/PD_TILE+PD_W/2);
+      let best=null; W.entries.concat(pdBorderPassable(W)).forEach(e=>{ const d=Math.hypot(e[0]-tx,e[1]-ty); if(!best||d<best.d) best={e,d}; }); if(best) W.entry=best.e.slice(0,2); walkInKm=p[3]; routeName=r.name; } }
+  const iso=M.date&&M.date!=="typical"?M.date:todayISO(), month=+iso.slice(5,7); let wx=null, sunset=null, sunrise=null, hours=null;
+  if(M.date!=="typical"){ try{ const n=await fetchNight(R.lat,R.lon,R.site&&R.site.ele,iso,{}); const k=classify(n); wx={low:n.low,high:n.high,humid:n.humid,windAvg:n.windAvg,rain:k.rain,bugs:k.bugs}; if(n.sunset) sunset=+n.sunset.slice(11,13)+(+n.sunset.slice(14,16))/60; if(n.sunrise) sunrise=+n.sunrise.slice(11,13)+(+n.sunrise.slice(14,16))/60; hours=n.hours; }catch(e){ toast("No forecast, using typical weather for the month"); } }
+  if(!wx){ const [lo,hi]=GM_CLIMATE[month], lapse=Math.round(((R.site&&R.site.ele)||50)/150); wx={low:lo-lapse,high:hi-lapse,humid:85,windAvg:8,rain:month>=10||month<=2?1:0}; }
+  PD=null; pdStart({classId:c.id,world:W,src:"real",wx,date:iso,month,sunset,sunrise,hours,diff,seed,label:W.label,walkInKm,routeName});
+}
+document.addEventListener("click",e=>{
+  if(!e.target.closest||!e.target.closest("#v-play")) return; const b=e.target.closest("button,a"); if(!b) return;
+  if(b.dataset.pdloc){ S.pdLoc=b.dataset.pdloc; save(); pdRenderStart(); return; }
+  if(b.id==="pdClassic"){ e.preventDefault(); S.playMode="classic"; save(); renderPlay(); return; }
+  if(b.id==="pdStory"){ e.preventDefault(); S.playMode="pd"; save(); renderPlay(); return; }
+  if(b.id==="pdRetry"&&PD_REAL) return pdPickReal(PD_REAL.lat,PD_REAL.lon);
+  if(b.id==="pdGen"&&PD_REAL){ PD_REAL.generated=PD_REAL.site&&PD_REAL.site.route==="moor"?"moor":"towpath"; PD_REAL.ready=true; PD_REAL.site=PD_REAL.site||{pitch:"hedge",sus:5,flags:{},lat:PD_REAL.lat,lon:PD_REAL.lon}; const g=$("#pdGo"); if(g) g.disabled=false; $("#gmSite").innerHTML=`<div class="small muted" style="margin-top:8px">Using a made-up area. The forecast and sunset are still real for this spot.</div>`; return; }
+  if(b.id==="pdResume"){ if(pdLoadSave()){ pdOpen(); } else { toast("Couldn't load that night"); renderPlay(); } return; }
+  if(b.id==="pdGo"||b.id==="pdDaily"){
+    const cid=$("#pdClass").value, diff=$("#pdDiff").value, loc=S.pdLoc||"towpath"; S.pdClass=cid; S.pdDiff=diff; S.pdSound=PDA.on; save(); PDA.on=S.pdSound!==false;
+    if(b.id==="pdDaily"){ const d=todayISO(), seed=+d.replace(/-/g,""), keys=["towpath","hill","river","moor"]; PD=null; pdStart({classId:cid,preset:keys[seed%4],seed,diff:"normal",date:d}); PD.daily=d; pdOpen(); return; }
+    if(loc==="real"){ b.disabled=true; b.textContent="Getting the forecast…"; pdStartReal(cid,diff).then(()=>pdOpen()).catch(err=>{ toast("Couldn't start: "+err.message); renderPlay(); }); return; }
+    PD=null; pdStart({classId:cid,preset:loc,diff}); pdOpen(); return; }
+});
+document.addEventListener("change",e=>{ if(!e.target.closest||!e.target.closest("#v-play")) return; if(e.target.id==="pdClass"){ S.pdClass=e.target.value; save(); pdRenderStart(); } });
 
 document.querySelectorAll("details[data-sec]").forEach(d=>{const v=S.ui&&S.ui[d.dataset.sec];if(v!=null)d.open=v;});
 render();

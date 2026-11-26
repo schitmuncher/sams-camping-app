@@ -1,3 +1,5 @@
+> **Status (Nov 2026):** the game is now a real-time top-down survival and stealth game (pd_* modules), built on real OpenStreetMap data or generated locations. The text game below is kept as *Classic story mode*. Design notes for the full game are in the README.
+
 # Pitch Dark: game design
 
 *A button-based text survival game played with your real camping kit, built into Camp Kit Planner as a **Play** mode.*
