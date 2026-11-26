@@ -230,6 +230,7 @@ body.nightmode{--bg:#120707;--panel:#1d0c0c;--panel2:#2a1212;--line:#4a2020;--te
 .pd-scoutI{font-size:11px;line-height:1.35;margin-bottom:6px;color:#fff}.pd-scoutI b{display:block;color:#ffe6a0}.pd-scoutI span{color:#ffd180}.pd-scoutI small{color:#9fb0c8}
 .pd-intro h2{margin:2px 0 8px}.pd-intro .big{width:100%;margin-top:10px;padding:12px;font-size:17px}
 .pd-targets{margin:6px 0;font-size:13px}.pd-targets .ok{color:#a5d6a7}.pd-targets .bad{color:#ff8a80;font-weight:600}
+.pd-tl{width:100%;height:auto;background:#0d1522;border-radius:10px;margin-top:4px}
 </style>
 </head>
 <body>
@@ -4564,7 +4565,7 @@ function pdNoise_(x,y,r,src,kind,label){
   else if(PD.p.state==="sleep"){ const d=Math.hypot(x-PD.p.x,y-PD.p.y); if(d<r*(1.1-0.35*pdPerk("sleep"))) pdWake(label||"a noise", Math.atan2(y-PD.p.y,x-PD.p.x)); }
 }
 const pdWho=n=>({walker:n.boater?"The boater":"The dog walker",jogger:"The jogger",farmer:"The farmer",keeper:"The gamekeeper",teens:"One of the lads",angler:"The angler",landowner:"The farmer"}[n.k]||"Someone");
-function pdWake(why,dir){ if(PD.p.state!=="sleep") return; setTimeout(()=>PD&&pdTip("wake","Woken up. Deal with it (layers, food, a wee, check the noise) or just tap 💤 Sleep again."),20); PD.p.state="shelter"; PD.lastWake={why,t:PD.t}; PD.stats.disturb++; PD.speed="walk"; pdMsg(`You wake: ${why}.`,"warn",dir); }
+function pdWake(why,dir){ if(PD.p.state!=="sleep") return; setTimeout(()=>PD&&pdTip("wake","Woken up. Deal with it (layers, food, a wee, check the noise) or just tap 💤 Sleep again."),20); pdTL("⏰",why); PD.p.state="shelter"; PD.lastWake={why,t:PD.t}; PD.stats.disturb++; PD.speed="walk"; pdMsg(`You wake: ${why}.`,"warn",dir); }
 
 /* ---------- spawning ---------- */
 function pdEdgeFor(kind){ const W=PDW; let list=W.entries.filter(e=>kind==="car"?e[2]===PD_T.ROAD:true); if(kind!=="car"&&list.some(e=>e[2]===PD_T.PATH)&&pdRand()<0.75) list=list.filter(e=>e[2]===PD_T.PATH); if(!list.length) list=pdBorderPassable(W); return list[Math.floor(pdRand()*list.length)]; }
@@ -4626,10 +4627,10 @@ const PD_NIGHT=[
  {id:"early",when:()=>PD.camp&&!PD.env.legal&&PD.t>PD.env.sunrise-110&&PD.t<PD.env.sunrise-50,t:"Still dark. The first car of the morning on the far road. Pack now, in the dark and the cold, and be long gone? Or grab another hour?",c:[{l:"Pack up now, quietly, red light only",e:{pack:1,morale:-2,energy:-3},r:"Numb fingers, everything stuffed in anyhow. But you'll be gone before anyone's about."},{l:"Another hour of sleep",e:{},r:"You burrow back in. Just one more hour…"}]},
  {id:"stars",when:()=>PD.env.cloud<0.4,t:"You wake, and the cloud has cleared. The whole sky is out.",c:[{l:"Watch for five minutes",e:{morale:10,warmth:-2,time:8},r:"The Milky Way, faint over the hedge. You'll remember this."},{l:"Back to sleep",e:{}}]}
 ];
-function pdNightEvent(){ const pool=PD_NIGHT.filter(ev=>!PD.flags["ne_"+ev.id]&&ev.when()); if(!pool.length) return false; const ev=pool[Math.floor(pdRand()*pool.length)]; PD.flags["ne_"+ev.id]=1; if(ev.pre) ev.pre(); PD.stats.dilemmas=(PD.stats.dilemmas||0)+1;
+function pdNightEvent(){ const pool=PD_NIGHT.filter(ev=>!PD.flags["ne_"+ev.id]&&ev.when()); if(!pool.length) return false; const ev=pool[Math.floor(pdRand()*pool.length)]; PD.flags["ne_"+ev.id]=1; pdTL("💬",ev.id); if(ev.pre) ev.pre(); PD.stats.dilemmas=(PD.stats.dilemmas||0)+1;
   PD.p.state="shelter"; PD.speed="walk"; PD.dialog={text:ev.t.replace("{sh}",PD.camp?PD.camp.type:"bag"),choices:ev.c.map(c=>({l:c.l,req:c.req?c.req():true,e:Object.assign({},c.e),r:typeof c.r==="function"?c.r():(c.r||"Done.")}))}; pdUIDialog&&pdUIDialog(); return true; }
 function pdTip(id,text){ S.pdTips=S.pdTips||{}; if(S.pdTips[id]) return; S.pdTips[id]=1; pdMsg("💡 "+text,"tip"); }
-function pdMoment(id,text,morale=6){ if(PD.stats.moments[id]) return; PD.stats.moments[id]={t:PD.t,text}; PD.b.morale=pdClamp(PD.b.morale+morale); pdMsg("✨ "+text,"moment"); }
+function pdMoment(id,text,morale=6){ if(PD.stats.moments[id]) return; PD.stats.moments[id]={t:PD.t,text}; pdTL("✨",id); PD.b.morale=pdClamp(PD.b.morale+morale); pdMsg("✨ "+text,"moment"); }
 
 /* ---------- people and animal AI ---------- */
 function pdMoveAlong(n,dt){ let d=n.speed*dt; while(d>0&&n.path&&n.path.length){ const [tx,ty]=n.path[0], dx=tx-n.x, dy=ty-n.y, L=Math.hypot(dx,dy);
@@ -4670,7 +4671,7 @@ function pdNPCs(dt,L,vis){
   }
   PD.npcs=PD.npcs.filter(n=>!n.gone);
 }
-function pdSpotted(n,d){ try{ navigator.vibrate&&navigator.vibrate([120,60,120]); }catch(e){}
+function pdSpotted(n,d){ pdTL("👁️","spotted"); try{ navigator.vibrate&&navigator.vibrate([120,60,120]); }catch(e){}
   const p=PD.p; if(n.k==="farmer"||n.k==="landowner") PD.flags.farmerMet=true; PD.heat=pdClamp(PD.heat+(PD.env.legal?4:{walker:10,jogger:8,farmer:30,landowner:40,keeper:35,teens:12,angler:6}[n.k]||10)); PD.stats.maxHeat=Math.max(PD.stats.maxHeat,PD.heat);
   if(p.state==="sleep") pdWake("a torch beam on your face",Math.atan2(n.y-p.y,n.x-p.x));
   const curious={walker:0.45,jogger:0.2,farmer:0.95,landowner:1,keeper:1,teens:0.7,angler:0.3}[n.k]??0.5;
@@ -4860,7 +4861,7 @@ function pdTick(dt){
     if(b.energy<60&&!(p.frozen>PD.t)&&pdRand()<dt*0.04) pdNoise_(p.x,p.y,7,"player","snore","your own snoring"); }
   // rain start message
   if(pdRaining()&&!PD.flags.rainMsg){ PD.flags.rainMsg=true; pdMsg("It's started raining.","info"); }
-  pdEarsTick(dt);
+  pdEarsTick(dt); pdTLSample();
   pdMissionTick(); if(PD.ended) return;
   if(PD.t>=e.sunrise&&!PD.flags.sunMsg){ PD.flags.sunMsg=true; pdMoment("sunrise",PD.env.cloud<0.6?"The sun comes up over the hedges and everything steams. Worth it.":"Grey light comes up through the cloud. Morning, at last.",6); pdMsg("It's light. Pack up and get out before the dog walkers.","info"); }
   // must-move deadline
@@ -5646,7 +5647,7 @@ function pdEarsStart(k,npc){
   // three answers: the truth, a likely confusion, and a wildcard (often "a person": the paranoid option)
   const conf={tawny:["barnowl","voices"],vixen:["voices","barnowl"],foxbark:["dog","muntjac"],muntjac:["dog","roe"],roe:["dog","muntjac"],badger:["steps","hedgehog"],hedgehog:["steps","badger"],sheepcough:["voices","cattle"],cattle:["steps","badger"],pheasant:["dog","barnowl"],barnowl:["vixen","tawny"],steps:["badger","cattle"],dog:["foxbark","badger"],voices:["sheepcough","vixen"]}[k]||["badger","steps"];
   const opts=[k,...conf].map(x=>PD_SOUNDS.find(y=>y.k===x)); for(let i=opts.length-1;i>0;i--){ const j=Math.floor(pdRand()*(i+1)); [opts[i],opts[j]]=[opts[j],opts[i]]; }
-  E.ev={k,s,npc:npc?npc.id:null,dir,dist,opts,born:performance.now(),t0:PD.t,x:p.x+Math.cos(dir)*dist,y:p.y+Math.sin(dir)*dist}; E.n++;
+  pdTL(s.i,s.n); E.ev={k,s,npc:npc?npc.id:null,dir,dist,opts,born:performance.now(),t0:PD.t,x:p.x+Math.cos(dir)*dist,y:p.y+Math.sin(dir)*dist}; E.n++;
   if(p.state==="sleep"){ p.state="shelter"; PD.speed="walk"; E.ev.woke=true; }
   pdEarsSound(k,dir); pdEarsUI(); try{ navigator.vibrate&&navigator.vibrate(s.human?[40,80,40,80,40]:[30]); }catch(e){}
 }
@@ -5737,6 +5738,19 @@ function pdDrawAtmos(x,S_,Z,w,h,rt){
     if(on){ x.strokeStyle=`rgba(255,230,160,${0.8*(1-age)})`; x.lineWidth=2; x.beginPath(); x.arc(sx,sy,Z*(0.5+age*2.5),0,6.283); x.stroke(); x.fillStyle="rgba(255,230,160,0.9)"; x.font="bold 16px system-ui"; x.textAlign="center"; x.fillText("?",sx,sy+5); }
     else { const a=Math.atan2(sy-h/2,sx-w/2), ex=w/2+Math.cos(a)*(w/2-24), ey=h/2+Math.sin(a)*(h/2-90); x.fillStyle=`rgba(255,230,160,${0.6+0.4*Math.sin(rt*6)})`; x.font="bold 22px system-ui"; x.textAlign="center"; x.fillText("?",ex,ey+7); } }
 }
+
+/* ---------- 5. THE NIGHT, AS A TIMELINE (morning report) ---------- */
+function pdTL(icon,label){ const st=PD.stats; st.tl=st.tl||[]; st.tl.push([Math.round(PD.t),icon,label||""]); }
+function pdTLSample(){ const st=PD.stats; st.sm=st.sm||[]; if(PD.t-(st.smAt||0)<10) return; st.smAt=PD.t; st.sm.push([Math.round(PD.t),PD.p.state==="sleep"?1:PD.camp&&PD.p.state==="shelter"?0.5:0,Math.round(PD.b.warmth)]); }
+function pdNightTimeline(){ const st=PD.stats, sm=st.sm||[]; if(sm.length<6) return ""; const e=PD.env, t0=Math.min(sm[0][0],e.sunset), t1=Math.max(sm[sm.length-1][0],e.sunrise), W=320, H=96, X=t=>8+(t-t0)/(t1-t0)*(W-16);
+  const bars=sm.map(([t,s],i)=>{ const nx=sm[i+1]?sm[i+1][0]:t+10; return `<rect x="${X(t).toFixed(1)}" y="${s===1?58:s?66:72}" width="${(Math.max(1,X(nx)-X(t))+0.6).toFixed(1)}" shape-rendering="crispEdges" height="${s===1?22:s?14:8}" fill="${s===1?"#5c7cfa":s?"#f0b35a":"#556"}" opacity="0.9"/>`; }).join("");
+  const wl=sm.map(([t,,w])=>`${X(t).toFixed(1)},${(54-w*0.32).toFixed(1)}`).join(" ");
+  const ic=(st.tl||[]).filter(x=>x[0]>=t0&&x[0]<=t1).map(([t,i])=>`<text x="${X(t).toFixed(1)}" y="12" font-size="11" text-anchor="middle">${i}</text>`).join("");
+  const hrs=[]; for(let h=Math.ceil(t0/60);h*60<=t1;h+=2) hrs.push(`<text x="${X(h*60).toFixed(1)}" y="${H-2}" font-size="8" fill="#9fb0c8" text-anchor="middle">${String(h%24).padStart(2,"0")}</text>`);
+  const slept=sm.filter(x=>x[1]===1).length*10, awake=sm.filter(x=>x[1]===0.5).length*10, wakes=(st.tl||[]).filter(x=>x[1]==="⏰").length;
+  return `<h3>🌙 Your night</h3><svg viewBox="0 0 ${W} ${H}" class="pd-tl"><line x1="${X(e.sunset)}" x2="${X(e.sunset)}" y1="14" y2="84" stroke="#ffb74d55" stroke-dasharray="2 3"/><line x1="${X(e.sunrise)}" x2="${X(e.sunrise)}" y1="14" y2="84" stroke="#ffe08255" stroke-dasharray="2 3"/>
+    <polyline points="${wl}" fill="none" stroke="#ff8a65" stroke-width="1.6"/>${bars}${ic}${hrs.join("")}</svg>
+    <p class="small muted" style="margin-top:2px"><span style="color:#5c7cfa">■</span> asleep ${(slept/60).toFixed(1)} h · <span style="color:#f0b35a">■</span> awake in the shelter ${(awake/60).toFixed(1)} h · <span style="color:#ff8a65">—</span> warmth · woken ${wakes}×</p>`; }
 /* ============================================================
    PITCH DARK (game): UI, input, audio, start + end screens
    ============================================================ */
@@ -6012,6 +6026,7 @@ function pdEndScreen(){
     ${E.mission?`<div class="pd-xp ${E.mission.ok?"ok":"bad"}"><b>${E.mission.ok?"🎯 Mission complete: ":"🎯 Mission failed: "}${esc(E.mission.t)}</b>${E.mission.res.map(r=>`<div class="small">${r.ok?"✅":"❌"} ${esc(r.n)}</div>`).join("")}${E.mission.ok?`<p class="small"><i>${esc(E.mission.win)}</i></p>`:""}</div>`:""}
     <canvas id="pdMini" width="300" height="300" class="pd-mini"></canvas>
     <div class="ggrades">${Object.entries(E.grades).map(([k,v])=>`<div class="gg g${v}"><b>${v}</b><span>${k}</span></div>`).join("")}</div>
+    ${pdNightTimeline()}
     ${pdKitTestHTML()}
     ${PD.stats.ghostExit||(PD.ears&&PD.ears.n)?`<div class="pd-xp ok">${PD.stats.ghostExit?`<div>👻 <b>Gone before the first dog walker.</b> Nobody will ever know.</div>`:""}${PD.ears&&PD.ears.n?`<div>👂 Night ears: <b>${PD.ears.got}/${PD.ears.n}</b> sounds worked out. Night Sounds book: ${Object.keys((S.pd||{}).ears||{}).length}/${PD_SOUNDS.length}</div>`:""}</div>`:""}
     <p class="small muted">${esc(PD.label)} · ${esc(PD.className)} · slept ${(PD.b.slept/60).toFixed(1)} h · spotted ${PD.stats.spotted}× · lowest warmth ${Math.round(PD.stats.minW)}</p>
