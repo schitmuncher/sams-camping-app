@@ -3881,21 +3881,23 @@ function pdFill(W,ring,v,only){
 
 /* ---------- OpenStreetMap: fetch with timeouts and mirrors ---------- */
 const PD_OVERPASS_ERR=[];
-const PD_OVERPASS=["https://overpass-api.de/api/interpreter","https://overpass.private.coffee/api/interpreter","https://overpass.kumi.systems/api/interpreter"];
+const PD_OVERPASS=["https://overpass-api.de/api/interpreter","https://maps.mail.ru/osm/tools/overpass/api/interpreter","https://overpass.private.coffee/api/interpreter","https://overpass.kumi.systems/api/interpreter"];
 async function pdOverpass(q,onTry){
-  let last=null;
-  for(let i=0;i<PD_OVERPASS.length;i++){
-    const ctl=new AbortController(), timer=setTimeout(()=>ctl.abort(),i===0?14000:12000);
-    onTry&&onTry(i);
-    try{ const r=await fetch(PD_OVERPASS[i]+"?data="+encodeURIComponent(q.replace(/\s+/g," ")),{signal:ctl.signal});
-      clearTimeout(timer); if(!r.ok) throw new Error("server "+(i+1)+" said "+r.status+(r.status===429?" (too many requests)":r.status===504?" (overloaded)":"")); const j=await r.json(); if(!j||!Array.isArray(j.elements)) throw new Error("server "+(i+1)+" sent a bad reply"); return j; }
-    catch(e){ clearTimeout(timer); last=e; PD_OVERPASS_ERR.push(e.name==="AbortError"?`server ${i+1} timed out`:(e.message||String(e))); }
-  }
-  throw new Error("Couldn't reach the map data servers ("+PD_OVERPASS_ERR.slice(-3).join("; ")+")");
+  // ask every server at once and use the first good answer (Overpass servers are often busy)
+  const key="pdArea:"+q.length+":"+q.slice(40,140), mem=pdOverpass.cache||(pdOverpass.cache={}); if(mem[key]) return mem[key];
+  PD_OVERPASS_ERR.length=0; const ctls=[]; let left=PD_OVERPASS.length, t0=Date.now();
+  const tick=setInterval(()=>onTry&&onTry(Math.round((Date.now()-t0)/1000)),1000);
+  try{ return await new Promise((res,rej)=>{
+    PD_OVERPASS.forEach((url,i)=>{ const ctl=new AbortController(); ctls.push(ctl); const tm=setTimeout(()=>ctl.abort(),40000);
+      fetch(url+"?data="+encodeURIComponent(q.replace(/\s+/g," ")),{signal:ctl.signal}).then(r=>{ if(!r.ok) throw new Error("server "+(i+1)+" said "+r.status+(r.status===429?" (too many requests)":r.status===504?" (overloaded)":"")); return r.json(); })
+        .then(j=>{ clearTimeout(tm); if(!j||!Array.isArray(j.elements)) throw new Error("server "+(i+1)+" sent a bad reply"); mem[key]=j; ctls.forEach(c=>c!==ctl&&c.abort()); res(j); })
+        .catch(err=>{ clearTimeout(tm); if(err.name!=="AbortError"||Date.now()-t0>39000) PD_OVERPASS_ERR.push(err.name==="AbortError"?`server ${i+1} timed out`:(err.message||String(err))); if(--left===0) rej(new Error("Couldn't reach the map data servers ("+PD_OVERPASS_ERR.join("; ")+")")); });
+    }); }); }
+  finally{ clearInterval(tick); }
 }
 function pdBBox(lat,lon){ const dLat=(PD_W*PD_TILE/2)/110540, dLon=(PD_W*PD_TILE/2)/(111320*Math.cos(lat*Math.PI/180)); return [lat-dLat,lon-dLon,lat+dLat,lon+dLon]; }
 function pdAreaQuery(lat,lon){ const [s,w,n,e]=pdBBox(lat,lon).map(v=>v.toFixed(5));
-  return `[out:json][timeout:20][bbox:${s},${w},${n},${e}];(
+  return `[out:json][timeout:35][bbox:${s},${w},${n},${e}];(
 way["natural"];relation["natural"~"^(wood|water|wetland|heath|scrub)$"];
 way["landuse"];relation["landuse"~"^(forest|farmland|meadow|grass)$"];
 way["waterway"];way["highway"];way["barrier"~"^(hedge|wall|fence|retaining_wall)$"];way["building"];way["leisure"~"^(park|nature_reserve|garden|pitch)$"];
@@ -5397,8 +5399,8 @@ async function pdPickReal(lat,lon){
   const M=S.gameMap=S.gameMap||{}; M.spot=[+lat.toFixed(5),+lon.toFixed(5)]; save();
   const my=PD_REAL={lat,lon,ready:false,t0:Date.now()}; gmDrawSetup(); if(gmSetupMap){ gmSetupMap.marks.push({lat,lon,icon:"⛺",color:"#37474f",r:13}); gmSetupMap.render(); }
   const box=$("#gmSite"); if(box) box.innerHTML=`<div class="small muted" style="margin-top:8px" id="pdLoadTxt">Fetching map data…</div>`; const go=$("#pdGo"); if(go) go.disabled=true;
-  const tick=setInterval(()=>{ const t=$("#pdLoadTxt"); if(!t||PD_REAL!==my||my.ready||my.err) return clearInterval(tick); const s=Math.round((Date.now()-my.t0)/1000); t.innerHTML=`Fetching map data from OpenStreetMap${my.server?` (backup server ${my.server})`:""}… ${s}s${s>=10?` <button class="tog" id="pdGen">Use a made-up area instead</button>`:""}`; },1000);
-  try{ const [osm,elev]=await Promise.all([pdOverpass(pdAreaQuery(lat,lon),i=>my.server=i),pdElevGrid(lat,lon)]); if(PD_REAL!==my) return;
+  const tick=setInterval(()=>{ const t=$("#pdLoadTxt"); if(!t||PD_REAL!==my||my.ready||my.err) return clearInterval(tick); const s=Math.round((Date.now()-my.t0)/1000); t.innerHTML=`Asking 4 OpenStreetMap servers at once (they can be slow)… ${s}s${s>=15?` <button class="tog" id="pdGen">Use a made-up area instead</button>`:""}`; },1000);
+  try{ const [osm,elev]=await Promise.all([pdOverpass(pdAreaQuery(lat,lon),s=>my.secs=s),pdElevGrid(lat,lon)]); if(PD_REAL!==my) return;
     my.els=osm.elements; my.elev=elev; const e5=elev?[elev[24],elev[3],elev[45],elev[21],elev[27]]:null; my.site=gmAnalyse(lat,lon,my.els,e5); my.ready=true; }
   catch(e){ if(PD_REAL!==my) return; my.err=(e.message||"Couldn't load the map data")+". Check your signal."; }
   clearInterval(tick); if((S.pdLoc||"towpath")==="real"&&$("#gmSite")){ $("#gmSite").innerHTML=my.ready?gmSiteCard(my.site):`<div class="small warn" style="margin-top:8px">${esc(my.err)} <button class="tog" id="pdRetry">Try again</button> <button class="tog" id="pdGen">Use a made-up area</button></div>`; const g=$("#pdGo"); if(g) g.disabled=!my.ready; }
