@@ -4844,7 +4844,7 @@ function pdTick(dt){
   } else p.still+=dt;
   if(p.busy){ if(p.busy.act==="pitch"&&p.busy.pegged&&pdRand()<dt*0.5){ const h=p.busy.site.hard; if(h>=1.5) pdNoise_(p.x,p.y,4+h*4,"player","peg","hammering pegs"); }
     if(p.busy.act==="cook"&&pdRand()<dt*0.4) pdNoise_(p.x,p.y,7,"player","stove","the stove roaring");
-    if(PD.t>=p.busy.until) pdFinishBusy(); }
+    if(PD.t>=p.busy.until){ pdFinishBusy(); if(p.queue&&p.queue.length) pdRoutineNext(); } }
   // body + world
   pdBody(dt); pdMetaTick(dt); if(PD.camp){ const cn=pdComfort().n; PD.stats.bestComfort=Math.max(PD.stats.bestComfort||0,cn); }
   const L=pdLights(), vis=pdPlayerVis(L); PD._vis=vis; PD._L=L;
@@ -5751,6 +5751,20 @@ function pdNightTimeline(){ const st=PD.stats, sm=st.sm||[]; if(sm.length<6) ret
   return `<h3>🌙 Your night</h3><svg viewBox="0 0 ${W} ${H}" class="pd-tl"><line x1="${X(e.sunset)}" x2="${X(e.sunset)}" y1="14" y2="84" stroke="#ffb74d55" stroke-dasharray="2 3"/><line x1="${X(e.sunrise)}" x2="${X(e.sunrise)}" y1="14" y2="84" stroke="#ffe08255" stroke-dasharray="2 3"/>
     <polyline points="${wl}" fill="none" stroke="#ff8a65" stroke-width="1.6"/>${bars}${ic}${hrs.join("")}</svg>
     <p class="small muted" style="margin-top:2px"><span style="color:#5c7cfa">■</span> asleep ${(slept/60).toFixed(1)} h · <span style="color:#f0b35a">■</span> awake in the shelter ${(awake/60).toFixed(1)} h · <span style="color:#ff8a65">—</span> warmth · woken ${wakes}×</p>`; }
+
+/* ---------- 6. CAMP ROUTINE: the right jobs, in the right order, one tap ---------- */
+function pdRoutinePlan(){ const c=PD.camp, K=pdKitCached(), p=PD.p, e=PD.env, T=pdTemp(e.sunset+240), q=[];
+  if(!c) return q;
+  if(!c.stashed&&PD.r.snacks>0) q.push(["stash",null,"stash the food"]);
+  if(!c.hidden) q.push(["hide",null,"hide the bright kit"]);
+  if(!c.awning&&(K.poncho&&!c.sh.includes(K.poncho.id)||K.tarp&&!c.sh.includes(K.tarp.id))&&(e.rain>=1||e.humid>=88||T<2)) q.push(["awning",null,"rig the awning"]);
+  if(["bivvy","tent"].includes(c.type)&&!c.vented&&e.humid>=80&&T>-2) q.push(["vent",null,"open the vent"]);
+  if(PD.b.bladder>=25) q.push(["wee",null,"wee, well away"]);
+  if(T<9){ (K.layers||[]).forEach(it=>{ if(!p.worn[it.id]&&(+it.warmth||0)>=1) q.push(["wear",it.id,"put on "+K.name(it)]); }); }
+  q.push(["enter",null,"get in"]); return q; }
+function pdRoutine(){ const q=pdRoutinePlan(); if(!q.length) return; const p=PD.p; if(PD.camp&&Math.hypot(p.x-PD.camp.x,p.y-PD.camp.y)>2.5) return pdMsg("Go back to your camp first.","info");
+  p.queue=q.slice(); pdMsg("🏕️ Camp routine: "+q.map(x=>x[2]).join(", ")+".","story"); pdRoutineNext(); }
+function pdRoutineNext(){ const p=PD.p; if(!p.queue||!p.queue.length||p.busy||PD.dialog) return; const [a,arg]=p.queue.shift(); if(a==="wee"&&p.state!=="free") return pdRoutineNext(); pdAction(a,arg); if(!p.busy&&p.queue.length) pdRoutineNext(); }
 /* ============================================================
    PITCH DARK (game): UI, input, audio, start + end screens
    ============================================================ */
@@ -5854,7 +5868,7 @@ function pdObjective(){ const e=PD.env, p=PD.p, c=PD.camp, toSS=Math.round(e.sun
   if(PD.t>e.sunrise-60){ const fw=pdFirstWalker(); return c?`First light: pack up 📦 · first walker due ~${pdHM(fw)}`:PD.t<fw?`Be gone before ${pdHM(fw)} (first dog walker) 🌅`:"Walk out to the edge of the map 🌅"; }
   if(!c&&PD.flags.packedOnce) return `Packed in the dark. Slip away before anyone's about 🌅`;
   if(!c) return toSS>0?`Find a hidden, sheltered spot · sunset in ${toSS>=60?Math.floor(toSS/60)+"h"+String(toSS%60).padStart(2,"0"):toSS+" min"}`:"It's dark. Find somewhere and pitch";
-  if(p.state==="free") return pdDaylight(PD.t)>0.5?"Wait for dark, sort camp from 🎒, then get in":"Get in your shelter ⛺";
+  if(p.state==="free") return pdDaylight(PD.t)>0.5?"Wait for dark, sort camp from 🎒, then get in":pdRoutinePlan().length>1?"Sort camp: 🏕️ Camp routine (or do it yourself from 🎒)":"Get in your shelter ⛺";
   if(p.state==="shelter") return PD.b.warmth<50?"Cold: layers on, eat, hot drink (🎒)":`Sleep till first light (${pdHM(e.sunrise-30)})`;
   return `Sleeping… first light ${pdHM(e.sunrise-30)}`; }
 function pdBar(v,cls){ return `<div class="pd-m ${cls}"><i style="width:${pdClamp(v)}%"></i></div>`; }
@@ -5880,9 +5894,10 @@ function pdHud(force){
   else if(p.state==="shelter"){ B.push(btn("sleep","💤 Sleep","pri")); if(K.light) B.push(btn("torch",p.torch==="off"?"🔦 Off":p.torch==="red"?"🔴 Red":"🔦 On")); B.push(btn("kit","🎒 Kit")); if(e.cloud<0.6&&pdDaylight(PD.t)<0.2) B.push(btn("stars","⭐ Stars")); B.push(btn("exit","🚪 Get out")); }
   else { if(K.light&&PD.r.torch>0) B.push(btn("torch",p.torch==="off"?"🔦 Off":p.torch==="red"?"🔴 Red":"🔦 On"));
     B.push(btn("sneak",p.sneak?"🤫 Sneaking":"🚶 Walking",p.sneak?"on":"")); B.push(btn("prone",p.prone?"🧍 Stand":"🫥 Lie flat",p.prone?"on":""));
-    if(near) B.push(btn("enter","⛺ Get in","pri")); else if(!PD.camp&&!PD.flags.packedOnce) B.push(btn("pitchq","⛺ Pitch here","pri"));
+    if(near&&!p.queue?.length&&pdRoutinePlan().length>1&&pdDaylight(PD.t)<0.7) B.push(btn("routine","🏕️ Camp routine","pri"));
+    if(near) B.push(btn("enter","⛺ Get in",pdRoutinePlan().length>1&&pdDaylight(PD.t)<0.7?"":"pri")); else if(!PD.camp&&!PD.flags.packedOnce) B.push(btn("pitchq","⛺ Pitch here","pri"));
     B.push(btn("kit","🎒 Kit"));
-    if(near) B.push(btn("pack","📦 Pack up")); else if(!PD.camp) B.push(btn("leave",PD.t>e.sunrise-60||PD.flags.packedOnce?"🌅 Walk out":"🚶 Walk out",PD.t>e.sunrise-60||PD.flags.packedOnce?"pri":"")); }
+    if(near&&(!(pdRoutinePlan().length>1&&pdDaylight(PD.t)<0.7&&PD.t<PD.env.sunset+240)||PD.flags.mustMove)) B.push(btn("pack","📦 Pack up")); else if(!PD.camp) B.push(btn("leave",PD.t>e.sunrise-60||PD.flags.packedOnce?"🌅 Walk out":"🚶 Walk out",PD.t>e.sunrise-60||PD.flags.packedOnce?"pri":"")); }
   const phT=PD.meta&&pdPhotoTarget(); if(phT&&!p.busy&&p.state!=="sleep") B.unshift(btn("photo",`📷 ${phT.sp.i} Photo`,"pri cam"));
   const html=B.join(""); if(html!==PD._bar){ PD._bar=html; pdEl("pdBar").innerHTML=html; }
   const sp=pdEl("pdSpd"); if(sp) sp.classList.toggle("on",PD.speed==="fast");
@@ -5893,6 +5908,7 @@ document.addEventListener("click",e=>{
   if(id==="kit") return pdKitSheet();
   if(id==="kitadd"){ const c=S.classes.find(x=>x.id===PD.classId); if(c&&arg){ c.items[arg]=1; save(); b.outerHTML=`<span class="chip ok">added for next time ✓</span>`; } return; }
   if(id==="pitchq") return pdPitchPreview();
+  if(id==="routine") return pdRoutine();
   if(id==="wake"){ PD.p.state="shelter"; PD.speed="walk"; return pdHud(true); }
   if(id==="leave"&&!PD.camp&&PD.t<PD.env.sunrise-60){ ask("Walk out and end the night now?",{ok:"Walk out"}).then(ok=>{ if(ok){ pdAction("leave"); pdHud(true); } }); return; }
   if(id==="sheetClose"){ pdEl("pdSheet").hidden=true; return; }
