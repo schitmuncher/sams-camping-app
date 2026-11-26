@@ -79,3 +79,7 @@ Go to Settings → Pages → Source: *Deploy from a branch* → `main` / root. T
 ## Notes on the data
 
 Weights and ratings were checked against retailer and manufacturer listings (November 2026). Items marked "est." in their research note have no published figure. Budget gear like the Coolzon bag and AKSOUL mat has no official EN/ISO temperature or R-value, so those numbers are estimates. Edit any item to put in your own measured values.
+
+## Credits
+
+Game art: Kenney (www.kenney.nl), CC0: Tiny Town, Roguelike/RPG pack, RPG Urban Pack. The sprites used are packed into `assets/pd_sprites.png` and embedded in `index.html`. Map data © OpenStreetMap contributors. Weather and elevation from Open-Meteo.
