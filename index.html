@@ -188,6 +188,12 @@ body.pd-on{overflow:hidden}
 .pd-album{display:grid;grid-template-columns:repeat(auto-fill,minmax(100px,1fr));gap:6px;margin-top:8px}.pd-sp{display:flex;flex-direction:column;align-items:center;text-align:center;padding:8px 4px;border-radius:10px;background:var(--panel2);gap:2px}.pd-sp span{font-size:26px}.pd-sp small{font-size:10px;opacity:.75;line-height:1.3}.pd-sp.got{border:1px solid #ffd27a55}
 .pd-camp{background:linear-gradient(160deg,#2a1a10,#101a24)!important}.pd-mlist{display:flex;flex-wrap:wrap;gap:6px;margin-top:10px}.pd-mi{padding:6px 10px;border-radius:10px;font-size:13px;background:var(--panel2);color:inherit;border:1px solid #fff2}.pd-mi.done{border-color:#81c784}.pd-mi:disabled{opacity:.45}.pd-xp.ok{background:#1d3322}.pd-xp.bad{background:#3a1414}
 .pd-loc.lock{opacity:.5}
+.ph-map{position:absolute;inset:0}.ph .gm-ui{top:calc(env(safe-area-inset-top) + 64px)}.ph-map.gmapbox,.ph .gmap{border-radius:0;margin:0}
+.ph-panel{position:absolute;left:0;right:0;bottom:0;background:linear-gradient(#0000,#000e 18%);padding:28px 8px calc(env(safe-area-inset-bottom) + 8px);display:flex;flex-direction:column;gap:6px}
+.ph-prog{background:#000b;border-radius:12px;padding:6px 10px;font-size:14px}.ph-prog canvas{width:100%;height:34px;display:block;margin-top:4px}
+.ph-msg{position:static!important;max-height:5em}.ph-meters{display:grid;grid-template-columns:repeat(4,1fr) auto;gap:6px;align-items:end;background:#000b;border-radius:12px;padding:6px 8px;font-size:11px}
+.ph-bar{position:static!important;background:none!important;padding:0!important}.ph-bar .pd-b{min-width:0;padding:9px 10px;font-size:13px}
+.pd-hikecta{background:#1d2a1a;border:1px solid #81c78455;border-radius:12px;padding:10px;margin-top:10px}
 .pd-j{padding:6px 0;border-bottom:1px solid var(--line)}
 .gdelta{white-space:nowrap;font-style:normal}.gach{display:grid;grid-template-columns:repeat(auto-fill,minmax(150px,1fr));gap:8px;margin-top:10px}.gach>div{background:var(--panel2);border-radius:10px;padding:8px;font-size:13px}
 .ggrades{display:grid;grid-template-columns:repeat(5,1fr);gap:6px;margin:12px 0}.gg{background:var(--panel2);border-radius:10px;padding:6px 2px;text-align:center;display:flex;flex-direction:column}.gg b{font-size:22px}.gg span{font-size:10px;color:var(--muted)}
@@ -2387,6 +2393,9 @@ refreshInstallUI();
 try{const t=new URLSearchParams(location.search).get("tab"); if(t&&document.getElementById("v-"+t)) setTimeout(()=>showView(t),0);}catch(e){}
 if("serviceWorker" in navigator && location.protocol.startsWith("http")) navigator.serviceWorker.register("sw.js").catch(()=>{});
 
+/* keep "⋯" menus on screen: open rightwards when the button sits on the left */
+document.addEventListener("toggle",e=>{ const d=e.target; if(!d.classList||!d.classList.contains("menu")||!d.open) return; const pop=d.querySelector(".menu-pop"); if(!pop) return;
+  pop.style.left=""; pop.style.right=""; const r=pop.getBoundingClientRect(); if(r.left<8){ pop.style.left="0"; pop.style.right="auto"; } else if(r.right>innerWidth-8){ pop.style.right="0"; pop.style.left="auto"; } },true);
 
 /* ============================================================
    PITCH DARK — content (storylets). Voice: dry, observational.
@@ -3836,7 +3845,7 @@ document.addEventListener("change",async e=>{
    A 100×100 tile map, 4 m per tile (400 m square). Built from real OpenStreetMap
    data around a spot, or generated for the preset locations.
    ============================================================ */
-const PD_T={GRASS:0,CROP:1,MEADOW:2,WOOD:3,SCRUB:4,WATER:5,PATH:6,ROAD:7,BUILD:8,HEDGE:9,WALL:10,YARD:11,HEATH:12,ROCK:13,BOG:14,GARDEN:15};
+const PD_T={RAIL:16,GRASS:0,CROP:1,MEADOW:2,WOOD:3,SCRUB:4,WATER:5,PATH:6,ROAD:7,BUILD:8,HEDGE:9,WALL:10,YARD:11,HEATH:12,ROCK:13,BOG:14,GARDEN:15};
 // cost: walk cost · pass · cover: hides you · noise: footstep noise · damp · comfort for sleeping · peg: ground hardness (0 soft–3 rock) · bl: wind block height class
 const PD_TP=[
  {n:"grass",c:1,p:1,cv:0,no:1,dm:0,cf:1,pg:1,bl:0,col:[86,124,62]},
@@ -3854,9 +3863,10 @@ const PD_TP=[
  {n:"heather",c:1.4,p:1,cv:0.2,no:1.3,dm:0.2,cf:0.9,pg:0.9,bl:0,col:[110,90,82]},
  {n:"granite",c:2,p:1,cv:0.45,no:1,dm:0,cf:0.1,pg:3,bl:2,col:[140,138,130]},
  {n:"bog",c:2.6,p:1,cv:0.1,no:1.6,dm:1,cf:0.1,pg:0.2,bl:0,col:[78,96,64]},
- {n:"garden",c:1,p:1,cv:0.25,no:1,dm:0,cf:1,pg:1,bl:0,col:[92,136,70]}
+ {n:"garden",c:1,p:1,cv:0.25,no:1,dm:0,cf:1,pg:1,bl:0,col:[92,136,70]},
+ {n:"railway",c:99,p:0,cv:0,no:0,dm:0,cf:0,pg:3,bl:0,col:[96,88,80]}
 ];
-const PD_W=100, PD_TILE=4;
+let PD_W=100; const PD_TILE=4, PD_REAL_W=160;
 /* ---------- seeded randomness ---------- */
 function pdRng(seed){ let a=seed>>>0||1; return ()=>{ a|=0; a=a+0x6D2B79F5|0; let t=Math.imul(a^a>>>15,1|a); t=t+Math.imul(t^t>>>7,61|t)^t; return ((t^t>>>14)>>>0)/4294967296; }; }
 function pdHash(x,y,s){ let h=(x*374761393+y*668265263+s*982451653)|0; h=Math.imul(h^h>>>13,1274126177); return ((h^h>>>16)>>>0)/4294967296; }
@@ -3866,7 +3876,7 @@ function pdNoise(x,y,s){ const xi=Math.floor(x), yi=Math.floor(y), xf=x-xi, yf=y
 function pdFbm(x,y,s,o=4){ let v=0,a=0.5,fr=1,n=0; for(let i=0;i<o;i++){ v+=a*pdNoise(x*fr,y*fr,s+i*17); n+=a; a/=2; fr*=2; } return v/n; }
 
 /* ---------- world object ---------- */
-function pdNewWorld(kind){ return {kind,w:PD_W,h:PD_W,t:new Uint8Array(PD_W*PD_W),elev:new Float32Array(PD_W*PD_W),trees:[],objs:[],names:{},flags:{},spot:null,entry:null,origin:null,label:""}; }
+function pdNewWorld(kind,size=100){ PD_W=size; return {kind,w:PD_W,h:PD_W,t:new Uint8Array(PD_W*PD_W),elev:new Float32Array(PD_W*PD_W),trees:[],objs:[],names:{},flags:{},spot:null,entry:null,origin:null,label:""}; }
 const pdIdx=(x,y)=>y*PD_W+x, pdIn=(x,y)=>x>=0&&y>=0&&x<PD_W&&y<PD_W;
 const pdAt=(W,x,y)=>pdIn(x|0,y|0)?W.t[pdIdx(x|0,y|0)]:PD_T.HEDGE;
 const pdSet=(W,x,y,v)=>{ x=Math.round(x); y=Math.round(y); if(pdIn(x,y)) W.t[pdIdx(x,y)]=v; };
@@ -3896,12 +3906,12 @@ async function pdOverpass(q,onTry){
     }); }); }
   finally{ clearInterval(tick); }
 }
-function pdBBox(lat,lon){ const dLat=(PD_W*PD_TILE/2)/110540, dLon=(PD_W*PD_TILE/2)/(111320*Math.cos(lat*Math.PI/180)); return [lat-dLat,lon-dLon,lat+dLat,lon+dLon]; }
+function pdBBox(lat,lon,size=PD_REAL_W){ const dLat=(size*PD_TILE/2)/110540, dLon=(size*PD_TILE/2)/(111320*Math.cos(lat*Math.PI/180)); return [lat-dLat,lon-dLon,lat+dLat,lon+dLon]; }
 function pdAreaQuery(lat,lon){ const [s,w,n,e]=pdBBox(lat,lon).map(v=>v.toFixed(5));
   return `[out:json][timeout:35][bbox:${s},${w},${n},${e}];(
 way["natural"];relation["natural"~"^(wood|water|wetland|heath|scrub)$"];
 way["landuse"];relation["landuse"~"^(forest|farmland|meadow|grass)$"];
-way["waterway"];way["highway"];way["barrier"~"^(hedge|wall|fence|retaining_wall)$"];way["building"];way["leisure"~"^(park|nature_reserve|garden|pitch)$"];
+way["waterway"];way["highway"];way["railway"~"^(rail|light_rail)$"];way["barrier"~"^(hedge|wall|fence|retaining_wall)$"];way["building"];way["leisure"~"^(park|nature_reserve|garden|pitch)$"];
 node["natural"="tree"];node["amenity"~"^(bench|pub|drinking_water|parking)$"];node["natural"~"^(peak|rock)$"];node["man_made"="survey_point"];node["place"];
 );out geom qt;`; }
 async function pdElevGrid(lat,lon){
@@ -3924,13 +3934,14 @@ function pdRings(rel){
   return rings;
 }
 function pdFromOSM(lat,lon,els,elev,seed){
-  const W=pdNewWorld("real"); W.origin=[lat,lon]; const R=pdRng(seed);
+  const W=pdNewWorld("real",PD_REAL_W); W.origin=[lat,lon]; W.vec={polys:[],lines:[]}; const R=pdRng(seed);
   const cosl=Math.cos(lat*Math.PI/180), P=(la,lo)=>[(lo-lon)*111320*cosl/PD_TILE+PD_W/2,(lat-la)*110540/PD_TILE+PD_W/2];
   W.proj=null;
   const ways=els.filter(e=>e.type==="way"&&e.geometry), rels=els.filter(e=>e.type==="relation"), nodes=els.filter(e=>e.type==="node");
   const ringsOf=e=>e.type==="way"?[e.geometry.map(g=>P(g.lat,g.lon))]:pdRings(e).map(r=>r.map(p=>P(p[0],p[1])));
-  const polys=(test,v,only)=>[...ways,...rels].forEach(e=>{ const t=e.tags||{}; if(!test(t)) return; if(e.type==="way"&&!(e.geometry.length>3)) return; ringsOf(e).forEach(r=>pdFill(W,r,v,only)); });
-  const lines=(test,v,wd,only)=>ways.forEach(e=>{ const t=e.tags||{}; if(!test(t)) return; pdLine(W,e.geometry.map(g=>P(g.lat,g.lon)),v,typeof wd==="function"?wd(t):wd,only); });
+  const near=r=>r.some(([x,y])=>x>-60&&y>-60&&x<PD_W+60&&y<PD_W+60);
+  const polys=(test,v,only,vk)=>[...ways,...rels].forEach(e=>{ const t=e.tags||{}; if(!test(t)) return; if(e.type==="way"&&!(e.geometry.length>3)) return; ringsOf(e).forEach(r=>{ pdFill(W,r,v,only); if(vk&&near(r)) W.vec.polys.push({k:vk,r,name:t.name}); }); });
+  const lines=(test,v,wd,only,vk)=>ways.forEach(e=>{ const t=e.tags||{}; if(!test(t)) return; const pts=e.geometry.map(g=>P(g.lat,g.lon)), w=typeof wd==="function"?wd(t):wd; pdLine(W,pts,v,w,only); if(vk&&near(pts)) W.vec.lines.push({k:vk,pts,w}); });
   // elevation first
   if(elev){ for(let y=0;y<PD_W;y++) for(let x=0;x<PD_W;x++){ const gx=x/(PD_W-1)*6, gy=y/(PD_W-1)*6, i=Math.min(5,Math.floor(gx)), j=Math.min(5,Math.floor(gy)), fx=gx-i, fy=gy-j, g=(a,b)=>elev[b*7+a]??elev[0];
       W.elev[pdIdx(x,y)]=g(i,j)*(1-fx)*(1-fy)+g(i+1,j)*fx*(1-fy)+g(i,j+1)*(1-fx)*fy+g(i+1,j+1)*fx*fy; } }
@@ -3946,22 +3957,26 @@ function pdFromOSM(lat,lon,els,elev,seed){
   polys(t=>t.natural==="wetland",PD_T.BOG);
   polys(t=>/^(bare_rock|scree)$/.test(t.natural||""),PD_T.ROCK);
   polys(t=>t.natural==="wood"||t.landuse==="forest",PD_T.WOOD);
-  polys(t=>t.natural==="water"||t.landuse==="reservoir"||t.waterway==="riverbank",PD_T.WATER);
-  lines(t=>/^(canal|river)$/.test(t.waterway||""),PD_T.WATER,t=>t.waterway==="canal"?3:Math.min(5,Math.max(2,Math.round((+t.width||8)/PD_TILE))));
-  lines(t=>/^(stream|brook)$/.test(t.waterway||""),PD_T.WATER,1);
+  polys(t=>t.natural==="water"||t.landuse==="reservoir"||t.waterway==="riverbank",PD_T.WATER,null,"water");
+  lines(t=>/^(canal|river)$/.test(t.waterway||""),PD_T.WATER,t=>t.waterway==="canal"?3:Math.min(5,Math.max(2,Math.round((+t.width||8)/PD_TILE))),null,"water");
+  lines(t=>/^(stream|brook)$/.test(t.waterway||""),PD_T.WATER,1,null,"water");
   lines(t=>/^(ditch|drain)$/.test(t.waterway||""),PD_T.BOG,1);
-  polys(t=>!!t.building,PD_T.BUILD);
+  polys(t=>!!t.building,PD_T.BUILD,null,"building");
   // field boundaries: real hedges if mapped, otherwise hedge the edges of farmland/meadow (very Cheshire)
   const hedges=ways.filter(e=>(e.tags||{}).barrier==="hedge");
   if(hedges.length) lines(t=>t.barrier==="hedge",PD_T.HEDGE,1,v=>v!==PD_T.WATER&&v!==PD_T.BUILD);
-  else ways.filter(e=>/^(farmland|meadow|grass)$/.test((e.tags||{}).landuse||"")&&e.geometry.length>3).forEach(e=>pdLine(W,e.geometry.map(g=>P(g.lat,g.lon)),PD_T.HEDGE,1,v=>v!==PD_T.WATER&&v!==PD_T.BUILD&&v!==PD_T.WOOD));
+  ways.filter(e=>/^(farmland|meadow|grass)$/.test((e.tags||{}).landuse||"")&&e.geometry.length>3).forEach(e=>pdLine(W,e.geometry.map(g=>P(g.lat,g.lon)),PD_T.HEDGE,1,v=>v===PD_T.CROP||v===PD_T.MEADOW||v===PD_T.GRASS));
+  // Cheshire fields are often mapped as one big polygon; split large open areas into hedged fields like the real thing
+  pdFieldHedges(W,R,hedges.length>20?60:38);
   lines(t=>/^(wall|retaining_wall)$/.test(t.barrier||""),PD_T.WALL,1);
   lines(t=>t.barrier==="fence",PD_T.WALL,1,v=>v!==PD_T.WATER&&v!==PD_T.BUILD);
   // roads and paths cut through hedges (gates and stiles)
-  lines(t=>/^(track)$/.test(t.highway||""),PD_T.PATH,2);
-  lines(t=>/^(footway|path|bridleway|steps|cycleway|pedestrian)$/.test(t.highway||""),PD_T.PATH,1);
-  lines(t=>/^(service|residential|unclassified|tertiary|living_street|tertiary_link)$/.test(t.highway||""),PD_T.ROAD,2);
-  lines(t=>/^(secondary|primary|trunk|motorway)/.test(t.highway||""),PD_T.ROAD,3);
+  lines(t=>/^(rail|light_rail|disused)$/.test(t.railway||""),PD_T.RAIL,2,null,"rail");
+  lines(t=>/^(track)$/.test(t.highway||""),PD_T.PATH,2,null,"track");
+  lines(t=>/^(footway|path|bridleway|steps|cycleway|pedestrian)$/.test(t.highway||""),PD_T.PATH,1,null,"path");
+  lines(t=>/^(service|residential|unclassified|tertiary|living_street|tertiary_link)$/.test(t.highway||""),PD_T.ROAD,2,null,"road");
+  lines(t=>/^(secondary|primary|trunk|motorway)/.test(t.highway||""),PD_T.ROAD,3,null,"bigroad");
+  lines(t=>t.barrier==="hedge",PD_T.HEDGE,1,v=>v!==PD_T.WATER&&v!==PD_T.BUILD&&v!==PD_T.ROAD&&v!==PD_T.PATH,"hedge");
   // trees
   for(let y=0;y<PD_W;y++) for(let x=0;x<PD_W;x++){ const v=W.t[pdIdx(x,y)];
     if(v===PD_T.WOOD&&R()<0.33) W.trees.push({x:x+R(),y:y+R(),r:1.2+R()*1.6});
@@ -3988,6 +4003,12 @@ function pdFromOSM(lat,lon,els,elev,seed){
   W.flags.moor=W.flags.legal||pdCount(W,PD_T.HEATH)>PD_W*PD_W*0.25;
   W.spot=[PD_W/2,PD_W/2]; W.label=W.names.place||W.names.wood||W.names.water||"your spot";
   pdFinish(W,R); return W;
+}
+function pdFieldHedges(W,R,sp){
+  const open=v=>v===PD_T.CROP||v===PD_T.MEADOW||v===PD_T.GRASS, s=Math.floor(R()*999);
+  for(let X=Math.floor(R()*sp);X<PD_W;X+=sp*(0.7+R()*0.6)){ const pts=[]; for(let y=-4;y<=PD_W+4;y+=5) pts.push([X+(pdNoise(X/9,y/25,s)-0.5)*12,y]); pdLine(W,pts,PD_T.HEDGE,1,open); }
+  for(let Y=Math.floor(R()*sp);Y<PD_W;Y+=sp*(0.7+R()*0.6)){ const pts=[]; for(let x=-4;x<=PD_W+4;x+=5) pts.push([x,Y+(pdNoise(x/25,Y/9,s+3)-0.5)*12]); pdLine(W,pts,PD_T.HEDGE,1,open); }
+  for(let y=1;y<PD_W-1;y++) for(let x=1;x<PD_W-1;x++){ if(W.t[pdIdx(x,y)]!==PD_T.HEDGE) continue; const r=R(); if(r<0.01){ pdDisk(W,x,y,1,PD_T.GRASS,v=>v===PD_T.HEDGE); W.objs.push({k:"gate",x:x+0.5,y:y+0.5}); } }
 }
 function pdCount(W,v){ let n=0; for(let i=0;i<W.t.length;i++) if(W.t[i]===v) n++; return n; }
 function pdPlaceBoats(W,R){ const cand=[]; for(let y=1;y<PD_W-1;y++) for(let x=4;x<PD_W-4;x++){ if(W.t[pdIdx(x,y)]!==PD_T.WATER) continue; const adj=[[0,-1],[0,1],[-1,0],[1,0]].some(([dx,dy])=>W.t[pdIdx(x+dx,y+dy)]===PD_T.PATH); if(adj) cand.push([x,y]); }
@@ -4172,7 +4193,7 @@ function pdKit(c){
 /* ---------- start a night ---------- */
 function pdStart(o){
   const c=S.classes.find(x=>x.id===o.classId)||cls(), K=pdKit(c), seed=o.seed??Math.floor(Math.random()*1e9), R=pdRng(seed^0x5bd1e995);
-  const W=o.world||pdGenerate(o.preset||"towpath",seed); PDW=W;
+  const W=o.world||pdGenerate(o.preset||"towpath",seed); PDW=W; PD_W=W.w;
   const P=PD_PRESETS[o.preset]||{}, wx=o.wx||{low:P.low??5,high:P.high??11,humid:P.humid??85,windAvg:P.wind??8,rain:P.rain??0,bugs:(P.month>=6&&P.month<=8)?2:0};
   const date=o.date||todayISO(), month=o.month||P.month||+date.slice(5,7);
   const lat=W.origin?W.origin[0]:{towpath:53.1,hill:53.07,river:53.2,moor:50.58}[o.preset]||53, lon=W.origin?W.origin[1]:{towpath:-2.57,hill:-2.73,river:-2.52,moor:-3.77}[o.preset]||-2.5;
@@ -4429,6 +4450,16 @@ function pdSpawn(s){
     case"kingfisher": PD.flags.kingfisher=PD.t+6; break;
   }
 }
+const PD_NIGHT=[
+ {id:"cold",when:()=>PD.b.warmth<55,t:"You wake with cold feet and a cold back. It's going to be a long night unless you do something.",c:[{l:"Hot drink from the flask",req:()=>PD.r.flask>0,e:{flask:1,warmth:12,morale:5,time:10}},{l:"Pull every layer on",e:{warmth:7,noise:4,time:10}},{l:"Sit-ups and toe wiggles in the bag",e:{warmth:6,energy:-6,noise:3,time:10}},{l:"Curl up and grit your teeth",e:{morale:-6}}]},
+ {id:"rain",when:()=>pdRaining()&&PD.camp&&!PD.camp.awning,t:"Rain. Proper rain, drumming on the {sh}. The foot of your bag is getting wet.",c:[{l:"Get out and rig the poncho over the head end",req:()=>!!pdKitCached().poncho,e:{awning:1,warmth:-5,dry:4,noise:4,time:15}},{l:"Pull your feet up, stuff kit in the dry bag",req:()=>pdKitCached().drybag,e:{dry:2,morale:-2,time:5}},{l:"Tuck in and hope",e:{dry:-10,morale:-4}}]},
+ {id:"lamp",when:()=>!PD.env.legal&&PDW.flags.farm,t:"A powerful lamp sweeps the next field. Lampers, out after rabbits. The beam swings your way.",c:[{l:"Lie completely still",e:{morale:-4,time:10},r:"The beam passes over you twice and moves on."},{l:"Torch on so they know you're there",e:{heat:15,morale:2},r:"A shout, a wave of the lamp, and they head the other way. Someone will mention it to the farmer."}]},
+ {id:"pack",when:()=>PD.camp&&!PD.camp.stashed&&PD.r.snacks>0,t:"Scrabbling and rustling right by your head. Something's at your pack.",c:[{l:"Bang the ground and hiss",e:{noise:8,stash:1},r:"Whatever it was bolts. You stuff the food deep in the pack."},{l:"Torch it",e:{stash:1,noise:2},r:"Two green eyes. A fox, which backs off slowly, offended."},{l:"Leave it",e:{snack:-1,morale:-5},r:"In the morning: wrappers everywhere."}]},
+ {id:"cramp",when:()=>PD.b.thirst<45||PD.b.energy<40,t:"Your calf locks into cramp. You're dehydrated.",c:[{l:"Drink and stretch it out",req:()=>PD.r.water>=0.25,e:{energy:3,time:5},r:"It eases. Drink more tomorrow."},{l:"Ride it out",e:{morale:-6,energy:-4}}]},
+ {id:"stars",when:()=>PD.env.cloud<0.4,t:"You wake, and the cloud has cleared. The whole sky is out.",c:[{l:"Watch for five minutes",e:{morale:10,warmth:-2,time:8},r:"The Milky Way, faint over the hedge. You'll remember this."},{l:"Back to sleep",e:{}}]}
+];
+function pdNightEvent(){ const pool=PD_NIGHT.filter(ev=>!PD.flags["ne_"+ev.id]&&ev.when()); if(!pool.length) return false; const ev=pool[Math.floor(pdRand()*pool.length)]; PD.flags["ne_"+ev.id]=1;
+  PD.p.state="shelter"; PD.speed="walk"; PD.dialog={text:ev.t.replace("{sh}",PD.camp?PD.camp.type:"bag"),choices:ev.c.map(c=>({l:c.l,req:c.req?c.req():true,e:c.e,r:c.r||"Done."}))}; pdUIDialog&&pdUIDialog(); return true; }
 function pdTip(id,text){ S.pdTips=S.pdTips||{}; if(S.pdTips[id]) return; S.pdTips[id]=1; pdMsg("💡 "+text,"tip"); }
 function pdMoment(id,text,morale=6){ if(PD.stats.moments[id]) return; PD.stats.moments[id]={t:PD.t,text}; PD.b.morale=pdClamp(PD.b.morale+morale); pdMsg("✨ "+text,"moment"); }
 
@@ -4536,6 +4567,7 @@ function pdConfront(n){
 }
 function pdChoose(i){
   const D=PD.dialog; if(!D) return; const ch=D.choices[i], n=PD.npcs.find(x=>x.id===D.npc), e=ch.e||{};
+  ["warmth","dry","energy"].forEach(k=>{ if(e[k]) PD.b[k]=pdClamp(PD.b[k]+e[k]); }); if(e.time) PD.t+=e.time; if(e.flask&&PD.r.flask>0){ PD.r.flask--; } if(e.stash&&PD.camp) PD.camp.stashed=true; if(e.awning&&PD.camp) PD.camp.awning=true; if(e.noise) pdNoise_(PD.p.x,PD.p.y,e.noise,"player","rustle");
   PD.heat=pdClamp(PD.heat+(e.heat||0)-(pdPerk("talk")&&e.heat<0?8:0)); PD.b.morale=pdClamp(PD.b.morale+(e.morale||0)); if(e.snack) PD.r.snacks=Math.max(0,PD.r.snacks+e.snack);
   if(e.local&&n&&n.local){ S.gameLocals=S.gameLocals||{}; S.gameLocals[n.local]=pdClamp((S.gameLocals[n.local]||0)+e.local,-3,5); }
   let res=ch.r;
@@ -4654,6 +4686,7 @@ function pdTick(dt){
   if(p.state==="sleep"){ const b=PD.b; if(b.warmth<36&&pdRand()<dt*0.06) pdWake("cold. Properly cold"); else if(b.bladder>94) pdWake("you're bursting"); else if(pdRaining()&&!PD.flags.rainWoke){ PD.flags.rainWoke=true; pdWake("rain pattering on the "+(c?c.type:"bag")); }
     else if(PD.t>e.sunrise-20&&!PD.flags.alarm){ PD.flags.alarm=true; pdWake("first light"); }
     else if(e.bugs>=2&&!(c&&c.sh.some(id=>(+(item(id)||{}).bug||0)>=2))&&!p.headnet&&PD.t>e.sunrise-70&&pdRand()<dt*0.05) pdWake("midges, in your ears and eyelids");
+    if(PD.t>PD.env.sunset+120&&PD.t<PD.env.sunrise-30&&pdRand()<dt*0.012&&pdNightEvent()) return;
     // snoring: a real risk with people about
     if(b.energy<60&&pdRand()<dt*0.04) pdNoise_(p.x,p.y,7,"player","snore","your own snoring"); }
   // rain start message
@@ -4710,20 +4743,20 @@ function pdAchCheck(J){ return PD_ACH.filter(a=>!J.ach[a.id]&&a.t(J,PD)).map(a=>
 
 /* ---------- save / load ---------- */
 function pdSerialize(){ const o=Object.assign({},PD); o.dialog=null; o._th=null; o._L=null; o._vis=null; o.noises=[];
-  o.world=PDW.kind==="real"?{kind:"real",t:btoa(String.fromCharCode.apply(null,PDW.t)),elev:Array.from(PDW.elev,v=>Math.round(v)),trees:PDW.trees,objs:PDW.objs,names:PDW.names,flags:PDW.flags,entry:PDW.entry,spot:PDW.spot,origin:PDW.origin,label:PDW.label}:{kind:PDW.kind};
+  o.world=PDW.kind==="real"?{kind:"real",vec:PDW.vec,t:btoa(Array.from(PDW.t,c=>String.fromCharCode(c)).join("")),elev:Array.from(PDW.elev,v=>Math.round(v)),trees:PDW.trees,objs:PDW.objs,names:PDW.names,flags:PDW.flags,entry:PDW.entry,spot:PDW.spot,origin:PDW.origin,label:PDW.label}:{kind:PDW.kind};
   return o; }
 function pdSaveNow(){ if(!PD||PD.ended) return; try{ S.pdSave=pdSerialize(); save(); }catch(e){} }
 function pdLoadSave(){ const o=S.pdSave; if(!o||o.v!==3) return false; try{
-  if(o.world.kind==="real"){ const W=pdNewWorld("real"); const bin=atob(o.world.t); for(let i=0;i<bin.length;i++) W.t[i]=bin.charCodeAt(i); o.world.elev.forEach((v,i)=>W.elev[i]=v); Object.assign(W,{trees:o.world.trees,objs:o.world.objs,names:o.world.names,flags:o.world.flags,entry:o.world.entry,spot:o.world.spot,origin:o.world.origin,label:o.world.label}); pdFinish(W,pdRng(o.seed)); PDW=W; }
-  else PDW=pdGenerate(o.world.kind,o.seed);
+  if(o.world.kind==="real"){ const W=pdNewWorld("real",Math.round(Math.sqrt(atob(o.world.t).length))); const bin=atob(o.world.t); for(let i=0;i<bin.length;i++) W.t[i]=bin.charCodeAt(i); o.world.elev.forEach((v,i)=>W.elev[i]=v); Object.assign(W,{vec:o.world.vec,trees:o.world.trees,objs:o.world.objs,names:o.world.names,flags:o.world.flags,entry:o.world.entry,spot:o.world.spot,origin:o.world.origin,label:o.world.label}); pdFinish(W,pdRng(o.seed)); PDW=W; }
+  else PDW=pdGenerate(o.world.kind,o.seed); PD_W=PDW.w;
   PD=Object.assign({},o); delete PD.world; PD_K=null; PD.p.speed=1; pdThermalCache(true); return true; }catch(e){ S.pdSave=null; return false; } }
 /* ============================================================
    PITCH DARK (game): RENDERER (canvas, top-down, with night lighting)
    ============================================================ */
-const PD_TS=16; // ground canvas pixels per tile
+let PD_TS=16; // ground canvas pixels per tile
 let PDR=null;
 function pdRenderInit(canvas){
-  const W=PDW, g=document.createElement("canvas"); g.width=PD_W*PD_TS; g.height=PD_W*PD_TS; const x=g.getContext("2d");
+  PD_TS=PD_W>120?12:16; const W=PDW, g=document.createElement("canvas"); g.width=PD_W*PD_TS; g.height=PD_W*PD_TS; const x=g.getContext("2d");
   pdPaintGround(x,W); const tr=document.createElement("canvas"); tr.width=g.width; tr.height=g.height; pdPaintTrees(tr.getContext("2d"),W);
   const lc=document.createElement("canvas");
   PDR={canvas,ctx:canvas.getContext("2d"),ground:g,trees:tr,lc,lx:lc.getContext("2d"),cam:{x:PD.p.x,y:PD.p.y},Z:12,shake:0,stars:[],frame:0};
@@ -4738,15 +4771,17 @@ function pdPaintGround(x,W){
   // pass 1: base
   const field=(tx,ty,c,t)=>{ if(t!==PD_T.GRASS&&t!==PD_T.CROP&&t!==PD_T.MEADOW) return c; const n=pdNoise(tx/14,ty/14,PD.seed%311)-0.5, m=pdNoise(tx/30,ty/30,PD.seed%97)-0.5; return [c[0]+n*30+m*12,c[1]+n*22-m*8,c[2]+n*10]; };
   W.fcol=(tx,ty,t)=>tint(field(tx,ty,PD_TP[t].col,t));
-  for(let ty=0;ty<PD_W;ty++) for(let tx=0;tx<PD_W;tx++){ const t=W.t[pdIdx(tx,ty)]; x.fillStyle=pdRGB(W.fcol(tx,ty,t),(pdHash(tx,ty,5)-0.5)*12); x.fillRect(tx*T,ty*T,T,T); }
+  const VEC=!!(W.vec&&(W.vec.lines.length||W.vec.polys.length)), under=new Set([PD_T.WATER,PD_T.BUILD,PD_T.ROAD,PD_T.RAIL,PD_T.PATH]);
+  W.under=(tx,ty,t)=>VEC&&under.has(t)?(t===PD_T.BUILD?PD_T.GARDEN:PD_T.GRASS):t;
+  for(let ty=0;ty<PD_W;ty++) for(let tx=0;tx<PD_W;tx++){ const t=W.under(tx,ty,W.t[pdIdx(tx,ty)]); x.fillStyle=pdRGB(W.fcol(tx,ty,t),(pdHash(tx,ty,5)-0.5)*12); x.fillRect(tx*T,ty*T,T,T); }
   // pass 2: organic blobs so tiles don't look like squares (soft natural edges)
   const order=[PD_T.GRASS,PD_T.GARDEN,PD_T.CROP,PD_T.MEADOW,PD_T.HEATH,PD_T.BOG,PD_T.SCRUB,PD_T.WOOD,PD_T.ROCK];
-  order.push(PD_T.WATER);
+  if(!VEC) order.push(PD_T.WATER);
   order.forEach(v=>{ for(let ty=0;ty<PD_W;ty++) for(let tx=0;tx<PD_W;tx++){ if(W.t[pdIdx(tx,ty)]!==v) continue; x.fillStyle=pdRGB(W.fcol(tx,ty,v),(pdHash(tx,ty,9)-0.5)*(v===PD_T.WATER?4:14));
     if(v===PD_T.WATER){ x.beginPath(); x.arc((tx+0.5)*T,(ty+0.5)*T,T*0.72,0,6.283); x.fill(); continue; }
     for(let k=0;k<2;k++){ x.beginPath(); x.arc((tx+0.5+(R()-0.5)*0.6)*T,(ty+0.5+(R()-0.5)*0.6)*T,T*(0.55+R()*0.3),0,6.283); x.fill(); } } });
   // pass 3: texture
-  for(let ty=0;ty<PD_W;ty++) for(let tx=0;tx<PD_W;tx++){ const t=W.t[pdIdx(tx,ty)], X=tx*T, Y=ty*T, h=k=>pdHash(tx,ty,k);
+  for(let ty=0;ty<PD_W;ty++) for(let tx=0;tx<PD_W;tx++){ const t=W.under(tx,ty,W.t[pdIdx(tx,ty)]), X=tx*T, Y=ty*T, h=k=>pdHash(tx,ty,k);
     if(t===PD_T.GRASS||t===PD_T.GARDEN){ for(let k=0;k<4;k++){ x.fillStyle=h(k)<0.5?"rgba(255,255,200,0.08)":"rgba(0,30,0,0.12)"; x.fillRect(X+h(k+10)*T,Y+h(k+20)*T,1.5,1.5); } if(summer&&h(3)<0.06){ x.fillStyle=["#f4f0e0","#f2d14a","#c99ad8"][Math.floor(h(4)*3)]; x.fillRect(X+h(5)*T,Y+h(6)*T,2,2); } }
     else if(t===PD_T.CROP){ const a=pdNoise(tx/18,ty/18,PD.seed%97)>0.5; x.strokeStyle="rgba(60,40,20,0.28)"; x.lineWidth=1.2; x.beginPath(); for(let k=0;k<3;k++){ if(a){ x.moveTo(X,Y+k*4+2); x.lineTo(X+T,Y+k*4+2); } else { x.moveTo(X+k*4+2,Y); x.lineTo(X+k*4+2,Y+T); } } x.stroke(); }
     else if(t===PD_T.MEADOW){ x.strokeStyle="rgba(200,220,120,0.22)"; x.lineWidth=1; x.beginPath(); for(let k=0;k<5;k++){ const px=X+h(k)*T, py=Y+h(k+5)*T; x.moveTo(px,py); x.lineTo(px+(h(k+9)-0.5)*3,py-4); } x.stroke(); }
@@ -4768,14 +4803,38 @@ function pdPaintGround(x,W){
   // walls
   for(let ty=0;ty<PD_W;ty++) for(let tx=0;tx<PD_W;tx++){ if(W.t[pdIdx(tx,ty)]!==PD_T.WALL) continue; x.fillStyle="#8a877e"; x.fillRect(tx*T+2,ty*T+2,T-4,T-4); x.fillStyle="rgba(255,255,255,0.2)"; x.fillRect(tx*T+2,ty*T+2,T-4,2); }
   // buildings: roofs with ridge shading
-  for(let ty=0;ty<PD_W;ty++) for(let tx=0;tx<PD_W;tx++){ if(W.t[pdIdx(tx,ty)]!==PD_T.BUILD) continue; const X=tx*T, Y=ty*T, roofs=["#8a4a3a","#5a5e66","#6a3a30","#4a4e56"], rc=roofs[Math.floor(pdNoise(tx/6,ty/6,3)*4)%4];
+  for(let ty=0;ty<PD_W;ty++) for(let tx=0;tx<PD_W;tx++){ if(VEC||W.t[pdIdx(tx,ty)]!==PD_T.BUILD) continue; const X=tx*T, Y=ty*T, roofs=["#8a4a3a","#5a5e66","#6a3a30","#4a4e56"], rc=roofs[Math.floor(pdNoise(tx/6,ty/6,3)*4)%4];
     x.fillStyle=rc; x.fillRect(X,Y,T,T); const up=pdAt(W,tx,ty-1)!==PD_T.BUILD, dn=pdAt(W,tx,ty+1)!==PD_T.BUILD, lf=pdAt(W,tx-1,ty)!==PD_T.BUILD, rt=pdAt(W,tx+1,ty)!==PD_T.BUILD;
     x.fillStyle="rgba(255,255,255,0.12)"; if(up) x.fillRect(X,Y,T,3); x.fillStyle="rgba(0,0,0,0.3)"; if(dn) x.fillRect(X,Y+T-3,T,3); if(rt) x.fillRect(X+T-2,Y,2,T); if(lf){ x.fillStyle="rgba(255,255,255,0.08)"; x.fillRect(X,Y,2,T); }
     x.strokeStyle="rgba(0,0,0,0.12)"; x.beginPath(); x.moveTo(X,Y+T/2); x.lineTo(X+T,Y+T/2); x.stroke();
     if(dn){ x.fillStyle="rgba(0,0,0,0.25)"; x.fillRect(X+2,Y+T,T,3); } }
+  if(VEC) pdPaintVec(x,W,T);
   // hillshade from elevation
   for(let ty=1;ty<PD_W-1;ty++) for(let tx=1;tx<PD_W-1;tx++){ const dx=W.elev[pdIdx(tx+1,ty)]-W.elev[pdIdx(tx-1,ty)], dy=W.elev[pdIdx(tx,ty+1)]-W.elev[pdIdx(tx,ty-1)], s=(-dx-dy)*0.06;
     if(Math.abs(s)>0.01){ x.fillStyle=s>0?`rgba(255,255,220,${Math.min(0.18,s)})`:`rgba(0,0,20,${Math.min(0.25,-s)})`; x.fillRect(tx*T,ty*T,T,T); } }
+}
+function pdPaintVec(x,W,T){
+  const V=W.vec, path=(pts,close)=>{ x.beginPath(); pts.forEach(([a,b],i)=>i?x.lineTo(a*T,b*T):x.moveTo(a*T,b*T)); if(close) x.closePath(); };
+  const L=k=>V.lines.filter(l=>l.k===k), stroke=(k,w,col,dash)=>L(k).forEach(l=>{ path(l.pts); x.lineWidth=w(l)*T; x.strokeStyle=col; x.setLineDash(dash?dash.map(d=>d*T):[]); x.stroke(); });
+  x.lineCap="round"; x.lineJoin="round";
+  // water: banks, then water, then a glint
+  V.polys.filter(p=>p.k==="water").forEach(p=>{ path(p.r,true); x.fillStyle="#2c5470"; x.fill(); x.lineWidth=0.5*T; x.strokeStyle="#6a8a6a"; x.stroke(); });
+  stroke("water",l=>l.w+0.8,"#5c7a55"); stroke("water",l=>l.w,"#2c5470"); stroke("water",l=>Math.max(0.3,l.w*0.25),"rgba(140,180,200,0.35)");
+  // railway: ballast, sleepers, rails
+  stroke("rail",()=>2.2,"#7a7066"); stroke("rail",()=>1.6,"#5a4a3a",[0.15,0.35]); stroke("rail",()=>0.9,"#7a7066"); stroke("rail",()=>1.1,"#b8b8b8"); stroke("rail",()=>0.7,"#7a7066");
+  // roads and paths
+  stroke("bigroad",()=>3.6,"#d8d4c8"); stroke("bigroad",()=>3.1,"#4a4e52"); stroke("bigroad",()=>0.18,"rgba(240,240,230,0.8)",[1,1.4]);
+  stroke("road",()=>2.6,"#cfcab8"); stroke("road",()=>2.2,"#55595d");
+  stroke("track",()=>1.9,"#8a7a5a"); stroke("track",()=>1.1,"#6f8a4f"); 
+  stroke("path",()=>1.2,"#b8a27a"); stroke("path",()=>0.7,"#c9b48a");
+  x.setLineDash([]);
+  // buildings: real footprints with roofs, shadow and a ridge
+  V.polys.filter(p=>p.k==="building").forEach((p,i)=>{ const r=p.r; if(r.length<3) return;
+    x.save(); x.translate(0.35*T,0.35*T); path(r,true); x.fillStyle="rgba(0,0,0,0.35)"; x.fill(); x.restore();
+    const roofs=["#8a4a3a","#6a6e76","#7a3a30","#5a5e66","#9a5a40"]; path(r,true); x.fillStyle=roofs[i%roofs.length]; x.fill(); x.lineWidth=1; x.strokeStyle="rgba(0,0,0,0.45)"; x.stroke();
+    let best=0,bi=0; for(let k=1;k<r.length;k++){ const d=Math.hypot(r[k][0]-r[k-1][0],r[k][1]-r[k-1][1]); if(d>best){ best=d; bi=k; } }
+    const cx=r.reduce((s,q)=>s+q[0],0)/r.length, cy=r.reduce((s,q)=>s+q[1],0)/r.length, ang=Math.atan2(r[bi][1]-r[bi-1][1],r[bi][0]-r[bi-1][0]);
+    x.strokeStyle="rgba(255,255,255,0.18)"; x.lineWidth=1.2; x.beginPath(); x.moveTo((cx-Math.cos(ang)*best*0.4)*T,(cy-Math.sin(ang)*best*0.4)*T); x.lineTo((cx+Math.cos(ang)*best*0.4)*T,(cy+Math.sin(ang)*best*0.4)*T); x.stroke(); });
 }
 function pdPaintTrees(x,W){
   const T=PD_TS, month=PD.env.month, bare=month===12||month<=3, autumn=month>=10&&month<=11;
@@ -4860,7 +4919,7 @@ function pdDraw(now){
 function pdDrawLight(x,S_,Z,w,h,rt){
   const R=PDR, lx=R.lx, L=PD._L||pdLights(), d=pdDaylight(PD.t), lw=R.lc.width, lh=R.lc.height, k=lw/w;
   if(d>=0.98) return;
-  const dusk=d>0.15&&d<0.75, A=Math.min(0.86,(1-d)*0.95);
+  const dusk=d>0.15&&d<0.75, A=Math.min(0.78,(1-d)*0.9);
   lx.globalCompositeOperation="source-over"; lx.clearRect(0,0,lw,lh);
   lx.fillStyle=dusk?`rgba(${30+d*40|0},${18+d*10|0},${40+d*10|0},${A})`:`rgba(6,12,30,${A})`; lx.fillRect(0,0,lw,lh);
   lx.globalCompositeOperation="destination-out";
@@ -5145,6 +5204,160 @@ function pdMissionTick(){ if(!PD.mission||PD.ended) return; const m=PD_CAMP.find
 function pdMissionEnd(){ if(!PD.mission) return; const m=PD_CAMP.find(x=>x.id===PD.mission), res=m.goals.map(g=>({n:g.n,ok:!PD.flags.mFail||PD.flags.mFail!==g.n?!!g.t():false})), ok=res.every(r=>r.ok)&&PD.ended.kind!=="failed";
   PD.ended.mission={id:m.id,t:m.t,ok,res,win:m.win}; if(ok){ const C=S.pd.camp=S.pd.camp||{}, first=!C[m.id]; C[m.id]={stars:Math.max(PD.ended.stars,(C[m.id]||{}).stars||0),date:todayISO()}; if(first) pdXP(150,"Mission complete: "+m.t); } }
 /* ============================================================
+   PITCH DARK: HIKE LAYER (walk a real GPX route on the real map, then camp)
+   Oregon Trail / 80 Days style: pace, rests, food, daylight, events by distance.
+   When you choose to camp, the detailed camp scene is built from OpenStreetMap
+   at that exact point. In the morning you carry on along the route.
+   ============================================================ */
+let PH=null, PH_MAP=null, PH_RAF=null, PH_LAST=0;
+const PH_PACE={stroll:{n:"Stroll",kmh:3,e:0.7,heat:4},steady:{n:"Steady",kmh:4,e:1,heat:8},push:{n:"Push",kmh:5,e:1.6,heat:13}};
+function phAt(km){ const P=PH.r.pts; let i=1; while(i<P.length-1&&P[i][3]<km) i++; const a=P[i-1], b=P[i], f=b[3]>a[3]?Math.max(0,Math.min(1,(km-a[3])/(b[3]-a[3]))):0;
+  return {lat:a[0]+(b[0]-a[0])*f,lon:a[1]+(b[1]-a[1])*f,ele:(a[2]??0)+((b[2]??0)-(a[2]??0))*f,i}; }
+function phSlope(km){ const a=phAt(km), b=phAt(Math.min(PH.r.distKm,km+0.25)); return (b.ele-a.ele)/250; }
+function phStart(r,classId,date){
+  const c=S.classes.find(x=>x.id===classId)||cls(), K=pdKit(c), p0=r.pts[0], sun=gmSun(p0[0],p0[1],date);
+  PH={v:1,r,classId,className:c.name,date,day:1,km:0,t:Math.round(Math.max(9*60,Math.min(sun.sunset*60-6*60,10*60))),pace:"steady",moving:false,speed:1,
+    b:{warmth:75,energy:92,dry:100,morale:72,hunger:0,thirst:90,feet:100,sweat:0},water:Math.max(0.5,K.waterCap||0.5),snacks:K.snacks+2,flask:K.flasks*2,
+    sunset:sun.sunset*60,sunrise:sun.sunrise*60+1440,env:null,nextEv:1.2+Math.random(),done:{},log:[],wpDone:{},camps:[],startKm:0};
+  phLog(`Day 1, ${pdHM(PH.t)}. ${r.name}: ${r.distKm.toFixed(1)} km, ↑${r.up} m. ${K.packKg.toFixed(1)} kg on your back. Sunset ${pdHM(PH.sunset)}.`);
+  fetchNight(p0[0],p0[1],p0[2]||50,date,{}).then(n=>{ if(!PH) return; const k=classify(n); PH.env={low:n.low,high:n.high,humid:n.humid,windAvg:n.windAvg,rain:k.rain,bugs:k.bugs,hours:n.hours}; if(n.sunset) PH.sunset=(+n.sunset.slice(11,13)+(+n.sunset.slice(14,16))/60)*60; }).catch(()=>{});
+  phOpen();
+}
+function phTemp(){ const e=PH.env, m=+PH.date.slice(5,7), [lo,hi]=e?[e.low,e.high]:GM_CLIMATE[m]; const h=(PH.t/60)%24; return lo+(hi-lo)*Math.max(0,Math.sin(Math.PI*(h-6)/16)); }
+function phLog(t,k="info"){ PH.log.push({t:PH.t,day:PH.day,text:t,k}); PH._new=true; }
+/* ---------- simulation ---------- */
+function phTick(dt){ // dt in game minutes
+  const b=PH.b, P=PH_PACE[PH.pace], K=pdKitCachedFor(PH.classId), dark=PH.t>PH.sunset+20||PH.t<PH.sunrise-1440+10;
+  PH.t+=dt;
+  if(PH.moving){
+    const sl=phSlope(PH.km), naismith=1/(1+Math.max(0,sl)*6+Math.max(0,-sl-0.08)*3), sp=P.kmh*naismith*(dark?(K.light?0.75:0.45):1)*(b.feet<35?0.7:1)*(b.energy<20?0.7:1);
+    PH.km=Math.min(PH.r.distKm,PH.km+sp*dt/60);
+    b.energy-=dt*0.06*P.e*(1+K.packKg/14)*(1+Math.max(0,sl)*8); b.feet-=dt*0.012*P.e*(K.socks?0.8:1); b.thirst-=dt*0.06*P.e; b.sweat=pdClamp(b.sweat+dt*(P.heat-6+phTemp()/4)*0.02);
+    b.warmth+=(Math.min(95,60+P.heat*2+phTemp()*1.2)-b.warmth)*0.02*dt;
+    if(PH.km>=PH.nextEv){ PH.nextEv=PH.km+1.6+Math.random()*1.8; phEvent(); }
+    const wp=(PH.r.wpts||[]).find(w=>!PH.wpDone[w.name]&&Math.abs(nearestKm(PH.r.pts,w)-PH.km)<0.15); if(wp){ PH.wpDone[wp.name]=1; phLog(`📍 You pass ${wp.name}.`,"moment"); }
+    if(PH.km>=PH.r.distKm){ PH.moving=false; phLog("🏁 End of the route.","moment"); phDialog({text:`You've walked the whole of ${PH.r.name}. ${PH.camps.length?`${PH.camps.length} night${PH.camps.length>1?"s":""} out on the way.`:""}`,choices:[{l:"Finish the hike",f:()=>phFinish(true)}]}); }
+  } else { b.warmth+=(Math.min(85,48+phTemp()*1.6-(b.sweat>40?8:0))-b.warmth)*0.02*dt; b.energy=Math.min(100,b.energy+dt*0.05); b.feet=Math.min(100,b.feet+dt*0.03); b.sweat=pdClamp(b.sweat-dt*0.08); }
+  b.hunger+=dt; if(b.hunger>240) b.energy-=dt*0.03; b.thirst=pdClamp(b.thirst-dt*0.015); if(b.thirst<25) b.energy-=dt*0.03;
+  b.morale+=((55+(b.energy-50)*0.3+(b.feet-60)*0.2-(b.hunger>240?10:0)-(phRain()?8:0)-(dark?10:0))-b.morale)*0.004*dt;
+  if(phRain()){ b.dry-=dt*(K.poncho||K.shelters.some(s=>+s.rain>=2)?0.03:0.18); }
+  ["warmth","energy","dry","morale","thirst","feet"].forEach(k=>b[k]=pdClamp(b[k]));
+  if(!PH.flags) PH.flags={};
+  if(PH.t>PH.sunset-75&&!PH.flags.duskWarn){ PH.flags.duskWarn=true; phLog(`🌆 About an hour of light left. Start thinking about where to camp. (${(PH.r.distKm-PH.km).toFixed(1)} km to go)`,"warn"); }
+  if(b.energy<=2){ PH.moving=false; phDialog({text:"Your legs have gone. You need to stop.",choices:[{l:"⛺ Camp right here",f:()=>phCamp()},{l:"🚕 Call it and get a lift home",f:()=>phFinish(false)}]}); }
+}
+function phRain(){ const e=PH.env; return !!(e&&e.rain>=1&&((PH.t/60)%24)>14&&Math.sin(PH.t/37)>0.3); }
+let PH_K=null; function pdKitCachedFor(id){ if(!PH_K||PH_K.c.id!==id) PH_K=pdKit(S.classes.find(x=>x.id===id)||cls()); return PH_K; }
+/* ---------- events on the trail ---------- */
+const PH_EVENTS=[
+ {id:"stile",t:"A tall wooden stile, slick with mud. With {kg} kg on your back.",c:[{l:"Pack off, pass it over, climb",e:{energy:-3,time:6}},{l:"Just go over with it on",r:0.35,bad:{feet:-8,morale:-8,msg:"You slip. Knee into the mud. Ow."},e:{energy:-2,time:2}}]},
+ {id:"mud",t:"The path turns into a field of churned mud.",c:[{l:"Go straight through",e:{dry:-12,energy:-5,feet:-6,time:10}},{l:"Skirt round the edge",e:{energy:-3,time:18}}]},
+ {id:"cows",t:"Cows in the next field, with calves. They've all turned to look at you.",c:[{l:"Walk calmly round the edge, no eye contact",e:{morale:-2,time:12}},{l:"Go back and find another way",e:{energy:-6,time:30,km:-0.3}},{l:"Straight through the middle",r:0.3,bad:{morale:-15,energy:-6,msg:"They follow you, then trot at you. You vault the gate with your heart going."},e:{time:4}}]},
+ {id:"walkers",t:"Two walkers coming the other way. \"Wild camping? Where are you headed?\"",c:[{l:"Stop for a chat",e:{morale:10,time:12},msg:"They tell you about a lovely spot further on. You feel better."},{l:"Smile, nod, keep moving",e:{time:1}}]},
+ {id:"wrongturn",t:"The path forks and the sign's been snapped off.",c:[{l:"Check the map properly",req:"map",e:{time:5},msg:"Left. Obviously left."},{l:"Guess: right looks right",r:0.5,bad:{energy:-8,morale:-8,time:25,msg:"It wasn't. Twenty minutes there and back."},e:{time:2}}]},
+ {id:"blister",t:"A hot spot on your heel. A blister is coming.",c:[{l:"Stop and tape it now",req:"firstaid",e:{time:8,feet:6},msg:"Tape on. Crisis averted."},{l:"Change into dry socks",req:"socks",e:{time:6,feet:10,dry:5}},{l:"Ignore it, push on",e:{feet:-22,morale:-4}}]},
+ {id:"pub",t:"A pub, right on the route, with a fire going inside.",c:[{l:"One pint and a packet of crisps",e:{morale:14,energy:6,time:40,hunger:-200,warmth:12},msg:"Worth every penny."},{l:"Fill your bottles at the bar",e:{time:8,water:9}},{l:"Walk past. Discipline.",e:{morale:-3}}]},
+ {id:"tap",t:"A water tap at the churchyard.",c:[{l:"Fill up",e:{time:5,water:9}},{l:"You're fine",e:{}}]},
+ {id:"view",t:"The path tops a rise and the whole Cheshire plain opens up, gold in the low light.",c:[{l:"Sit for five minutes",e:{morale:12,time:6,warmth:-3}},{l:"Photo and keep going",e:{morale:5,time:1}}]},
+ {id:"shower",t:"The sky goes dark grey. Rain coming, fast.",c:[{l:"Waterproof on now",req:"waterproof",e:{time:3},msg:"Snug and smug."},{l:"Shelter under a big oak and wait",e:{time:20,warmth:-5}},{l:"Keep going and get wet",e:{dry:-25,morale:-6}}]},
+ {id:"dog",t:"A loose dog barrels towards you, barking. No owner in sight.",c:[{l:"Stand still, arms in, talk calmly",e:{morale:-3,time:3},msg:"It sniffs you, decides you're boring, and trots off."},{l:"Throw it a biscuit",req:"snack",e:{snacks:-1,morale:4}}]},
+ {id:"farmer",t:"A farmer leans on a gate. \"Where are you off to with all that?\"",c:[{l:"\"Just walking the route, heading on before dark\"",e:{morale:2}},{l:"Ask if there's anywhere you could camp",r:0.45,good:{morale:12,msg:"\"Top of the long field, by the oak. Gone by eight, mind.\" A tip!"},e:{morale:-2},msg:"\"Not round here.\""}]},
+ {id:"hungry",cond:()=>PH.b.hunger>200,t:"Your stomach's growling and your legs feel heavy.",c:[{l:"Stop and eat",req:"snack",e:{snacks:-1,hunger:-999,energy:10,time:8}},{l:"Keep going",e:{energy:-5,morale:-5}}]},
+ {id:"flask",cond:()=>PH.flask>0&&phTemp()<8,t:"Your hands are cold and there's tea in the flask.",c:[{l:"Stop for a brew",e:{flask:-1,warmth:12,morale:8,time:8}},{l:"Save it for tonight",e:{}}]}
+];
+function phHas(req){ const K=pdKitCachedFor(PH.classId), c=K.c, own=n=>classLines(c).some(l=>n.test(l.it.name));
+  return {map:own(/map|compass|gps/i),firstaid:own(/first aid|plaster|blister|compeed/i),socks:K.socks,waterproof:!!K.poncho||own(/waterproof|jacket|poncho|shell/i),snack:PH.snacks>0}[req]??true; }
+function phEvent(){ const pool=PH_EVENTS.filter(e=>!PH.done[e.id]&&(!e.cond||e.cond())); if(!pool.length) return; const ev=pool[Math.floor(Math.random()*pool.length)]; PH.done[ev.id]=1; PH.moving=false;
+  phDialog({text:ev.t.replace("{kg}",pdKitCachedFor(PH.classId).packKg.toFixed(1)),choices:ev.c.map(ch=>({l:ch.l+(ch.req&&!phHas(ch.req)?` 🔒 (needs ${ {map:"a map or GPS",firstaid:"a first aid kit",socks:"spare socks",waterproof:"a waterproof",snack:"a snack"}[ch.req]})`:""),dis:ch.req&&!phHas(ch.req),f:()=>{
+    let e=ch.e, msg=ch.msg; if(ch.r!=null&&Math.random()<ch.r){ if(ch.bad){ e=Object.assign({},e,ch.bad); msg=ch.bad.msg; } if(ch.good){ e=Object.assign({},e,ch.good); msg=ch.good.msg; } }
+    const b=PH.b; ["energy","dry","morale","feet","warmth"].forEach(k=>{ if(e[k]) b[k]=pdClamp(b[k]+e[k]); }); if(e.hunger) b.hunger=Math.max(0,b.hunger+e.hunger); if(e.time) PH.t+=e.time; if(e.km) PH.km=Math.max(0,PH.km+e.km);
+    if(e.water) PH.water=Math.max(PH.water,pdKitCachedFor(PH.classId).waterCap||1); if(e.snacks) PH.snacks=Math.max(0,PH.snacks+e.snacks); if(e.flask) PH.flask=Math.max(0,PH.flask+e.flask);
+    phLog(msg||ch.l,"story"); PH.moving=true; }}))}); }
+/* ---------- camping: drop into the detailed camp scene here ---------- */
+async function phCamp(){
+  PH.moving=false; const here=phAt(PH.km); phHudMsg("Finding somewhere to camp… loading the map around you.");
+  try{ const A=pdAreaFor(here.lat,here.lon), D=A&&await pdAreaLoad(A); let els,elev;
+    if(D){ const cut=pdAreaCut(D,here.lat,here.lon); els=cut.els; elev=cut.elev; }
+    else { const [o,e]=await Promise.all([pdOverpass(pdAreaQuery(here.lat,here.lon),s=>phHudMsg(`Loading the map around you… ${s}s`)),pdElevGrid(here.lat,here.lon)]); els=o.elements; elev=e; }
+    const seed=Math.floor(Math.random()*1e9), W=pdFromOSM(here.lat,here.lon,els,elev,seed);
+    // enter from the direction the route arrives
+    const back=phAt(Math.max(0,PH.km-0.3)), cosl=Math.cos(here.lat*Math.PI/180), ang=Math.atan2(-(back.lat-here.lat)*110540,(back.lon-here.lon)*111320*cosl);
+    let best=null; W.entries.concat(pdBorderPassable(W)).forEach(e=>{ const a=Math.atan2(e[1]-PD_W/2,e[0]-PD_W/2), d=Math.abs(pdAng(a,ang)); if(!best||d<best.d) best={e,d}; }); if(best) W.entry=best.e.slice(0,2);
+    phStartCamp(W,seed);
+  }catch(err){ phHudMsg("Couldn't load the map here ("+err.message+"). Using a made-up spot."); const seed=Math.floor(Math.random()*1e9); phStartCamp(pdGenerate("towpath",seed),seed); }
+}
+function phStartCamp(W,seed){
+  const e=PH.env||{}, m=+PH.date.slice(5,7), [lo,hi]=e.low!=null?[e.low,e.high]:GM_CLIMATE[m];
+  const keep=PH; phClose();
+  PD=null; pdStart({classId:keep.classId,world:W,src:"real",wx:{low:lo,high:hi,humid:e.humid||85,windAvg:e.windAvg||8,rain:e.rain||0,bugs:e.bugs},date:keep.date,month:m,sunset:keep.sunset/60,sunrise:(keep.sunrise-1440)/60,diff:"normal",seed,label:`${keep.r.name}, km ${keep.km.toFixed(1)}`,walkInKm:keep.km-keep.startKm,routeName:keep.r.name});
+  PD.t=Math.max(PD.t,keep.t); Object.assign(PD.b,{warmth:keep.b.warmth,energy:keep.b.energy,dry:keep.b.dry,morale:keep.b.morale,hunger:keep.b.hunger,thirst:keep.b.thirst,sweat:keep.b.sweat});
+  PD.r.water=keep.water; PD.r.snacks=keep.snacks; PD.r.flask=keep.flask; PD.hike=keep; keep.camps.push({km:keep.km,day:keep.day});
+  pdMsg(`⛺ Day ${keep.day}, ${pdHM(PD.t)}. You leave the route at km ${keep.km.toFixed(1)} to find a pitch. ${(keep.r.distKm-keep.km).toFixed(1)} km still to go tomorrow.`,"story");
+  pdOpen();
+}
+function phResumeAfterCamp(){ // called from the morning report
+  const H=PD.hike; if(!H) return; H.day++; H.t=Math.round(PD.ended.t%1440); H.startKm=H.km; H.flags={};
+  Object.assign(H.b,{warmth:PD.b.warmth,energy:Math.min(100,PD.b.energy+15),dry:PD.b.dry,morale:Math.min(100,PD.b.morale+5),hunger:PD.b.hunger,thirst:PD.b.thirst,sweat:0});
+  H.water=PD.r.water; H.snacks=PD.r.snacks; H.flask=PD.r.flask; const p=phAt(H.km), sun=gmSun(p.lat,p.lon,addDays(H.date,H.day-1)); H.sunset=sun.sunset*60; H.sunrise=sun.sunrise*60+1440;
+  pdClose(); PD=null; PH=H; phLog(`Day ${H.day}, ${pdHM(H.t)}. Back on the route at km ${H.km.toFixed(1)}. ${(H.r.distKm-H.km).toFixed(1)} km to go.`,"story"); phOpen(); }
+function phFinish(done){ const H=PH; phClose(); PH=null; S.pdHikeSave=null;
+  const J=S.pd=S.pd||{runs:0,dawns:0,journal:[],best:{},ach:{},seen:{}}; const xp=Math.round(H.km*12+H.camps.length*60+(done?100:0)); J.xp=(J.xp||0)+xp; J.hikes=(J.hikes||0)+1; J.hikeKm=(J.hikeKm||0)+H.km;
+  J.journal.unshift({date:todayISO(),night:H.date,loc:"🥾 "+H.r.name,cls:H.className,kind:done?"dawn":"walkedhome",stars:done?Math.min(5,2+H.camps.length):1,grades:{},moments:[],line:`${H.km.toFixed(1)} of ${H.r.distKm.toFixed(1)} km over ${H.day} day${H.day>1?"s":""}.`}); save();
+  toast(`${done?"Hike complete":"Hike over"}: ${H.km.toFixed(1)} km, +${xp} XP`); renderPlay(); }
+/* ---------- screen ---------- */
+function phOpen(){
+  let root=pdEl("ph"); if(!root){ root=document.createElement("div"); root.id="ph"; root.className="pd ph"; document.body.appendChild(root); }
+  root.innerHTML=`<div id="phMap" class="ph-map"></div>
+   <div class="pd-top"><div class="pd-clock"><b id="phTime"></b><span id="phDay"></span></div><div class="pd-wx" id="phWx"></div><div class="grow"></div><button class="pd-ib" id="phSpd">⏩</button><button class="pd-ib" id="phMenu">☰</button></div>
+   <div class="ph-panel"><div class="ph-prog"><span id="phKm"></span><canvas id="phProf" width="600" height="60"></canvas></div>
+     <div class="pd-msg ph-msg" id="phMsg"></div>
+     <div class="ph-meters" id="phMeters"></div>
+     <div class="pd-bar ph-bar" id="phBar"></div></div>
+   <div class="pd-modal" id="phModal" hidden></div>`;
+  document.body.classList.add("pd-on");
+  PH_MAP&&PH_MAP.destroy(); const p=phAt(PH.km); PH_MAP=new GMap(pdEl("phMap"),{lat:p.lat,lon:p.lon,z:15,layer:(S.gameMap||{}).layer||"topo"});
+  pdEl("phSpd").onclick=()=>{ PH.speed=PH.speed===1?4:1; };
+  pdEl("phMenu").onclick=()=>phDialog({text:`${PH.r.name}. Day ${PH.day}, km ${PH.km.toFixed(1)} of ${PH.r.distKm.toFixed(1)}.`,choices:[{l:"▶ Resume",f:()=>{}},{l:"💾 Save and exit",f:()=>{ S.pdHikeSave=PH; save(); phClose(); PH=null; renderPlay(); }},{l:"🏳 End the hike here",f:()=>phFinish(false)}]});
+  pdEl("phBar").onclick=e=>{ const b=e.target.closest("[data-ph]"); if(!b) return; const id=b.dataset.ph, B=PH.b;
+    if(id==="go") PH.moving=!PH.moving; else if(PH_PACE[id]) PH.pace=id;
+    else if(id==="eat"&&PH.snacks>0){ PH.snacks--; B.hunger=0; B.energy=pdClamp(B.energy+10); PH.t+=6; phLog("🍫 Snack stop."); }
+    else if(id==="drink"&&PH.water>=0.2){ PH.water-=0.25; B.thirst=pdClamp(B.thirst+30); PH.t+=2; }
+    else if(id==="rest"){ PH.moving=false; PH.t+=20; B.energy=pdClamp(B.energy+8); B.feet=pdClamp(B.feet+6); B.warmth-=6; phLog("🪨 Twenty minutes' rest on a gate."); }
+    else if(id==="camp") phDialog({text:`Camp around here? You're at km ${PH.km.toFixed(1)}. It's ${pdHM(PH.t)}, sunset ${pdHM(PH.sunset)}. The detailed map of this spot will load.`,choices:[{l:"⛺ Find a pitch here",f:()=>phCamp()},{l:"Keep walking",f:()=>{}}]});
+    phHud(true); };
+  PH_LAST=performance.now(); cancelAnimationFrame(PH_RAF); PH_RAF=requestAnimationFrame(phLoop); phHud(true);
+}
+function phClose(){ cancelAnimationFrame(PH_RAF); PH_RAF=null; PH_MAP&&PH_MAP.destroy(); PH_MAP=null; const r=pdEl("ph"); if(r) r.remove(); document.body.classList.remove("pd-on"); }
+function phLoop(now){ if(!pdEl("ph")||!PH) return; const dt=Math.min(0.1,(now-PH_LAST)/1000); PH_LAST=now;
+  if(pdEl("phModal").hidden) phTick(dt*PH.speed*(PH.moving?1.2:0.6));
+  if(!PH._hudAt||now-PH._hudAt>150){ PH._hudAt=now; phHud(); }
+  PH_RAF=requestAnimationFrame(phLoop); }
+function phHudMsg(t){ const m=pdEl("phMsg")||pdEl("pdMsg"); if(m) m.textContent=t; }
+function phHud(force){
+  if(!PH||!pdEl("ph")) return; const b=PH.b, p=phAt(PH.km), T=phTemp();
+  pdEl("phTime").textContent=pdHM(PH.t); { const tt=PH.t%1440, ss=PH.sunset, sr=PH.sunrise-1440, d=tt>ss+60||tt<sr-30?0.35:tt>ss?1-0.65*(tt-ss)/60:tt<sr?0.35+0.65*(tt-(sr-30))/30:1; pdEl("phMap").style.filter=`brightness(${d.toFixed(2)}) saturate(${(0.5+d/2).toFixed(2)})`; } pdEl("phDay").textContent=`Day ${PH.day} · ${PH.moving?PH_PACE[PH.pace].n:"stopped"}`;
+  pdEl("phWx").innerHTML=`<span>${Math.round(T)}°C</span><span>${phRain()?"🌧️":PH.t>PH.sunset?"🌙":"⛅"}</span><span>🌅${pdHM(PH.sunset)}</span>`;
+  pdEl("phKm").innerHTML=`<b>${PH.km.toFixed(1)}</b> / ${PH.r.distKm.toFixed(1)} km · ${Math.round(p.ele)} m${phSlope(PH.km)>0.04?" ↗":phSlope(PH.km)<-0.04?" ↘":""}`;
+  const bar=(v,c,l)=>`<div title="${l}"><small>${l}</small><div class="pd-m ${c}"><i style="width:${pdClamp(v)}%"></i></div></div>`;
+  pdEl("phMeters").innerHTML=bar(b.warmth,"w","Warm")+bar(b.energy,"e","Energy")+bar(b.feet,"m","Feet")+bar(b.dry,"d","Dry")+`<div class="small">🥤${PH.water.toFixed(1)} 🍫${PH.snacks}${PH.flask?` ☕${PH.flask}`:""}${b.hunger>200?" 😋":""}${b.thirst<30?" 🥵":""}</div>`;
+  const last=PH.log[PH.log.length-1]; if(last&&(PH._new||force)){ PH._new=false; const m=pdEl("phMsg"); m.className="pd-msg ph-msg k-"+last.k; m.innerHTML=`<span class="pd-mt">${pdHM(last.t)}</span> ${esc(last.text)}`; }
+  const btn=(id,l,cls="")=>`<button class="pd-b ${cls}" data-ph="${id}">${l}</button>`;
+  const html=btn("go",PH.moving?"⏸ Stop":"▶ Walk",PH.moving?"":"pri")+["stroll","steady","push"].map(k=>btn(k,PH_PACE[k].n,PH.pace===k?"on":"")).join("")+btn("eat","🍫")+btn("drink","🥤")+btn("rest","🪨 Rest")+btn("camp","⛺ Camp",PH.t>PH.sunset-90?"pri":"");
+  if(html!==PH._bar){ PH._bar=html; pdEl("phBar").innerHTML=html; }
+  // map: route, walked part, you
+  if(PH_MAP){ const done=PH.r.pts.slice(0,p.i).map(q=>[q[0],q[1]]).concat([[p.lat,p.lon]]);
+    PH_MAP.lines=[{pts:PH.r.pts.map(q=>[q[0],q[1]]),color:"#ff7043",w:4,op:0.55,dash:"8 6"},{pts:done,color:"#ff7043",w:5}];
+    PH_MAP.marks=(PH.r.wpts||[]).map(w=>({lat:w.lat,lon:w.lon,icon:"•",r:5,color:"#ffb74d",fs:9})).concat(PH.camps.map(c=>{ const q=phAt(c.km); return {lat:q.lat,lon:q.lon,icon:"⛺",r:10,color:"#37474f",fs:11}; }),[{lat:p.lat,lon:p.lon,icon:"🚶",r:12,color:"#2e7d32"}]);
+    if(Math.hypot(PH_MAP.lat-p.lat,(PH_MAP.lon-p.lon)*0.6)>0.0012) PH_MAP.setView(p.lat,p.lon); else PH_MAP.render(); }
+  // elevation profile
+  const cv=pdEl("phProf"); if(cv&&(force||!PH._profAt||Math.abs(PH._profAt-PH.km)>0.05)){ PH._profAt=PH.km; const x=cv.getContext("2d"), P=PH.r.pts, es=P.map(q=>q[2]??0), lo=Math.min(...es), hi=Math.max(...es)+1, W=cv.width, Hh=cv.height;
+    x.clearRect(0,0,W,Hh); x.fillStyle="rgba(255,183,77,0.25)"; x.beginPath(); x.moveTo(0,Hh); P.forEach(q=>x.lineTo(q[3]/PH.r.distKm*W,Hh-((q[2]??0)-lo)/(hi-lo)*(Hh-8)-2)); x.lineTo(W,Hh); x.fill();
+    const X=PH.km/PH.r.distKm*W; x.fillStyle="rgba(255,112,67,0.5)"; x.fillRect(0,0,X,Hh); x.fillStyle="#fff"; x.fillRect(X-1,0,2,Hh); }
+}
+function phDialog(D){ const m=pdEl("phModal"); if(!m) return; m.hidden=false; PH.moving=false;
+  m.innerHTML=`<div class="pd-card pd-talk"><p class="pd-say">${esc(D.text)}</p>${D.choices.map((c,i)=>`<button class="pd-a" data-phc="${i}" ${c.dis?"disabled":""}><span>${esc(c.l)}</span></button>`).join("")}</div>`;
+  m.querySelectorAll("[data-phc]").forEach(b=>b.onclick=()=>{ m.hidden=true; D.choices[+b.dataset.phc].f(); phHud(true); }); }
+/* ============================================================
    PITCH DARK (game): UI, input, audio, start + end screens
    ============================================================ */
 let PD_RAF=null, PD_LAST=0, PD_HUDAT=0, PD_SAVEAT=0, PD_REAL=null;
@@ -5406,10 +5619,11 @@ function pdEndScreen(){
     ${E.contracts?`<h3>📋 Contracts</h3>${E.contracts.map(c=>`<div class="pd-con ${c.done?"done":""}"><span>${c.done?"✅":"❌"} ${esc(c.n)}</span><b>${c.done?"+"+c.xp:""}</b></div>`).join("")}`:""}
     ${pdKitReport()}
     <h3>📝 Night Notes</h3>${L.map((l,i)=>`<div class="item"><div class="nm"><span>${esc(l.t)}</span></div>${l.id?`<button class="tog pri" data-pdpack="${l.id}">+ Pack ${esc(l.n.replace(/\s*\(.*?\)\s*/g," ").slice(0,22))}</button>`:""}</div>`).join("")}
-    <div class="row" style="margin-top:12px;flex-wrap:wrap">${E.mission&&!E.mission.ok?`<button class="pri" id="pdRetry">↻ Retry mission</button>`:""}<button class="${E.mission&&!E.mission.ok?"":"pri"}" id="pdAgain">▶ ${E.mission&&E.mission.ok&&pdCampNext()?"Next mission":"Another night"}</button><button id="pdLog">📓 Log as practice night</button><button id="pdBack">Back to the app</button></div></div>`;
+    <div class="row" style="margin-top:12px;flex-wrap:wrap">${PD.hike&&E.kind==="dawn"&&PD.hike.km<PD.hike.r.distKm?`<button class="pri" id="phCont">🥾 Carry on: ${(PD.hike.r.distKm-PD.hike.km).toFixed(1)} km to go</button>`:""}${E.mission&&!E.mission.ok?`<button class="pri" id="pdRetry">↻ Retry mission</button>`:""}<button class="${E.mission&&!E.mission.ok?"":"pri"}" id="pdAgain">▶ ${E.mission&&E.mission.ok&&pdCampNext()?"Next mission":"Another night"}</button><button id="pdLog">📓 Log as practice night</button><button id="pdBack">Back to the app</button></div></div>`;
   pdMiniMap(pdEl("pdMini"));
   m.querySelectorAll("[data-pdpack]").forEach(b=>b.onclick=()=>{ const c=S.classes.find(x=>x.id===PD.classId); if(c){ c.items[b.dataset.pdpack]=1; save(); b.outerHTML=`<span class="chip ok">packed ✓</span>`; } });
   pdEl("pdAgain").onclick=()=>{ const nx=E.mission&&E.mission.ok&&pdCampNext(), cid=PD.classId; pdClose(); PD=null; if(nx){ pdStartMission(nx,cid); pdOpen(); } else renderPlay(); };
+  if(pdEl("phCont")) pdEl("phCont").onclick=()=>phResumeAfterCamp();
   if(pdEl("pdRetry")) pdEl("pdRetry").onclick=()=>{ const m=PD_CAMP.find(x=>x.id===E.mission.id), cid=PD.classId; pdClose(); PD=null; pdStartMission(m,cid); pdOpen(); };
   pdEl("pdLog").onclick=()=>{ const c=S.classes.find(x=>x.id===PD.classId)||cls(), t=thermal(Object.assign({},c,{wx:Object.assign({},c.wx,{low:Math.round(PD.env.low)})}),{noCalib:true}), mw=PD.stats.minW;
     S.trips.push({id:"t_"+Date.now().toString(36),date:todayISO(),loc:"🎮 "+PD.label,classId:c.id,className:c.name,low:Math.round(PD.env.low),felt:mw>=60?0:mw>=45?-1:-2,rating:t.rating,margin:t.margin,notes:`Practice night in Pitch Dark: ${PD_ENDS[PD.ended.kind][1]}, ${PD.ended.stars}★. Slept ${(PD.b.slept/60).toFixed(1)} h, lowest warmth ${Math.round(mw)}.`,weight:weights(c).pack,practice:true}); save();
@@ -5429,6 +5643,7 @@ function pdStartHTML(){
     <p class="small">Walk in at dusk, find a hidden spot, pitch, and get through the night. Dog walkers, farmers, foxes, frost and your own snoring are all against you. Your kit decides how warm, dry and hidden you are.</p></div>
    ${pdCampHTML()}
    ${pdRankHTML(J)}
+   ${S.pdHikeSave?`<div class="card row" style="justify-content:space-between"><span>🥾 Hike in progress: <b>${esc(S.pdHikeSave.r.name)}</b>, km ${S.pdHikeSave.km.toFixed(1)}</span><button class="pri" id="phResume">▶ Resume</button></div>`:""}
    ${S.pdSave&&S.pdSave.v===3?`<div class="card row" style="justify-content:space-between"><span>🌙 Night in progress: <b>${esc(S.pdSave.label)}</b>, ${pdHM(S.pdSave.t)}</span><button class="pri" id="pdResume">▶ Resume</button></div>`:""}
    <div class="card"><h3 style="margin-top:0">Where</h3><div class="pd-locs">${locs.map(([k,i,n,s])=>{ const need=PD_LOC_RANK[k]||0, lock=pdRank(J.xp||0).r<need; return lock?`<button class="pd-loc lock" disabled><span class="pd-li">🔒</span><b>${n}</b><small>Unlocks at rank ${need+1}: ${PD_RANKS[need]}</small></button>`:`<button class="pd-loc ${loc===k?"on":""}" data-pdloc="${k}"><span class="pd-li">${i}</span><b>${n}</b><small>${s}</small>${(J.best&&Object.keys(J.best).some(b=>b.startsWith(k+"|")))?`<em>${"★".repeat(Math.max(...Object.entries(J.best).filter(([b])=>b.startsWith(k+"|")).map(([,v])=>v.stars)))}</em>`:""}</button>`; }).join("")}</div>
      ${loc==="real"?pdRealHTML():""}</div>
@@ -5459,6 +5674,7 @@ function pdRealHTML(){
   return `<div style="margin-top:10px"><p class="small muted">Tap the map where you'd camp. The game builds the 400 m around it from real OpenStreetMap data: woods, hedges, water, paths, roads, buildings and height.</p>
     <div id="gmSetupMap" class="gmapbox"></div>
     <div class="row" style="margin-top:8px;flex-wrap:wrap"><label class="tog btn" style="cursor:pointer">📂 GPX route<input type="file" id="gmGpx" accept=".gpx,application/gpx+xml" hidden></label><button class="tog" id="gmNear">📍 Near me</button>${gmRouteFor(cls())?`<button class="tog" id="gmRouteEnd">⛺ Route end</button>`:""}</div>
+    ${gmRouteFor(cls())?`<div class="pd-hikecta"><b>🥾 ${esc(gmRouteFor(cls()).name)}</b> · ${gmRouteFor(cls()).distKm.toFixed(1)} km · ↑${gmRouteFor(cls()).up} m<br><small class="muted">Walk the whole route on the real map, in real hours, and camp wherever you choose. Long routes take more than one night.</small><br><button class="pri" id="phGo">🥾 Hike this route</button></div>`:`<p class="small muted">📂 Load a HiiKER GPX route above to hike it for real: walk it, then camp along the way.</p>`}
     <label style="margin-top:8px">Night of<select id="gmDate">${days}<option value="typical" ${M.date==="typical"?"selected":""}>Typical for this month</option></select></label>
     <div id="gmSite">${R?R.ready?gmSiteCard(R.site):R.err?`<div class="small warn" style="margin-top:8px">${esc(R.err)} <button class="tog" id="pdRetry">Try again</button></div>`:`<div class="small muted" style="margin-top:8px" id="pdLoadTxt">Fetching map data…</div>`:`<div class="small muted" style="margin-top:8px">No spot picked yet.</div>`}</div></div>`;
 }
@@ -5505,6 +5721,8 @@ document.addEventListener("click",e=>{
   if(b.id==="pdStory"){ e.preventDefault(); S.playMode="pd"; save(); renderPlay(); return; }
   if(b.id==="pdRetry"&&PD_REAL) return pdPickReal(PD_REAL.lat,PD_REAL.lon);
   if(b.id==="pdGen"&&PD_REAL){ PD_REAL.generated=PD_REAL.site&&PD_REAL.site.route==="moor"?"moor":"towpath"; PD_REAL.ready=true; PD_REAL.site=PD_REAL.site||{pitch:"hedge",sus:5,flags:{},lat:PD_REAL.lat,lon:PD_REAL.lon}; const g=$("#pdGo"); if(g) g.disabled=false; $("#gmSite").innerHTML=`<div class="small muted" style="margin-top:8px">Using a made-up area. The forecast and sunset are still real for this spot.</div>`; return; }
+  if(b.id==="phGo"){ const r=gmRouteFor(cls()), M=S.gameMap||{}; S.pdClass=$("#pdClass").value; save(); phStart(r,S.pdClass,M.date&&M.date!=="typical"?M.date:todayISO()); return; }
+  if(b.id==="phResume"){ PH=S.pdHikeSave; PH_K=null; phOpen(); return; }
   if(b.id==="pdResume"){ if(pdLoadSave()){ pdOpen(); } else { toast("Couldn't load that night"); renderPlay(); } return; }
   if(b.id==="pdGo"||b.id==="pdDaily"){
     const cid=$("#pdClass").value, diff=$("#pdDiff").value, loc=S.pdLoc||"towpath"; S.pdClass=cid; S.pdDiff=diff; S.pdSound=PDA.on; save(); PDA.on=S.pdSound!==false;
