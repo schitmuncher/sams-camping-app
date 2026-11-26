@@ -139,7 +139,7 @@ body.pd-on{overflow:hidden}
 .pd-top{position:absolute;left:0;right:0;top:0;display:flex;gap:6px;align-items:center;padding:calc(env(safe-area-inset-top) + 6px) 8px 6px;background:linear-gradient(#000c,#0000);pointer-events:none}
 .pd-top>*{pointer-events:auto}.pd-top .grow{flex:1;pointer-events:none}
 .pd-clock{display:flex;flex-direction:column;line-height:1.05;text-shadow:0 1px 3px #000}.pd-clock b{font-size:22px;font-variant-numeric:tabular-nums}.pd-clock span{font-size:11px;opacity:.85}
-.pd-wx{display:flex;gap:8px;font-size:13px;background:#0008;border-radius:10px;padding:4px 8px;margin-left:4px}.pd-arrow{display:inline-block;font-style:normal;margin-right:2px}
+.pd-wx{display:flex;gap:8px;white-space:nowrap;font-size:13px;background:#0008;border-radius:10px;padding:4px 8px;margin-left:4px}.pd-arrow{display:inline-block;font-style:normal;margin-right:2px}
 .pd-ib{width:38px;height:38px;padding:0;border-radius:10px;background:#0009;border:1px solid #fff2;color:#fff;font-size:17px}
 .pd-ib.on{background:#ffd27a55}
 .pd-left{position:absolute;left:6px;top:calc(env(safe-area-inset-top) + 58px);display:flex;flex-direction:column;gap:6px;pointer-events:none;width:74px}
@@ -179,6 +179,14 @@ body.pd-on{overflow:hidden}
 .pd-locs{display:grid;grid-template-columns:repeat(auto-fill,minmax(140px,1fr));gap:8px}
 .pd-loc{display:flex;flex-direction:column;align-items:flex-start;gap:2px;text-align:left;padding:10px;border-radius:14px;background:var(--panel2);border:2px solid transparent;color:inherit;position:relative}
 .pd-loc.on{border-color:#81c784;background:#1d3322}.pd-li{font-size:26px}.pd-loc small{opacity:.7;font-size:12px;line-height:1.3}.pd-loc em{position:absolute;right:8px;top:8px;color:#ffd27a;font-style:normal;font-size:12px}
+.pd-b.cam{background:#1565c0;border-color:#90caf9;animation:pdcam 1.2s infinite}@keyframes pdcam{50%{box-shadow:0 0 12px #90caf9}}
+.pd-a.locked{opacity:.85;border-style:dashed}.pd-a.locked .tog{padding:6px 8px;font-size:12px}
+.pd-con{display:flex;justify-content:space-between;gap:8px;padding:7px 10px;margin:4px 0;border-radius:10px;background:#1e2a36;font-size:14px}.pd-con.done{background:#1d3322}.pd-con small{opacity:.7}.pd-con b{color:#ffd27a}
+.pd-xp{background:#1a2230;border-radius:12px;padding:10px;margin:10px 0}.xpb{height:9px!important;margin:6px 0 2px}.xpb i{background:linear-gradient(90deg,#ffd27a,#ffb74d)!important}
+.pd-rank{background:linear-gradient(160deg,#1a1a30,#162416)!important}
+.pd-perks{display:flex;flex-direction:column;gap:6px;margin-top:8px}.pd-perk{display:flex;gap:10px;align-items:center;padding:8px;border-radius:10px;background:var(--panel2)}.pd-perk>div{flex:1}.pd-perk.on{border:1px solid #81c784}
+.pd-album{display:grid;grid-template-columns:repeat(auto-fill,minmax(100px,1fr));gap:6px;margin-top:8px}.pd-sp{display:flex;flex-direction:column;align-items:center;text-align:center;padding:8px 4px;border-radius:10px;background:var(--panel2);gap:2px}.pd-sp span{font-size:26px}.pd-sp small{font-size:10px;opacity:.75;line-height:1.3}.pd-sp.got{border:1px solid #ffd27a55}
+.pd-loc.lock{opacity:.5}
 .pd-j{padding:6px 0;border-bottom:1px solid var(--line)}
 .gdelta{white-space:nowrap;font-style:normal}.gach{display:grid;grid-template-columns:repeat(auto-fill,minmax(150px,1fr));gap:8px;margin-top:10px}.gach>div{background:var(--panel2);border-radius:10px;padding:8px;font-size:13px}
 .ggrades{display:grid;grid-template-columns:repeat(5,1fr);gap:6px;margin:12px 0}.gg{background:var(--panel2);border-radius:10px;padding:6px 2px;text-align:center;display:flex;flex-direction:column}.gg b{font-size:22px}.gg span{font-size:10px;color:var(--muted)}
@@ -3524,6 +3532,7 @@ function gSysLessons(add){
    ============================================================ */
 const GM_LAYERS={map:{url:"https://tile.openstreetmap.org/{z}/{x}/{y}.png",attr:"© OpenStreetMap contributors",max:19},
   topo:{url:"https://tile.opentopomap.org/{z}/{x}/{y}.png",attr:"© OpenStreetMap contributors, SRTM · style © OpenTopoMap (CC-BY-SA)",max:17}};
+const GM_FALLBACK=["https://{s}.basemaps.cartocdn.com/rastertiles/voyager/{z}/{x}/{y}.png","https://{s}.tile.openstreetmap.fr/osmfr/{z}/{x}/{y}.png"];
 const gmProj=(lat,lon,z)=>{const s=256*2**z, r=Math.PI/180, sl=Math.sin(lat*r);
   return [(lon+180)/360*s, (0.5-Math.log((1+sl)/(1-sl))/(4*Math.PI))*s];};
 const gmUnproj=(x,y,z)=>{const s=256*2**z, n=Math.PI-2*Math.PI*y/s;
@@ -3567,8 +3576,8 @@ class GMap{
     const [w,h]=this.size(), o=this.origin(), z=this.z, n=2**z, L=GM_LAYERS[this.layer];
     const x0=Math.floor(o[0]/256), y0=Math.floor(o[1]/256), x1=Math.floor((o[0]+w)/256), y1=Math.floor((o[1]+h)/256), keep=new Set();
     for(let x=x0;x<=x1;x++) for(let y=y0;y<=y1;y++){ if(y<0||y>=n) continue; const k=`${z}/${x}/${y}`; keep.add(k);
-      let t=this.tiles.get(k); if(!t){ t=document.createElement("img"); t.alt=""; t.draggable=false; t.decoding="async"; t.loading="eager"; t.referrerPolicy="strict-origin-when-cross-origin"; if(this.layer==="map") t.crossOrigin="anonymous";
-        t.src=L.url.replace("{z}",z).replace("{x}",((x%n)+n)%n).replace("{y}",y); t.onerror=()=>t.classList.add("err"); this.tl.appendChild(t); this.tiles.set(k,t); }
+      let t=this.tiles.get(k); if(!t){ t=document.createElement("img"); t.alt=""; t.draggable=false; t.decoding="async"; t.loading="eager"; t.referrerPolicy="strict-origin-when-cross-origin"; t.dataset.k=k; t.dataset.f="0";
+        t.src=L.url.replace("{z}",z).replace("{x}",((x%n)+n)%n).replace("{y}",y); t.onerror=()=>{ const f=+t.dataset.f; const alt=GM_FALLBACK[f]; if(alt){ t.dataset.f=f+1; const [zz,xx,yy]=t.dataset.k.split("/"); t.src=alt.replace("{z}",zz).replace("{x}",((+xx%n)+n)%n).replace("{y}",yy).replace("{s}","abc"[(+xx+ +yy)%3]); } else t.classList.add("err"); }; this.tl.appendChild(t); this.tiles.set(k,t); }
       t.style.transform=`translate(${Math.round(x*256-o[0])}px,${Math.round(y*256-o[1])}px)`; }
     this.tiles.forEach((t,k)=>{ if(!keep.has(k)){ t.remove(); this.tiles.delete(k);} });
     this.el.querySelector(".gm-attr").textContent=L.attr;
@@ -3607,8 +3616,7 @@ way${a(300)}["building"];
 way${a(600)}["landuse"~"^(farmyard|residential)$"];
 way${a(150)}["landuse"~"^(farmland|meadow|grass)$"];way${a(200)}["natural"~"^(heath|moor|grassland|scrub|fell)$"];
 node${a(900)}["amenity"~"^(pub|drinking_water)$"];node${a(4000)}["place"~"^(village|hamlet|town|suburb)$"];
-);out tags geom qt;
-is_in(${lat},${lon})->.a;(area.a["boundary"="national_park"];area.a["boundary"="protected_area"];area.a["designation"="access_land"];);out tags;`; }
+);out geom qt;`; }
 async function gmSurvey(lat,lon){
   const q=gmQuery(lat.toFixed(5),lon.toFixed(5));
   const ring=[[0,0],[0.0027,0],[-0.0027,0],[0,0.0045],[0,-0.0045]];
@@ -3629,7 +3637,7 @@ function gmAnalyse(lat,lon,els,elev){
   const cover=best(t=>/^(farmland|meadow|grass)$/.test(t.landuse||"")||/^(heath|moor|grassland|scrub|fell)$/.test(t.natural||""));
   const pub=best(t=>t.amenity==="pub"), tap=best(t=>t.amenity==="drinking_water"), village=best(t=>!!t.place);
   const areas=els.filter(e=>e.type==="area").map(e=>e.tags||{});
-  const park=areas.find(t=>t.boundary==="national_park")||areas.find(t=>t.boundary==="protected_area");
+  const park=areas.find(t=>t.boundary==="national_park")||areas.find(t=>t.boundary==="protected_area")||(lat>50.45&&lat<50.72&&lon>-4.15&&lon<-3.72?{name:"Dartmoor National Park"}:null);
   const access=areas.some(t=>t.designation==="access_land");
   const s=Object.assign(S0,{wood,water,path,road,bigRoad,house,farm,homes,cover,pub,tap,village,park:park?park.name||"a protected area":null,access});
   if(Array.isArray(elev)&&elev.length===5&&elev[0]!=null){ s.ele=Math.round(elev[0]); s.relief=Math.round(elev[0]-(elev[1]+elev[2]+elev[3]+elev[4])/4); }
@@ -3872,17 +3880,18 @@ function pdFill(W,ring,v,only){
     xs.sort((a,b)=>a-b); for(let k=0;k+1<xs.length;k+=2) for(let x=Math.max(x0,Math.ceil(xs[k]));x<=Math.min(x1,Math.floor(xs[k+1]));x++){ if(!only||only(W.t[pdIdx(x,y)])) W.t[pdIdx(x,y)]=v; } } }
 
 /* ---------- OpenStreetMap: fetch with timeouts and mirrors ---------- */
+const PD_OVERPASS_ERR=[];
 const PD_OVERPASS=["https://overpass-api.de/api/interpreter","https://overpass.private.coffee/api/interpreter","https://overpass.kumi.systems/api/interpreter"];
 async function pdOverpass(q,onTry){
   let last=null;
   for(let i=0;i<PD_OVERPASS.length;i++){
     const ctl=new AbortController(), timer=setTimeout(()=>ctl.abort(),i===0?14000:12000);
     onTry&&onTry(i);
-    try{ const r=await fetch(PD_OVERPASS[i],{method:"POST",body:"data="+encodeURIComponent(q),headers:{"Content-Type":"application/x-www-form-urlencoded"},signal:ctl.signal});
-      clearTimeout(timer); if(!r.ok) throw new Error("busy ("+r.status+")"); const j=await r.json(); if(!j||!Array.isArray(j.elements)) throw new Error("bad reply"); return j; }
-    catch(e){ clearTimeout(timer); last=e; }
+    try{ const r=await fetch(PD_OVERPASS[i]+"?data="+encodeURIComponent(q.replace(/\s+/g," ")),{signal:ctl.signal});
+      clearTimeout(timer); if(!r.ok) throw new Error("server "+(i+1)+" said "+r.status+(r.status===429?" (too many requests)":r.status===504?" (overloaded)":"")); const j=await r.json(); if(!j||!Array.isArray(j.elements)) throw new Error("server "+(i+1)+" sent a bad reply"); return j; }
+    catch(e){ clearTimeout(timer); last=e; PD_OVERPASS_ERR.push(e.name==="AbortError"?`server ${i+1} timed out`:(e.message||String(e))); }
   }
-  throw new Error("Couldn't reach the map data servers"+(last&&last.name==="AbortError"?" (too slow)":""));
+  throw new Error("Couldn't reach the map data servers ("+PD_OVERPASS_ERR.slice(-3).join("; ")+")");
 }
 function pdBBox(lat,lon){ const dLat=(PD_W*PD_TILE/2)/110540, dLon=(PD_W*PD_TILE/2)/(111320*Math.cos(lat*Math.PI/180)); return [lat-dLat,lon-dLon,lat+dLat,lon+dLon]; }
 function pdAreaQuery(lat,lon){ const [s,w,n,e]=pdBBox(lat,lon).map(v=>v.toFixed(5));
@@ -3891,8 +3900,7 @@ way["natural"];relation["natural"~"^(wood|water|wetland|heath|scrub)$"];
 way["landuse"];relation["landuse"~"^(forest|farmland|meadow|grass)$"];
 way["waterway"];way["highway"];way["barrier"~"^(hedge|wall|fence|retaining_wall)$"];way["building"];way["leisure"~"^(park|nature_reserve|garden|pitch)$"];
 node["natural"="tree"];node["amenity"~"^(bench|pub|drinking_water|parking)$"];node["natural"~"^(peak|rock)$"];node["man_made"="survey_point"];node["place"];
-);out tags geom qt;
-is_in(${lat.toFixed(5)},${lon.toFixed(5)})->.a;(area.a["boundary"="national_park"];area.a["boundary"="protected_area"];area.a["designation"="access_land"];);out tags;`; }
+);out geom qt;`; }
 async function pdElevGrid(lat,lon){
   const [s,w,n,e]=pdBBox(lat,lon), N=7, la=[], lo=[];
   for(let j=0;j<N;j++) for(let i=0;i<N;i++){ la.push((n-(n-s)*j/(N-1)).toFixed(5)); lo.push((w+(e-w)*i/(N-1)).toFixed(5)); }
@@ -3973,8 +3981,7 @@ function pdFromOSM(lat,lon,els,elev,seed){
   const place=nodes.find(n=>(n.tags||{}).place&&n.tags.name); if(place) W.names.place=place.tags.name;
   const path=ways.find(e=>/^(footway|path|bridleway|track)$/.test((e.tags||{}).highway||"")&&e.tags.name); if(path) W.names.path=path.tags.name;
   const road=ways.find(e=>/^(residential|unclassified|tertiary|secondary|primary)/.test((e.tags||{}).highway||"")&&e.tags.name); if(road) W.names.road=road.tags.name;
-  const areas=els.filter(e=>e.type==="area").map(e=>e.tags||{});
-  const park=areas.find(t=>t.boundary==="national_park"); W.flags.park=park?park.name||"a national park":null; W.flags.legal=/dartmoor/i.test(W.flags.park||"");
+  const dm=lat>50.45&&lat<50.72&&lon>-4.15&&lon<-3.72; W.flags.park=dm?"Dartmoor National Park":null; W.flags.legal=dm;
   W.flags.moor=W.flags.legal||pdCount(W,PD_T.HEATH)>PD_W*PD_W*0.25;
   W.spot=[PD_W/2,PD_W/2]; W.label=W.names.place||W.names.wood||W.names.water||"your spot";
   pdFinish(W,R); return W;
@@ -4176,8 +4183,10 @@ function pdStart(o){
   // already-worn layers from the class
   Object.keys(c.worn||{}).forEach(id=>{ const it=item(id); if(it&&it.kind==="layer") PD.p.worn[id]=1; });
   if(!Object.keys(PD.p.worn).length&&K.layers.length) PD.p.worn[K.layers[K.layers.length-1].id]=1;
-  pdSchedule(R);
+  PD.challenge=o.challenge||null;
+  pdSchedule(R); pdMetaInit(R);
   pdMsg(o.intro||pdIntro(K),"story");
+  setTimeout(()=>PD&&PD.meta&&pdMsg("📋 Tonight's contracts: "+PD.meta.contracts.map(c=>PD_CONTRACTS[c.id].n(c.arg)).join(" · ")+". Tap 🗺 to see them.","info"),30);
   if(!(S.pdTips&&S.pdTips.walk)) setTimeout(()=>PD&&pdTip("walk","Tap the map to walk. Paths and roads are where people go. Find cover away from them: woods, hedge corners, scrub. Then ⛺ Pitch here."),50);
   pdThermalCache(true);
   return PD;
@@ -4281,7 +4290,7 @@ function pdBody(dt){
   const b=PD.b, p=PD.p, e=PD.env, inBag=p.state==="shelter"||p.state==="sleep", K=pdKitCached();
   const moving=p.path.length>0, busy=!!p.busy;
   let target;
-  if(inBag){ const th=pdThermalCache(); target=70+th.margin*4; }
+  if(inBag){ const th=pdThermalCache(); target=70+th.margin*4; if(PD.stats.minMargin==null||th.margin<PD.stats.minMargin){ PD.stats.minMargin=th.margin; PD.stats.minMarginAt=PD.t; PD.stats.minMarginT=th.T; } }
   else {
     const T=pdTemp(PD.t), wind=pdWindNow()*pdWindShelter(PDW,p.x,p.y,e.windDir), chill=Math.min(8,wind/3);
     const wet=pdRaining()&&!(K.poncho||K.shelters.some(s=>+s.rain>=2))?4:0;
@@ -4291,7 +4300,7 @@ function pdBody(dt){
     if(moving&&margin>4) b.sweat=pdClamp(b.sweat+dt*(margin-4)*0.35); else b.sweat=pdClamp(b.sweat-dt*0.12);
     if(wet) b.dry=pdClamp(b.dry-dt*0.25);
   }
-  if(PD.t<b.heatUntil) target+=8;
+  if(PD.t<b.heatUntil) target+=8; target+=2*pdPerk("warm");
   if(b.hunger>360) target-=4; if(b.sweat>30) target-=(b.sweat-30)/8; if(b.dry<50) target-=(50-b.dry)/6;
   if(PD.camp&&PD.camp.site.damp>0.5&&inBag) target-=3;
   target=pdClamp(target,2,100);
@@ -4299,18 +4308,22 @@ function pdBody(dt){
   if(inBag&&target>92){ b.sweat=pdClamp(b.sweat+dt*0.15); }
   // energy, hunger, thirst, bladder
   const sleeping=p.state==="sleep";
-  const sleepQ=sleeping?(b.warmth>=52?1:b.warmth>=42?0.6:b.warmth>=36?0.25:0)*(PD.camp?0.75+PD.camp.site.comfort*0.25:0.6)*(b.bladder>92?0.2:1):0;
+  const sleepQ=sleeping?(b.warmth>=52?1:b.warmth>=42?0.6:b.warmth>=36?0.25:0)*(PD.camp?0.7+pdComfort().n*0.07:0.6)*(b.bladder>92?0.2:1):0;
   b.energy=pdClamp(b.energy+dt*(sleeping?0.2*sleepQ:moving?-(0.05+PD_K.packKg*0.006)*(PD_TP[pdAt(PDW,p.x,p.y)].c):-0.025)-(b.thirst<25?dt*0.03:0));
   b.slept+=sleeping?dt*sleepQ:0;
-  b.hunger+=dt; b.thirst=pdClamp(b.thirst-dt*(moving?0.06:0.02)); b.bladder=pdClamp(b.bladder+dt*(0.045+(pdTemp(PD.t)<5?0.015:0)));
+  b.hunger+=dt; b.thirst=pdClamp(b.thirst-dt*(moving?0.06:0.02)); b.bladder=pdClamp(b.bladder+dt*(0.045+(pdTemp(PD.t)<5?0.015:0))*(1-0.25*pdPerk("bladder")));
   if(inBag&&PD.camp&&["bivvy","tent"].includes(PD.camp.type)&&!PD.camp.vented&&e.humid>=80) b.dry=pdClamp(b.dry-dt*0.02);
   if(pdRaining()&&inBag&&PD.camp){ const prot=Math.max(...PD.camp.sh.map(id=>+(item(id)||{}).rain||0))+(PD.camp.awning?1:0); if(prot<2) b.dry=pdClamp(b.dry-dt*(2-prot)*0.08); }
   // morale drifts toward comfort
-  let mood=55+(b.warmth-55)*0.4+(b.dry-70)*0.2+(b.energy-50)*0.1-(b.hunger>360?8:0)-(b.bladder>85?6:0);
+  let mood=55+(PD.camp&&inBag?pdComfort().n*2:0)+(b.warmth-55)*0.4+(b.dry-70)*0.2+(b.energy-50)*0.1-(b.hunger>360?8:0)-(b.bladder>85?6:0);
   if(e.bugs>=1&&!p.headnet&&(PD.t<e.sunset+90||PD.t>e.sunrise-60)&&pdNearWater(p.x,p.y,18)&&!(inBag&&PD.camp&&PD.camp.sh.some(id=>(+(item(id)||{}).bug||0)>=2))) mood-=e.bugs*12;
   b.morale+=(pdClamp(mood)-b.morale)*(1-Math.exp(-dt/90));
   PD.stats.minW=Math.min(PD.stats.minW,b.warmth);
 }
+function pdComfort(){ const c=PD.camp; if(!c) return {n:0,why:[]}; const s=c.site, why=[]; let n=0;
+  if(s.hidden>=70){ n++; why.push("well hidden"); } if(s.wind<0.45){ n++; why.push("out of the wind"); } if(s.comfort>=0.75){ n++; why.push("flat, comfy ground"); } if(s.damp<0.4||c.awning){ n++; why.push(c.awning?"awning up":"dry spot"); }
+  if(c.stashed&&(c.vented||PD.env.humid<80)){ n++; why.push("camp sorted"); } if(Math.abs(pdAng(c.door,PD.env.windDir))<0.8){ n=Math.max(0,n-1); why.push("door faces the wind (−1)"); }
+  return {n:Math.min(5,n),why}; }
 function pdNearWater(x,y,r){ for(let a=0;a<12;a++) for(let d=2;d<=r;d+=4) if(pdAt(PDW,x+Math.cos(a/12*6.283)*d,y+Math.sin(a/12*6.283)*d)===PD_T.WATER) return true; return false; }
 
 /* ---------- lights and visibility ---------- */
@@ -4332,7 +4345,8 @@ function pdPlayerVis(L){
   let base=1; if(inCamp){ const c=PD.camp; base=0.22+[0.05,0.15,0.3,0.5][Math.min(3,c.vis)]+({bivvy:0,poncho:0.05,tarp:0.1,tent:0.2,hammock:0.25}[c.type]||0.1); if(c.hidden) base*=0.6; }
   else if(p.sneak) base=0.55; if(!inCamp&&!p.sneak&&p.path.length) base*=1.25;
   const light=pdLightAt(p.x,p.y,L,"player")+(p.torch==="white"&&p.state!=="sleep"?0.25:0);
-  return {v:Math.min(1.5,light*(1-cover*0.85)*base),beacon:p.state!=="sleep"&&PD.r.torch>0?(p.torch==="white"?1:p.torch==="red"?0.12:0):0,cover,light};
+  if(p.prone&&!inCamp) base*=0.45;
+  return {v:Math.min(1.5,light*(1-cover*0.85)*(1-0.12*pdPerk("ghost")*cover)*base),beacon:p.state!=="sleep"&&PD.r.torch>0?(p.torch==="white"?1:p.torch==="red"?0.12:0):0,cover,light};
 }
 
 /* ---------- noise ---------- */
@@ -4341,7 +4355,7 @@ function pdNoise_(x,y,r,src,kind,label){
   if(src==="player"){ PD.npcs.forEach(n=>{ if(!n.person||n.state==="leave"||n.state==="confront") return; const d=pdDist(n,{x,y}); if(d<r*(n.k==="keeper"?1.4:1)){ const ch=(1-d/r)*(n.k==="keeper"||n.k==="farmer"?1:0.7);
         if(pdRand()<ch){ n.notice=Math.max(n.notice,0.25); if(n.state!=="investigate"&&n.state!=="search"){ n.state="investigate"; n.goal={x,y}; n.path=pdPath(n.x,n.y,x,y,"npc")||[]; PD.stats.heard++; pdMsg(`${pdWho(n)} stops. Did they hear that?`,"warn",Math.atan2(n.y-PD.p.y,n.x-PD.p.x)); } } } });
     PD.animals.forEach(a=>{ if(pdDist(a,{x,y})<r*1.3&&["deer","fox","badger","pony","cow"].includes(a.k)&&a.state!=="flee"){ a.state="flee"; a.path=[]; } }); }
-  else if(PD.p.state==="sleep"){ const d=Math.hypot(x-PD.p.x,y-PD.p.y); if(d<r*1.1) pdWake(label||"a noise", Math.atan2(y-PD.p.y,x-PD.p.x)); }
+  else if(PD.p.state==="sleep"){ const d=Math.hypot(x-PD.p.x,y-PD.p.y); if(d<r*(1.1-0.35*pdPerk("sleep"))) pdWake(label||"a noise", Math.atan2(y-PD.p.y,x-PD.p.x)); }
 }
 const pdWho=n=>({walker:n.boater?"The boater":"The dog walker",jogger:"The jogger",farmer:"The farmer",keeper:"The gamekeeper",teens:"One of the lads",angler:"The angler",landowner:"The farmer"}[n.k]||"Someone");
 function pdWake(why,dir){ if(PD.p.state!=="sleep") return; setTimeout(()=>PD&&pdTip("wake","Woken up. Deal with it (layers, food, a wee, check the noise) or just tap 💤 Sleep again."),20); PD.p.state="shelter"; PD.lastWake={why,t:PD.t}; PD.stats.disturb++; PD.speed="walk"; pdMsg(`You wake: ${why}.`,"warn",dir); }
@@ -4380,6 +4394,12 @@ function pdSpawn(s){
     case"ponies": for(let i=0;i<5;i++) addA({k:"pony",x:20+pdRand()*60,y:20+pdRand()*60,path:[],speed:4,state:"graze",ttl:1e9,col:["#5a3a22","#2a1a10","#8a6a4a"][i%3]}); break;
     case"cattle":{ let f=null; for(let k=0;k<400&&!f;k++){ const x=10+Math.floor(pdRand()*80), y=10+Math.floor(pdRand()*80), t=W.t[pdIdx(x,y)]; if((t===PD_T.GRASS||t===PD_T.MEADOW)&&Math.hypot(x-W.entry[0],y-W.entry[1])>20) f=[x,y]; }
       if(f) for(let i=0;i<7;i++) addA({k:"cow",x:f[0]+pdRand()*8-4,y:f[1]+pdRand()*8-4,path:[],speed:5,state:"graze",ttl:1e9,home:f}); break; }
+    case"bats":{ const c=PDW.trees.filter(t=>Math.hypot(t.x-PD.p.x,t.y-PD.p.y)<35)[0]||{x:PD.p.x+8,y:PD.p.y-6}; for(let i=0;i<3;i++) addA({k:"bat",x:c.x,y:c.y,cx:c.x+pdRand()*6-3,cy:c.y+pdRand()*6-3,ph:pdRand()*6,speed:0,state:"fly",ttl:PD.t+70,path:[]}); break; }
+    case"hedgehog":{ let s=null; for(let k=0;k<400&&!s;k++){ const i=Math.floor(pdRand()*W.t.length), x=i%PD_W, y=(i/PD_W)|0; if(PD_TP[W.t[i]].p&&W.t[i]!==PD_T.ROAD&&[[1,0],[-1,0],[0,1],[0,-1]].some(([a,b])=>pdAt(W,x+a,y+b)===PD_T.HEDGE||pdAt(W,x+a,y+b)===PD_T.GARDEN)&&Math.hypot(x-PD.p.x,y-PD.p.y)<45) s=[x+0.5,y+0.5]; } if(s) addA({k:"hedgehog",x:s[0],y:s[1],path:[],speed:3,state:"wander",ttl:PD.t+120}); break; }
+    case"hare":{ let s=null; for(let k=0;k<400&&!s;k++){ const i=Math.floor(pdRand()*W.t.length); if([PD_T.CROP,PD_T.GRASS,PD_T.MEADOW].includes(W.t[i])) s=[i%PD_W+0.5,((i/PD_W)|0)+0.5]; } if(s) addA({k:"hare",x:s[0],y:s[1],path:[],speed:30,state:"graze",ttl:PD.t+90}); break; }
+    case"heron":{ const bank=[]; for(let y=1;y<PD_W-1;y+=2) for(let x=1;x<PD_W-1;x+=2) if(W.t[pdIdx(x,y)]!==PD_T.WATER&&PD_TP[W.t[pdIdx(x,y)]].p&&[[1,0],[-1,0],[0,1],[0,-1]].some(([a,b])=>W.t[pdIdx(x+a,y+b)]===PD_T.WATER)) bank.push([x,y]); if(bank.length){ const b=bank[Math.floor(pdRand()*bank.length)]; addA({k:"heron",x:b[0]+0.5,y:b[1]+0.5,path:[],speed:30,state:"stand",ttl:PD.t+600}); } break; }
+    case"tawny":{ const ts=W.trees.filter(t=>pdAt(W,t.x,t.y)===PD_T.WOOD&&Math.hypot(t.x-PD.p.x,t.y-PD.p.y)<40); const t=ts[Math.floor(pdRand()*ts.length)]; if(t){ addA({k:"tawny",x:t.x,y:t.y,path:[],speed:0,state:"perch",ttl:PD.t+45}); pdNoise_(t.x,t.y,22,"animal","owl","a tawny owl, close"); pdAudio("owl",t); } break; }
+    case"sheep":{ for(let i=0;i<8;i++){ const x=30+pdRand()*40, y=50+pdRand()*30; if(PD_TP[pdAt(W,x,y)].p) addA({k:"sheep",x,y,path:[],speed:5,state:"graze",ttl:1e9,home:[x,y]}); } break; }
     case"chorus": pdNoise_(PD.p.x+8,PD.p.y-6,40,"animal","birds","the dawn chorus"); pdMoment("chorus","Dawn chorus: a robin, then a blackbird, then everything at once.",4); break;
     case"engine": { const b=W.objs.find(o=>o.k==="boat"); if(b) pdNoise_(b.x,b.y,34,"npc","engine","a boat engine coughing into life"); break; }
     case"kingfisher": PD.flags.kingfisher=PD.t+6; break;
@@ -4438,6 +4458,12 @@ function pdAnimals(dt,L){
   const p=PD.p;
   for(const a of PD.animals){
     if(a.k==="barnowl"){ a.x+=a.speed*dt; a.y+=Math.sin(a.x/6)*0.3; if(a.x>PD_W+3) a.gone=true; if(Math.abs(a.x-p.x)<12&&p.state!=="sleep") pdMoment("barnowl","A barn owl drifts over the field, white and completely silent."); continue; }
+    if(a.k==="bat"){ a.ph+=dt*9; a.x=a.cx+Math.cos(a.ph)*3+Math.cos(a.ph*2.3)*1.5; a.y=a.cy+Math.sin(a.ph*1.3)*2.5; a.dir=a.ph+Math.PI/2; if(PD.t>a.ttl) a.gone=true; continue; }
+    if(a.k==="tawny"){ a.dir=Math.sin(PD.t/3)*0.6; if(PD.t>a.ttl) a.gone=true; continue; }
+    if(a.k==="heron"&&a.state==="stand"){ a.dir=Math.PI*0.25; if(Math.hypot(p.x-a.x,p.y-a.y)<8&&!p.prone&&p.state==="free"){ a.state="flee"; pdMsg("A heron lifts off the bank with a hoarse croak, legs trailing.","info"); } if(PD.t>a.ttl) a.gone=true; continue; }
+    if(a.k==="hedgehog"){ if(!a.path.length) a.path=pdPath(a.x,a.y,a.x+pdRand()*10-5,a.y+pdRand()*10-5,"player")||[]; pdMoveAlong(a,dt); if(PD.t>a.ttl) a.gone=true; continue; }
+    if(a.k==="hare"){ if(Math.hypot(p.x-a.x,p.y-a.y)<12&&p.path.length&&!p.sneak){ a.state="flee"; } else { if(!a.path.length&&pdRand()<dt*0.3) a.path=[[a.x+pdRand()*6-3,a.y+pdRand()*6-3]]; pdMoveAlong(a,dt*0.15); if(PD.t>a.ttl) a.state="flee"; continue; } }
+    if(a.k==="sheep"){ if(!a.path.length&&pdRand()<dt*0.2) a.path=pdPath(a.x,a.y,a.home[0]+pdRand()*12-6,a.home[1]+pdRand()*12-6,"player")||[]; pdMoveAlong(a,dt*0.5); continue; }
     if(a.state==="flee"){ if(!a.path.length){ const ang=Math.atan2(a.y-p.y,a.x-p.x); a.path=[[a.x+Math.cos(ang)*25,a.y+Math.sin(ang)*25]]; } pdMoveAlong(a,dt*3); if(!a.path.length) a.gone=a.k!=="pony"&&a.k!=="cow"; if(!a.gone&&!a.path.length) a.state="graze"; continue; }
     const dp=Math.hypot(p.x-a.x,p.y-a.y);
     if(a.k==="fox"){ const food=PD.camp&&!PD.camp.stashed&&PD.r.snacks>0;
@@ -4486,17 +4512,17 @@ function pdConfront(n){
 }
 function pdChoose(i){
   const D=PD.dialog; if(!D) return; const ch=D.choices[i], n=PD.npcs.find(x=>x.id===D.npc), e=ch.e||{};
-  PD.heat=pdClamp(PD.heat+(e.heat||0)); PD.b.morale=pdClamp(PD.b.morale+(e.morale||0)); if(e.snack) PD.r.snacks=Math.max(0,PD.r.snacks+e.snack);
+  PD.heat=pdClamp(PD.heat+(e.heat||0)-(pdPerk("talk")&&e.heat<0?8:0)); PD.b.morale=pdClamp(PD.b.morale+(e.morale||0)); if(e.snack) PD.r.snacks=Math.max(0,PD.r.snacks+e.snack);
   if(e.local&&n&&n.local){ S.gameLocals=S.gameLocals||{}; S.gameLocals[n.local]=pdClamp((S.gameLocals[n.local]||0)+e.local,-3,5); }
   let res=ch.r;
-  if(e.ask){ const ok=pdRand()<(0.35+((S.gameLocals||{})[n&&n.local]||0)*0.15+(PD.stats.lnt>=4?0.1:0)); res=ok?"A long pause. \"Gone by seven. And I mean gone.\" You can stay.":"\"No. Pack up and go.\" Not up for discussion."; if(!ok){ e.mustMove=true; PD.heat=pdClamp(PD.heat+10); } }
+  if(e.ask){ const ok=pdRand()<(0.35+0.2*pdPerk("talk")+((S.gameLocals||{})[n&&n.local]||0)*0.15+(PD.stats.lnt>=4?0.1:0)); res=ok?"A long pause. \"Gone by seven. And I mean gone.\" You can stay.":"\"No. Pack up and go.\" Not up for discussion."; if(!ok){ e.mustMove=true; PD.heat=pdClamp(PD.heat+10); } }
   if(e.mustMove){ PD.flags.mustMove={at:PD.t,from:PD.camp?[PD.camp.x,PD.camp.y]:[PD.p.x,PD.p.y],by:PD.t+60,who:n?n.k:"farmer"}; res+=" You need to pack up and move well away (or walk out) within the hour."; }
   if(n){ n.state="leave"; n.spotted=true; const ex=pdEdgeFor(n.k==="car"?"car":"walker"); n.path=pdPath(n.x,n.y,ex[0]+0.5,ex[1]+0.5,"npc")||[]; PD.npcs.filter(d=>d.owner===n.id).forEach(d=>d.state="heel"); }
   pdMsg(res,"story"); PD.dialog=null;
 }
 
 /* ---------- player actions ---------- */
-function pdWalkTo(x,y){ const p=PD.p; if(p.busy||PD.dialog||PD.ended) return false; if(p.state!=="free"){ pdMsg("You're in your shelter. Get out first.","info"); return false; }
+function pdWalkTo(x,y){ const p=PD.p; if(p.prone){ p.prone=false; } if(p.busy||PD.dialog||PD.ended) return false; if(p.state!=="free"){ pdMsg("You're in your shelter. Get out first.","info"); return false; }
   const path=pdPath(p.x,p.y,x,y,"player"); if(!path||!path.length) { pdMsg("You can't get there from here.","info"); return false; } p.path=path; return true; }
 function pdBusy(label,mins,act,o={}){ PD.p.busy=Object.assign({label,until:PD.t+mins,start:PD.t,act},o); PD.p.path=[]; }
 function pdAction(id,arg){
@@ -4507,6 +4533,10 @@ function pdAction(id,arg){
   switch(id){
     case"cancel": if(p.busy&&p.busy.act!=="pitch"&&p.busy.act!=="pack") p.busy=null; break;
     case"sneak": p.sneak=!p.sneak; break;
+    case"prone": if(inCamp) return; p.prone=!p.prone; p.path=[]; if(p.prone) pdMsg("You drop flat in the grass and keep still.","info"); break;
+    case"photo": pdTakePhoto(); break;
+    case"geo": { const g=PD.meta&&PD.meta.cache; if(!g) return pdMsg("No geocaches listed round here.","info"); if(PD.meta.cacheFound) return pdMsg("Already found tonight's cache.","info"); if(r.phone<=2) return pdMsg("Phone's dead.","warn"); r.phone-=2; PD.flags.phoneUntil=PD.t+2; const d=Math.hypot(g.x-p.x,g.y-p.y)*PD_TILE, a=Math.atan2(g.y-p.y,g.x-p.x), dirs=["east","south-east","south","south-west","west","north-west","north","north-east"], dn=dirs[((Math.round(a/(Math.PI/4))%8)+8)%8];
+      pdMsg(`📡 Geocache: ${Math.round(d/5)*5} m ${dn}.${d<40?" GPS is wobbling now, so look around trees, walls and rocks.":""}`,"info"); break; }
     case"torch": { if(!K.light) return pdMsg("You didn't bring a torch.","info"); if(r.torch<=0) return pdMsg("The torch is flat.","info"); p.torch=p.torch==="off"?"white":p.torch==="white"&&K.red?"red":"off"; break; }
     case"pitch": { if(c) return pdMsg("You've already pitched.","info"); const site=pdSite(PDW,p.x-0.5,p.y-0.5,PD.env); if(!site.ok) return pdMsg(site.why,"info");
       const sh=arg&&arg.sh||[K.main&&K.main.id].filter(Boolean); if(!sh.length) return pdMsg("You've no shelter in this kit. You'll be sleeping out in the open.","info");
@@ -4514,7 +4544,7 @@ function pdAction(id,arg){
       if(type==="hammock"&&!site.hammock){ if(!(arg&&arg.ground)) { pdMsg("No pair of trees the right distance apart for the hammock. Pitch again to lie it on the ground like a bivvy (cold underneath), or find two trees about 4 m apart.","warn"); PD.flags.hammockGround=true; return; } }
       const base={bivvy:3,tent:12,tarp:14,hammock:14,poncho:10}[type]||8;
       const pegged=types.some(t=>["tent","tarp","poncho"].includes(t));
-      let mins=base*(dark&&p.torch==="off"?1.7:1)*(b.warmth<45?1.3:1)*(pegged&&site.hard>=2&&!K.metalPegs?1.4:1);
+      let mins=base*(1-0.2*pdPerk("pitch"))*(dark&&p.torch==="off"?1.7:1)*(b.warmth<45?1.3:1)*(pegged&&site.hard>=2&&!K.metalPegs?1.4:1);
       pdBusy(type==="bivvy"?"Rolling out the bivvy":`Pitching the ${type}`,Math.round(mins),"pitch",{site,sh,type,door:arg&&arg.door!=null?arg.door:PD.env.windDir+Math.PI,pegged});
       break; }
     case"enter": if(!c||!atCamp) return; p.state="shelter"; p.path=[]; p.x=c.x+0.5; p.y=c.y+0.5; pdThermalCache(true); pdNoise_(p.x,p.y,3,"player","rustle"); break;
@@ -4542,7 +4572,7 @@ function pdAction(id,arg){
     case"socks": if(!K.socks||PD.flags.socks) return; PD.flags.socks=true; b.sweat=0; b.dry=pdClamp(b.dry+15); pdBusy("Changing into dry socks and base layer",6,"misc"); pdNoise_(p.x,p.y,3,"player","rustle"); break;
     case"towel": if(!K.towel||PD.flags.towelAt>PD.t-90) return; PD.flags.towelAt=PD.t; b.dry=pdClamp(b.dry+8); pdBusy("Wiping off the condensation",4,"misc"); break;
     case"stars": if(PD.env.cloud>0.6) return pdMsg("Thick cloud. No stars tonight.","info"); pdBusy("Lying back, looking up",12,"stars"); break;
-    case"pack": { if(!c||!atCamp&&!inCamp) return; p.state="free"; pdBusy("Packing up",Math.round((dark&&p.torch==="off"?14:9)*(K.drybag?0.85:1)*(PD.b.warmth<45?1.3:1)),"pack"); break; }
+    case"pack": { if(!c||!atCamp&&!inCamp) return; p.state="free"; pdBusy("Packing up",Math.round((1-0.2*pdPerk("pitch"))*(dark&&p.torch==="off"?14:9)*(K.drybag?0.85:1)*(PD.b.warmth<45?1.3:1)),"pack"); break; }
     case"leave": { if(c) return pdMsg("Pack up first. You're not leaving kit behind.","warn"); PD.flags.leaving=true; const e=PDW.entry; pdWalkTo(e[0]+0.5,e[1]+0.5); break; }
   }
 }
@@ -4550,11 +4580,12 @@ function pdFinishBusy(){
   const p=PD.p, B=p.busy, K=pdKitCached(); p.busy=null;
   if(B.act==="pitch"){ const s=B.site, loose=B.pegged&&s.hard>=2&&!K.metalPegs&&pdRand()<0.55;
     PD.camp={x:s.x,y:s.y,site:s,sh:B.sh,type:B.type,door:B.door,awning:false,vented:false,stashed:false,hidden:false,loose,vis:Math.max(...B.sh.map(id=>visOf(item(id))??1)),col:pdColour(item(B.sh[0])),pitchedAt:PD.t,hammock:s.hammock||null};
+    if(PD.meta){ PD.meta.pitchHidden=s.hidden; const pp=PD.meta.perfect.find(q=>Math.hypot(q.x-s.x,q.y-s.y)<3); if(pp){ pp.seen=true; if(!PD.meta.perfectPitched){ PD.meta.perfectPitched=true; PD.meta.perfectSeen=Math.max(1,PD.meta.perfectSeen); pdXP(45,"Pitched on a perfect pitch",s.x,s.y); } } }
     if(s.waterDist<60){ PD.stats.lnt-=0.5; PD.stats.lntWhy.push(`Camped ${s.waterDist} m from water (60 m is the rule)`); }
     setTimeout(()=>PD&&pdTip("camp","Camp's up. Open 🎒 Kit to stash your food, hide bright kit and sort layers. Once it's dark, ⛺ Get in and 💤 Sleep. Things will wake you."),20);
     pdMsg(`${B.type==="bivvy"?"Bivvy down":"Pitched"}.${loose?" The pegs won't bite in this ground. It's not as tight as you'd like.":""} ${s.hidden>=70?"Nicely hidden.":s.hidden<45?"You're quite visible from the path here.":""}`,"info"); pdThermalCache(true); }
   else if(B.act==="awning"){ PD.camp.awning=true; PD.camp.sh=PD.camp.sh.concat(B.id); pdMsg("Low awning over the head end. Drizzle and frost stay off your face.","info"); pdThermalCache(true); }
-  else if(B.act==="cook"){ PD.b.hunger=0; PD.b.heatUntil=PD.t+120; PD.b.morale=pdClamp(PD.b.morale+12); PD.b.energy=pdClamp(PD.b.energy+15); pdMsg("Hot food. Everything is better now.","info"); }
+  else if(B.act==="cook"){ if(pdDaylight(PD.t)<0.3&&PD.meta) PD.meta.cookedDark=true; PD.b.hunger=0; PD.b.heatUntil=PD.t+120; PD.b.morale=pdClamp(PD.b.morale+12); PD.b.energy=pdClamp(PD.b.energy+15); pdMsg("Hot food. Everything is better now.","info"); }
   else if(B.act==="boil"){ PD.r.flask=Math.max(PD.r.flask,pdKitCached().flasks*2); PD.r.flaskAt=PD.t; pdMsg("Flask full of boiling water.","info"); }
   else if(B.act==="filter"){ PD.r.water=Math.max(K.waterCap,0.5); pdMsg("Bottles full. Tastes of nothing, which is the point.","info"); }
   else if(B.act==="stars"){ PD.b.morale=pdClamp(PD.b.morale+8); pdMoment("stargazing","Lying on your back, looking up. More stars than you've seen in years. The Plough, Orion, a satellite crawling across.",4);
@@ -4581,7 +4612,7 @@ function pdTick(dt){
   while(PD.sched.length&&PD.sched[0].at<=PD.t){ pdSpawn(PD.sched.shift()); }
   // player movement
   if(p.path.length&&!p.busy){ const t=pdAt(PDW,p.x,p.y), sp=13/PD_TP[t].c*(p.sneak?0.5:1)*(PD.b.energy<25?0.75:1); const ox=p.x, oy=p.y; pdMoveAlong(p,dt*sp); const moved=Math.hypot(p.x-ox,p.y-oy); p.moved+=moved; p.still=0;
-    if(p.moved-p.lastStep>0.9){ p.lastStep=p.moved; const nz=PD_TP[pdAt(PDW,p.x,p.y)].no*(p.sneak?0.35:1)*(PD.twists.includes("frost")&&PD.t>1440?1.4:1); pdNoise_(p.x,p.y,3.2*nz,"player","step"); }
+    if(p.moved-p.lastStep>0.9){ p.lastStep=p.moved; const nz=PD_TP[pdAt(PDW,p.x,p.y)].no*(p.sneak?0.35:1)*(1-0.25*pdPerk("soft"))*(PD.twists.includes("frost")&&PD.t>1440?1.4:1); pdNoise_(p.x,p.y,3.2*nz,"player","step"); }
     if(PD.stats.trail.length===0||Math.hypot(PD.stats.trail[PD.stats.trail.length-1][0]-p.x,PD.stats.trail[PD.stats.trail.length-1][1]-p.y)>2) PD.stats.trail.push([+p.x.toFixed(1),+p.y.toFixed(1)]);
     if(!p.path.length&&PD.flags.leaving&&!PD.camp&&(p.x<1.6||p.y<1.6||p.x>PD_W-1.6||p.y>PD_W-1.6)) pdEnd(PD.t>e.sunrise-60?"dawn":"walkedhome");
   } else p.still+=dt;
@@ -4589,7 +4620,7 @@ function pdTick(dt){
     if(p.busy.act==="cook"&&pdRand()<dt*0.4) pdNoise_(p.x,p.y,7,"player","stove","the stove roaring");
     if(PD.t>=p.busy.until) pdFinishBusy(); }
   // body + world
-  pdBody(dt);
+  pdBody(dt); pdMetaTick(dt); if(PD.camp){ const cn=pdComfort().n; PD.stats.bestComfort=Math.max(PD.stats.bestComfort||0,cn); }
   const L=pdLights(), vis=pdPlayerVis(L); PD._vis=vis; PD._L=L;
   pdNPCs(dt,L,vis); pdAnimals(dt,L);
   // camp events
@@ -4627,7 +4658,7 @@ function pdEnd(kind){
   J.runs++; if(kind==="dawn") J.dawns++; Object.keys(st.moments).forEach(m=>J.seen[m]=(J.seen[m]||0)+1);
   const key=(PD.preset||"real:"+PD.label)+"|"+PD.classId; if(!J.best[key]||stars>J.best[key].stars) J.best[key]={stars,date:todayISO(),grades};
   J.journal.unshift({date:todayISO(),night:PD.date,loc:PD.label,cls:PD.className,kind,stars,grades,moments:Object.keys(st.moments),line:pdJournalLine(kind)}); J.journal=J.journal.slice(0,60);
-  PD.newAch=pdAchCheck(J); S.pdSave=null; save();
+  pdMetaEnd(); PD.newAch=pdAchCheck(J); S.pdSave=null; save();
 }
 const PD_ENDS={dawn:["🌅","You made it","Night done, kit packed, gone without a trace."],walkedhome:["🚶","Walked out","You called it and walked home. That's a skill too."],bailed:["🥶","Too cold","Your body made the decision. You packed up shivering and walked out."],exhausted:["😮‍💨","Exhausted","Nothing left in the tank. You walked out on fumes."],calledit:["🌧️","Called it","The night won this one. Home, kettle, bed."],movedon:["🔦","Moved on","You didn't get far enough away in time. Night over."],overslept:["😴","Overslept","Dog walkers found your camp at nine. Awkward."]};
 function pdJournalLine(kind){ const m=Object.values(PD.stats.moments).map(x=>x.text); if(m.length) return m[Math.floor(pdRand()*m.length)];
@@ -4760,6 +4791,9 @@ function pdDraw(now){
   PDW.objs.forEach(o=>{ const [sx,sy]=S_(o.x,o.y); if(sx<-60||sy<-60||sx>w+60||sy>h+60) return; pdDrawObj(x,o,sx,sy,Z,rt); });
   // spot marker from the real map pick
   if(PDW.spot&&!PD.camp&&!PD.campHist){ const [sx,sy]=S_(PDW.spot[0]+0.5,PDW.spot[1]+0.5); x.strokeStyle="rgba(255,210,120,0.7)"; x.setLineDash([4,4]); x.lineWidth=2; x.beginPath(); x.arc(sx,sy,Z*1.4+Math.sin(rt*3)*2,0,6.283); x.stroke(); x.setLineDash([]); }
+  // litter and perfect pitches
+  if(PD.meta){ PD.meta.litter.forEach(l=>{ if(l.got) return; const [sx,sy]=S_(l.x,l.y); if(sx<-10||sy<-10||sx>w+10||sy>h+10) return; x.fillStyle={can:"#c0392b",crisps:"#2e86c1",bottle:"#a9cce3",wrapper:"#f4d03f",bag:"#eee"}[l.k]; x.fillRect(sx-2,sy-1.5,4,3); x.fillStyle="rgba(255,255,255,0.5)"; x.fillRect(sx-2,sy-1.5,1.5,1); });
+    PD.meta.perfect.forEach(pp=>{ if(!pp.seen) return; const [sx,sy]=S_(pp.x+0.5,pp.y+0.5); x.font="14px system-ui"; x.textAlign="center"; x.globalAlpha=0.6+0.4*Math.sin(rt*3); x.fillText("✨",sx,sy+5); x.globalAlpha=1; }); }
   // camp
   if(PD.camp) pdDrawCamp(x,S_,Z,rt);
   // trail of where you've been (faint)
@@ -4771,7 +4805,8 @@ function pdDraw(now){
   PD.npcs.forEach(n=>{ if(!n.person||n.state==="leave"||dl<0.3) return; const [sx,sy]=S_(n.x,n.y); const rr=(4+28*Math.min(1,dl))*Z*0.6, a=dl>0.5?1.1:0.9;
     const g=x.createRadialGradient(sx,sy,0,sx,sy,rr); const c=n.notice>0.5?"255,150,60":"255,240,170"; g.addColorStop(0,`rgba(${c},${0.16+n.notice*0.12})`); g.addColorStop(1,`rgba(${c},0)`); x.fillStyle=g; x.beginPath(); x.moveTo(sx,sy); x.arc(sx,sy,rr,n.dir-a,n.dir+a); x.closePath(); x.fill(); });
   PD.npcs.forEach(n=>{ const [sx,sy]=S_(n.x,n.y); if(sx>-60&&sy>-60&&sx<w+60&&sy<h+60) pdDrawNPC(x,n,sx,sy,Z,rt); });
-  if(p.state==="free"){ const [sx,sy]=S_(p.x,p.y); pdDrawPerson(x,sx,sy,Z,p.dir,p.path.length?rt:0,{body:pdKitCached().packCol==="camo"?"#4c5a30":"#3a4a3a",pack:pdKitCached().packCol,player:true,sneak:p.sneak}); if(p.busy) pdDrawBusy(x,sx,sy,Z); }
+  if(p.state==="free"&&p.prone){ const [sx,sy]=S_(p.x,p.y); x.save(); x.translate(sx,sy); x.rotate(p.dir); const s=Z/15; x.fillStyle="rgba(0,0,0,0.3)"; x.beginPath(); x.ellipse(2,2,10*s,4*s,0,0,6.283); x.fill(); const pc=pdKitCached().packCol; x.fillStyle=pc==="camo"?"#4c5a30":pc; x.beginPath(); x.ellipse(0,0,9*s,3.6*s,0,0,6.283); x.fill(); x.fillStyle="#2b2b2b"; x.beginPath(); x.arc(8*s,0,2.6*s,0,6.283); x.fill(); x.restore(); }
+  else if(p.state==="free"){ const [sx,sy]=S_(p.x,p.y); pdDrawPerson(x,sx,sy,Z,p.dir,p.path.length?rt:0,{body:pdKitCached().packCol==="camo"?"#4c5a30":"#3a4a3a",pack:pdKitCached().packCol,player:true,sneak:p.sneak}); if(p.busy) pdDrawBusy(x,sx,sy,Z); }
   // midges
   const e=PD.env; if(e.bugs>=1&&!p.headnet&&(PD.t<e.sunset+90||PD.t>e.sunrise-60)&&pdNearWater(p.x,p.y,18)){ const [sx,sy]=S_(p.x,p.y); x.fillStyle="rgba(20,20,20,0.7)"; for(let i=0;i<20*e.bugs;i++){ const a=rt*2+i, r=Z*(0.5+(i%5)*0.25); x.fillRect(sx+Math.cos(a*1.3+i)*r,sy+Math.sin(a*1.7+i*2)*r,1.5,1.5); } }
   // lighting
@@ -4790,6 +4825,10 @@ function pdDraw(now){
     const col=n.src==="player"?"255,255,255":n.kind==="owl"||n.kind==="birds"?"190,220,140":n.kind==="bark"||n.kind==="flap"?"255,120,90":"255,210,120";
     x.strokeStyle=`rgba(${col},${(1-age)*(n.src==="player"?0.55:0.3)})`; x.lineWidth=1.5; x.beginPath(); x.arc(sx,sy,Math.max(2,n.r*Z*age),0,6.283); x.stroke();
     if(n.src!=="player"&&(sx<0||sy<0||sx>w||sy>h)){ const a=Math.atan2(sy-h/2,sx-w/2), ex=w/2+Math.cos(a)*(w/2-22), ey=h/2+Math.sin(a)*(h/2-70); x.fillStyle=`rgba(${col},${1-age})`; x.font="bold 16px system-ui"; x.textAlign="center"; x.fillText(n.kind==="owl"?"🦉":n.kind==="bark"?"🐕":n.kind==="car"?"🚗":"?",ex,ey+5); } });
+  // floating XP
+  if(PD.meta){ const now=performance.now(); PD.meta.float=PD.meta.float.filter(f=>now-f.t<1600); PD.meta.float.forEach(f=>{ const a=(now-f.t)/1600, [sx,sy]=S_(f.x,f.y); x.globalAlpha=1-a; x.fillStyle="#ffe082"; x.font="bold 14px system-ui"; x.textAlign="center"; x.fillText(f.txt,sx,sy-20-a*30); x.globalAlpha=1; }); }
+  if(PD.flags.flashUntil&&performance.now()<PD.flags.flashUntil){ x.fillStyle="rgba(255,255,255,0.75)"; x.fillRect(0,0,w,h); }
+  const alarm=Math.max(0,...PD.npcs.filter(n=>n.person&&!n.spotted).map(n=>n.notice)); if(alarm>0.45){ const a=(alarm-0.45)*0.9*(0.6+0.4*Math.sin(rt*8)); const g=x.createRadialGradient(w/2,h/2,Math.min(w,h)*0.3,w/2,h/2,Math.max(w,h)*0.7); g.addColorStop(0,"rgba(255,0,0,0)"); g.addColorStop(1,`rgba(220,30,20,${a})`); x.fillStyle=g; x.fillRect(0,0,w,h); }
   // vignette
   const vg=x.createRadialGradient(w/2,h/2,Math.min(w,h)*0.35,w/2,h/2,Math.max(w,h)*0.75); vg.addColorStop(0,"rgba(0,0,0,0)"); vg.addColorStop(1,"rgba(0,0,0,0.45)"); x.fillStyle=vg; x.fillRect(0,0,w,h);
 }
@@ -4803,7 +4842,7 @@ function pdDrawLight(x,S_,Z,w,h,rt){
   const hole=(X,Y,r,a,dir,ang)=>{ const [sx,sy]=S_(X,Y), cx=sx*k, cy=sy*k, rr=r*Z*k; const g=lx.createRadialGradient(cx,cy,0,cx,cy,rr); g.addColorStop(0,`rgba(0,0,0,${a})`); g.addColorStop(0.6,`rgba(0,0,0,${a*0.6})`); g.addColorStop(1,"rgba(0,0,0,0)"); lx.fillStyle=g;
     lx.beginPath(); if(ang!=null){ lx.moveTo(cx,cy); lx.arc(cx,cy,rr,dir-ang,dir+ang); lx.closePath(); } else lx.arc(cx,cy,rr,0,6.283); lx.fill(); };
   // your own eyes adjust: a little patch of visibility around you
-  const p=PD.p; hole(p.x,p.y,3.2+gmMoonLight(PD.env.moon)*(1-PD.env.cloud)*3,0.45,0,null);
+  const p=PD.p; hole(p.x,p.y,3.2+pdPerk("eyes")*1.6+gmMoonLight(PD.env.moon)*(1-PD.env.cloud)*3,0.45,0,null);
   L.forEach(l=>{ const fl=l.src==="stove"?0.85+0.15*Math.sin(rt*20):1; if(l.cone){ hole(l.x,l.y,l.r,Math.min(0.95,l.i*0.95)*fl,l.dir,l.a); hole(l.x,l.y,1.6,0.6,0,null); } else hole(l.x,l.y,l.r,Math.min(0.9,l.i*1.2)*fl,0,null); });
   x.drawImage(R.lc,0,0,lw,lh,0,0,w,h);
   // coloured glow on top
@@ -4811,7 +4850,7 @@ function pdDrawLight(x,S_,Z,w,h,rt){
   L.forEach(l=>{ const [sx,sy]=S_(l.x,l.y), rr=l.r*Z*(l.cone?1:0.9); const g=x.createRadialGradient(sx,sy,0,sx,sy,rr); g.addColorStop(0,`rgba(${l.col},${(l.cone?0.16:0.28)*l.i})`); g.addColorStop(1,`rgba(${l.col},0)`); x.fillStyle=g; x.beginPath(); if(l.cone){ x.moveTo(sx,sy); x.arc(sx,sy,rr,l.dir-l.a,l.dir+l.a); x.closePath(); } else x.arc(sx,sy,rr,0,6.283); x.fill();
     if(l.cone||l.src==="window"){ x.fillStyle=`rgba(${l.col},0.9)`; x.beginPath(); x.arc(sx,sy,l.src==="window"?1.6:2.2,0,6.283); x.fill(); } });
   // eyes in the dark
-  PD.animals.forEach(a=>{ if(!["fox","badger","deer","cow","pony"].includes(a.k)) return; const lit=pdLightAt(a.x,a.y,L)>0.25&&d<0.4; if(!lit) return; const [sx,sy]=S_(a.x,a.y); x.fillStyle=a.k==="fox"?"rgba(160,255,140,0.95)":"rgba(255,240,170,0.9)"; x.beginPath(); x.arc(sx+Math.cos(a.dir||0)*Z*0.4-2,sy+Math.sin(a.dir||0)*Z*0.4,1.6,0,6.283); x.arc(sx+Math.cos(a.dir||0)*Z*0.4+2,sy+Math.sin(a.dir||0)*Z*0.4,1.6,0,6.283); x.fill(); });
+  PD.animals.forEach(a=>{ if(!["fox","badger","deer","cow","pony","hedgehog","hare","tawny","sheep"].includes(a.k)) return; const lit=pdLightAt(a.x,a.y,L)>0.25&&d<0.4; if(!lit) return; const [sx,sy]=S_(a.x,a.y); x.fillStyle=a.k==="fox"?"rgba(160,255,140,0.95)":"rgba(255,240,170,0.9)"; x.beginPath(); x.arc(sx+Math.cos(a.dir||0)*Z*0.4-2,sy+Math.sin(a.dir||0)*Z*0.4,1.6,0,6.283); x.arc(sx+Math.cos(a.dir||0)*Z*0.4+2,sy+Math.sin(a.dir||0)*Z*0.4,1.6,0,6.283); x.fill(); });
   x.globalCompositeOperation="source-over";
 }
 function pdDrawPerson(x,sx,sy,Z,dir,walkT,o){
@@ -4834,6 +4873,7 @@ function pdDrawNPC(x,n,sx,sy,Z,rt){
     if(n.state==="sniff"){ x.fillStyle="#fff"; x.font=`bold ${12}px system-ui`; x.textAlign="center"; x.fillText("WOOF",sx,sy-Z*0.9); } return; }
   const look={walker:{body:n.boater?"#2a3a5a":"#5a4030",hat:"#3a2a2a"},jogger:{body:"#c03030",hat:"#222",hivis:true},farmer:{body:"#3a4a2a",hat:"#5a4a3a"},landowner:{body:"#3a4a2a",hat:"#5a4a3a"},keeper:{body:"#4a5a3a",hat:"#6a5a3a"},teens:{body:["#222","#6a2a6a","#2a4a8a"][n.id%3],hat:"#111"},angler:{body:"#3a5a3a",hat:"#6a6a3a"}}[n.k]||{body:"#555"};
   pdDrawPerson(x,sx,sy,Z,n.dir,n.path&&n.path.length?rt+n.id:0,look);
+  if(n.notice>0.05&&!n.spotted){ x.strokeStyle="rgba(0,0,0,0.5)"; x.lineWidth=4; x.beginPath(); x.arc(sx,sy-Z*0.1,Z*0.75,0,6.283); x.stroke(); x.strokeStyle=n.notice>0.7?"#ff7043":"#ffd54f"; x.lineWidth=3; x.beginPath(); x.arc(sx,sy-Z*0.1,Z*0.75,-Math.PI/2,-Math.PI/2+Math.min(1,n.notice)*6.283); x.stroke(); }
   if(n.notice>0.25&&!n.spotted){ x.fillStyle=n.notice>0.7?"#ffb74d":"#fff59d"; x.font="bold 15px system-ui"; x.textAlign="center"; x.fillText(n.notice>0.7?"?!":"?",sx,sy-Z*1.05); }
   if(n.spotted&&n.state!=="leave"){ x.fillStyle="#ff5252"; x.font="bold 16px system-ui"; x.textAlign="center"; x.fillText("!",sx,sy-Z*1.05); }
   if(n.phone&&pdDaylight(PD.t)<0.4){ x.fillStyle="rgba(170,210,255,0.9)"; x.fillRect(sx+3,sy-2,2,3); }
@@ -4847,6 +4887,12 @@ function pdDrawAnimal(x,a,sx,sy,Z,rt){
   else if(a.k==="deer"){ x.fillStyle="#8a5a36"; x.beginPath(); x.ellipse(0,0,7*s,3*s,0,0,6.283); x.fill(); x.beginPath(); x.ellipse(7.5*s,0,2.6*s,1.6*s,0,0,6.283); x.fill(); x.fillStyle="#f0e8dc"; x.beginPath(); x.arc(-6.5*s,0,1.8*s,0,6.283); x.fill(); x.fillStyle="#6a4428"; x.beginPath(); x.ellipse(8*s,-2.2*s,1*s,1.8*s,0.4,0,6.283); x.ellipse(8*s,2.2*s,1*s,1.8*s,-0.4,0,6.283); x.fill(); }
   else if(a.k==="cow"){ x.fillStyle="#f2f0ea"; x.beginPath(); x.ellipse(0,0,10*s,5*s,0,0,6.283); x.fill(); x.fillStyle="#1a1a1a"; x.beginPath(); x.ellipse(-3*s,-1*s,3*s,2.5*s,0.4,0,6.283); x.ellipse(4*s,2*s,2.5*s,2*s,0,0,6.283); x.fill(); x.fillStyle="#222"; x.beginPath(); x.ellipse(10*s,0,3*s,2.6*s,0,0,6.283); x.fill(); }
   else if(a.k==="pony"){ x.fillStyle=a.col; x.beginPath(); x.ellipse(0,0,9*s,4*s,0,0,6.283); x.fill(); x.beginPath(); x.ellipse(9*s,0,3.5*s,2*s,0,0,6.283); x.fill(); x.fillStyle="#1a120a"; x.fillRect(-1*s,-1*s,8*s,2*s); x.beginPath(); x.ellipse(-10*s,0,3*s,1.2*s,0,0,6.283); x.fill(); }
+  else if(a.k==="hedgehog"){ x.fillStyle="#6a5038"; x.beginPath(); x.ellipse(0,0,4*s,3*s,0,0,6.283); x.fill(); x.fillStyle="#3a2a1a"; for(let i=0;i<8;i++){ x.fillRect(-3*s+i*0.8*s,-2.5*s+(i%2)*s,0.8*s,0.8*s); } x.fillStyle="#c8a888"; x.beginPath(); x.arc(4*s,0,1.3*s,0,6.283); x.fill(); }
+  else if(a.k==="hare"){ x.fillStyle="#9a7a50"; x.beginPath(); x.ellipse(0,0,5*s,2.6*s,0,0,6.283); x.fill(); x.beginPath(); x.arc(4.5*s,0,2*s,0,6.283); x.fill(); x.fillStyle="#6a5030"; x.beginPath(); x.ellipse(5.5*s,-2.2*s,0.8*s,3*s,0.6,0,6.283); x.ellipse(5.5*s,2.2*s,0.8*s,3*s,-0.6,0,6.283); x.fill(); x.fillStyle="#fff"; x.beginPath(); x.arc(-5*s,0,1.2*s,0,6.283); x.fill(); }
+  else if(a.k==="heron"){ x.fillStyle="#9aa0a8"; x.beginPath(); x.ellipse(0,0,4*s,2.6*s,0,0,6.283); x.fill(); x.strokeStyle="#9aa0a8"; x.lineWidth=1.5*s; x.beginPath(); x.moveTo(3*s,0); x.lineTo(7*s,-1*s); x.stroke(); x.fillStyle="#d8b84a"; x.fillRect(7*s,-1.5*s,3*s,1*s); x.fillStyle="#222"; x.fillRect(5*s,-1.5*s,2*s,0.6*s); }
+  else if(a.k==="bat"){ const f=Math.sin(rt*25); x.fillStyle="#2a2420"; x.beginPath(); x.moveTo(0,0); x.lineTo(-2*s,-5*s*(0.5+f*0.5)); x.lineTo(2*s,0); x.lineTo(-2*s,5*s*(0.5+f*0.5)); x.fill(); x.beginPath(); x.arc(0,0,1.3*s,0,6.283); x.fill(); }
+  else if(a.k==="tawny"){ x.fillStyle="#7a5a3a"; x.beginPath(); x.ellipse(0,0,3*s,3.6*s,0,0,6.283); x.fill(); x.fillStyle="#a88058"; x.beginPath(); x.arc(0,-1*s,2.2*s,0,6.283); x.fill(); x.fillStyle="#111"; x.beginPath(); x.arc(-0.9*s,-1.2*s,0.6*s,0,6.283); x.arc(0.9*s,-1.2*s,0.6*s,0,6.283); x.fill(); }
+  else if(a.k==="sheep"){ x.fillStyle="#ecebe4"; x.beginPath(); x.ellipse(0,0,6*s,4*s,0,0,6.283); x.fill(); x.fillStyle="#222"; x.beginPath(); x.ellipse(6*s,0,2.2*s,1.6*s,0,0,6.283); x.fill(); }
   else if(a.k==="barnowl"){ const f=Math.sin(rt*10)*0.5+0.5; x.fillStyle="#f4ece0"; x.beginPath(); x.ellipse(0,0,3*s,2.4*s,0,0,6.283); x.fill(); x.beginPath(); x.moveTo(0,0); x.lineTo(-2*s,-9*s*(0.6+f*0.4)); x.lineTo(3*s,-1*s); x.moveTo(0,0); x.lineTo(-2*s,9*s*(0.6+f*0.4)); x.lineTo(3*s,1*s); x.fill(); x.fillStyle="#d8b890"; x.beginPath(); x.arc(3*s,0,1.8*s,0,6.283); x.fill(); }
   x.restore();
 }
@@ -4898,6 +4944,139 @@ function pdMiniMap(cv){
   (PD.campHist||[]).forEach(([a,b])=>{ x.font="16px system-ui"; x.textAlign="center"; x.fillText("⛺",(a+0.5)*k,(b+0.5)*k+5); });
 }
 /* ============================================================
+   PITCH DARK: META (ranks, perks, contracts, photography, collectibles, exploration)
+   Short goals (contracts each night), mid goals (album, perfect pitches, geocaches),
+   long goals (ranks, perks, badges, locations). Every night earns XP, even bad ones.
+   ============================================================ */
+const PD_RANKS=["Car Camper","Day Tripper","Weekend Wanderer","Hedge Sleeper","Towpath Tramp","Bivvy Botherer","Frost Dodger","Night Walker","Field Ghost","Owl Listener","Moor Stalker","Hedgerow Phantom","Dark Sky Dweller","Wild Camper","Pitch Dark Legend"];
+const pdRankXP=r=>Math.round(120*r*(r+1)/2); // XP needed to reach rank r+1 from 0
+function pdRank(xp){ let r=0; while(r<PD_RANKS.length-1&&xp>=pdRankXP(r+1)) r++; return {r,name:PD_RANKS[r],cur:xp-pdRankXP(r),need:pdRankXP(r+1)-pdRankXP(r),next:PD_RANKS[r+1]||null}; }
+const PD_PERKS=[
+ {id:"soft",n:"Soft Step",i:"🥾",d:"Your footsteps make 25% less noise per level.",max:2},
+ {id:"eyes",n:"Night Eyes",i:"🌙",d:"See further in the dark without a torch.",max:2},
+ {id:"pitch",n:"Quick Pitch",i:"⛺",d:"Pitch and pack 20% faster per level.",max:2},
+ {id:"warm",n:"Warm Blooded",i:"🔥",d:"Your body runs a little warmer at night.",max:2},
+ {id:"ghost",n:"Hedge Ghost",i:"🌿",d:"Cover hides you 12% better per level.",max:2},
+ {id:"talk",n:"Smooth Talker",i:"🗣️",d:"People are more likely to let you stay, and calm down faster.",max:1},
+ {id:"sleep",n:"Deep Sleeper",i:"😴",d:"Small noises don't wake you as often.",max:1},
+ {id:"nat",n:"Naturalist",i:"🦊",d:"More wildlife turns up, and your photos rate higher.",max:1},
+ {id:"bladder",n:"Iron Bladder",i:"🚻",d:"You need a wee 25% less often.",max:1}
+];
+const pdPerk=id=>((S.pd&&S.pd.perks)||{})[id]||0;
+const PD_LOC_RANK={towpath:0,real:0,hill:1,river:2,moor:3};
+const PD_SPECIES=[
+ {k:"fox",n:"Red fox",i:"🦊",hint:"Night, anywhere. Loves unguarded food."},
+ {k:"badger",n:"Badger",i:"🦡",hint:"Late night, in and near woods."},
+ {k:"deer",n:"Roe deer",i:"🦌",hint:"Dawn, at wood edges. Stay very still."},
+ {k:"barnowl",n:"Barn owl",i:"🦉",hint:"Dusk, hunting low over fields."},
+ {k:"tawny",n:"Tawny owl",i:"🌳",hint:"Night, perched in woodland. Listen for the call."},
+ {k:"hedgehog",n:"Hedgehog",i:"🦔",hint:"Night, along hedges and gardens."},
+ {k:"hare",n:"Brown hare",i:"🐇",hint:"Dusk and dawn, in open fields."},
+ {k:"heron",n:"Grey heron",i:"🪶",hint:"By the water, any time of day."},
+ {k:"bat",n:"Pipistrelle bat",i:"🦇",hint:"Just after sunset, near trees and water."},
+ {k:"pony",n:"Dartmoor pony",i:"🐴",hint:"On the moor."},
+ {k:"cow",n:"Curious cow",i:"🐄",hint:"Cattle nights. They will find you."},
+ {k:"kingfisher",n:"Kingfisher",i:"💙",hint:"Early morning, over water. Be quick."}
+];
+const PD_CONTRACTS={
+  litter:{n:n=>`Pick up ${n} bits of litter`,xp:50,make:()=>3+Math.floor(pdRand()*3),test:(n)=>PD.meta.litterGot>=n,prog:n=>`${PD.meta.litterGot}/${n}`},
+  photo:{n:k=>`Photograph a ${PD_SPECIES.find(s=>s.k===k).n.toLowerCase()}`,xp:70,test:k=>!!PD.meta.photos[k],prog:()=>""},
+  cache:{n:()=>"Find the geocache",xp:80,test:()=>PD.meta.cacheFound,prog:()=>""},
+  hidden:{n:()=>"Pitch somewhere rated 80+ hidden",xp:50,test:()=>PD.camp&&PD.camp.site.hidden>=80||PD.meta.pitchHidden>=80,prog:()=>""},
+  ghost:{n:()=>"Get through the night without being spotted",xp:90,end:true,test:()=>!PD.stats.spotted&&PD.ended&&PD.ended.kind==="dawn",prog:()=>""},
+  sleep:{n:()=>"Sleep 6 hours or more",xp:60,test:()=>PD.b.slept>=360,prog:()=>`${(PD.b.slept/60).toFixed(1)}/6 h`},
+  warm:{n:()=>"Keep warmth above 45 all night",xp:70,end:true,test:()=>PD.ended&&PD.ended.kind==="dawn"&&PD.stats.minW>=45,prog:()=>""},
+  explore:{n:()=>"Explore half the map",xp:60,test:()=>pdExplored()>=50,prog:()=>`${pdExplored()}%`},
+  perfect:{n:()=>"Find a perfect pitch",xp:70,test:()=>PD.meta.perfectSeen>0,prog:()=>""},
+  early:{n:()=>"Be packed and gone within 30 min of sunrise",xp:60,end:true,test:()=>PD.ended&&PD.ended.kind==="dawn"&&PD.ended.t<=PD.env.sunrise+30,prog:()=>""},
+  hot:{n:()=>"Cook a hot meal after dark",xp:50,test:()=>PD.meta.cookedDark,prog:()=>""},
+  album:{n:()=>"Photograph 3 different animals",xp:90,test:()=>Object.keys(PD.meta.photos).length>=3,prog:()=>`${Object.keys(PD.meta.photos).length}/3`}
+};
+/* ---------- set up a night ---------- */
+function pdMetaInit(R){
+  const W=PDW, M=PD.meta={litter:[],litterGot:0,photos:{},cache:null,cacheFound:false,perfect:[],perfectSeen:0,xp:[],float:[],fog:new Uint8Array(PD_W*PD_W),contracts:[],done:{},cookedDark:false,pitchHidden:0};
+  // litter near paths, benches and car parks
+  const cand=[]; for(let y=2;y<PD_W-2;y++) for(let x=2;x<PD_W-2;x++){ const t=W.t[pdIdx(x,y)]; if(!PD_TP[t].p||t===PD_T.ROAD||t===PD_T.WATER) continue; const nearPath=[[1,0],[-1,0],[0,1],[0,-1],[2,0],[0,2]].some(([a,b])=>{ const v=pdAt(W,x+a,y+b); return v===PD_T.PATH||v===PD_T.ROAD||v===PD_T.YARD; }); if(nearPath) cand.push([x,y]); }
+  for(let i=0;i<Math.min(14,Math.floor(cand.length/25));i++){ const [x,y]=cand[Math.floor(R()*cand.length)]; M.litter.push({x:x+R(),y:y+R(),k:["can","crisps","bottle","wrapper","bag"][Math.floor(R()*5)]}); }
+  W.objs.filter(o=>o.k==="bench"||o.k==="car").forEach(o=>{ for(let i=0;i<2;i++) M.litter.push({x:o.x+R()*3-1.5,y:o.y+R()*3-1.5,k:R()<0.5?"can":"wrapper"}); });
+  // geocache hidden by a tree, a wall or some rocks, away from the entry
+  const hide=[]; W.trees.forEach(t=>{ if(Math.hypot(t.x-W.entry[0],t.y-W.entry[1])>30&&PD_TP[pdAt(W,t.x,t.y)].p) hide.push([t.x,t.y]); }); for(let i=0;i<W.t.length;i+=3) if((W.t[i]===PD_T.WALL||W.t[i]===PD_T.ROCK)) hide.push([i%PD_W+0.5,((i/PD_W)|0)+0.5]);
+  if(hide.length) M.cache={...(([x,y])=>({x,y}))(hide[Math.floor(R()*hide.length)]),log:["“TFTC! Muddy but worth it.” · Gav & the dog","“Found at dusk, nearly trod on a hedgehog.” · moorwalker77","“Signed the log, left a pin badge.” · the Hendersons","“Third attempt. Brambles 3, me 1.” · K"][Math.floor(R()*4)]};
+  // perfect pitches: the best-hidden, sheltered, comfy, dry, legal spots
+  const scored=[]; for(let k=0;k<500;k++){ const x=4+Math.floor(R()*92), y=4+Math.floor(R()*92), s=pdSite(W,x,y,PD.env); if(!s.ok||!s.lntOK||s.t===PD_T.PATH) continue; const sc=s.hidden+(1-s.wind)*60+s.comfort*40-s.damp*40; scored.push({x,y,sc}); }
+  scored.sort((a,b)=>b.sc-a.sc); scored.forEach(s=>{ if(M.perfect.length<2&&M.perfect.every(p=>Math.hypot(p.x-s.x,p.y-s.y)>25)&&Math.hypot(s.x-W.entry[0],s.y-W.entry[1])>15) M.perfect.push({x:s.x,y:s.y,seen:false}); });
+  // more wildlife (Naturalist perk makes it more common)
+  const nat=1+pdPerk("nat")*0.6, e=PD.env, S_=(at,k)=>PD.sched.push({at:Math.round(at),k}), rng=(a,b)=>a+R()*(b-a);
+  const hasWater=W.t.some(v=>v===PD_T.WATER), hasWood=W.t.some(v=>v===PD_T.WOOD);
+  if(e.month>=4&&e.month<=10||R()<0.3) S_(e.sunset+rng(15,40),"bats");
+  if(!W.flags.moor) for(let i=0;i<Math.round(1.5*nat);i++) S_(rng(e.sunset+60,e.sunrise-90),"hedgehog");
+  if(W.t.some(v=>v===PD_T.CROP||v===PD_T.GRASS||v===PD_T.MEADOW)){ if(R()<0.7*nat) S_(e.sunset-rng(0,30),"hare"); if(R()<0.7*nat) S_(e.sunrise-rng(10,40),"hare"); }
+  if(hasWater) S_(PD.t0+rng(5,60),"heron");
+  if(hasWood&&R()<0.6*nat) S_(rng(1290,1600),"tawny");
+  if(PD.preset==="hill") S_(PD.t0,"sheep");
+  PD.sched.sort((a,b)=>a.at-b.at);
+  // tonight's contracts: three, suited to the place
+  const pool=["litter","cache","hidden","ghost","sleep","warm","explore","perfect","early","album"]; if(pdKitCached().stove) pool.push("hot");
+  const sp=["fox","barnowl","hare","hedgehog","bat"].concat(hasWater?["heron"]:[],hasWood?["deer","badger","tawny"]:[],W.flags.moor?["pony"]:[]);
+  const picks=[]; while(picks.length<3){ const id=pool[Math.floor(R()*pool.length)]; if(!picks.some(c=>c.id===id)) picks.push({id,arg:id==="litter"?Math.min(M.litter.length,PD_CONTRACTS.litter.make()):null}); }
+  if(R()<0.6) picks[2]={id:"photo",arg:sp[Math.floor(R()*sp.length)]};
+  M.contracts=picks.filter(c=>c.id!=="cache"||M.cache).map(c=>({id:c.id,arg:c.arg,done:false}));
+  if(PD.challenge==="notorch"){ PD.r.torch=0; }
+}
+function pdExplored(){ const f=PD.meta.fog; let n=0; for(let i=0;i<f.length;i++) n+=f[i]; return Math.round(n/f.length*100); }
+function pdXP(n,why,x,y){ if(!PD.meta||!n) return; n=Math.round(n*(PD.challenge?1.3:1)*({easy:0.8,normal:1,hard:1.25}[PD.diff]||1)); PD.meta.xp.push({n,why}); PD.meta.float.push({x:x??PD.p.x,y:y??PD.p.y,t:performance.now(),txt:`+${n} XP`}); pdAudio&&pdAudio("ding"); }
+/* ---------- each tick ---------- */
+function pdMetaTick(dt){
+  const M=PD.meta; if(!M) return; const p=PD.p, W=PDW;
+  // exploration: what you can see gets revealed
+  const r=pdDaylight(PD.t)>0.4?10:p.torch!=="off"?7:4+pdPerk("eyes")*1.5; if(p.state==="free"&&(PD._fogAt==null||Math.hypot(p.x-PD._fogAt[0],p.y-PD._fogAt[1])>1.5)){ PD._fogAt=[p.x,p.y]; for(let dy=-r;dy<=r;dy++) for(let dx=-r;dx<=r;dx++){ if(dx*dx+dy*dy>r*r) continue; const X=Math.round(p.x+dx), Y=Math.round(p.y+dy); if(pdIn(X,Y)) M.fog[pdIdx(X,Y)]=1; } }
+  if(p.state!=="free") return pdContracts();
+  // litter pick-up as you walk past
+  M.litter.forEach(l=>{ if(!l.got&&Math.hypot(l.x-p.x,l.y-p.y)<1.1){ l.got=true; M.litterGot++; PD.stats.lnt=Math.min(4.5,PD.stats.lnt+0.1); pdXP(6,"Litter picked up",l.x,l.y); if(M.litterGot===1) pdMsg("Picked up someone's litter. Leave it better than you found it.","info"); } });
+  // geocache: found when you get close
+  const c=M.cache; if(c&&!M.cacheFound&&Math.hypot(c.x-p.x,c.y-p.y)<1.4){ M.cacheFound=true; pdXP(60,"Found the geocache",c.x,c.y); pdMsg(`📦 Geocache! A lunchbox wrapped in a bin bag, wedged in the roots. The logbook: ${c.log} You sign it.`,"moment"); S.pd.caches=(S.pd.caches||0)+1; }
+  // perfect pitches reveal themselves when you're close
+  M.perfect.forEach(pp=>{ if(!pp.seen&&Math.hypot(pp.x-p.x,pp.y-p.y)<7&&pdDaylight(PD.t)>0.15){ pp.seen=true; M.perfectSeen++; pdXP(25,"Spotted a perfect pitch",pp.x,pp.y); pdMsg("✨ That's a perfect pitch: flat, dry, hidden and out of the wind. Marked on your map.","moment"); } });
+  // blackberries in late summer
+  if(PD.env.month>=8&&PD.env.month<=10&&pdAt(W,p.x,p.y)!==PD_T.SCRUB&&[[1,0],[-1,0],[0,1],[0,-1]].some(([a,b])=>pdAt(W,p.x+a,p.y+b)===PD_T.SCRUB)&&(PD.meta.berries||0)<3&&pdRand()<dt*0.2){ PD.meta.berries=(PD.meta.berries||0)+1; PD.r.snacks++; pdMsg("A handful of blackberries from the brambles. +1 snack.","info"); }
+  pdContracts();
+}
+function pdContracts(){ const M=PD.meta; M.contracts.forEach(c=>{ const C=PD_CONTRACTS[c.id]; if(c.done||C.end&&!PD.ended) return; if(C.test(c.arg)){ c.done=true; pdXP(C.xp,"Contract: "+C.n(c.arg)); pdMsg("📋 Contract done: "+C.n(c.arg)+"!","moment"); } }); }
+/* ---------- photography ---------- */
+function pdPhotoTarget(){
+  const p=PD.p; if(p.state==="sleep"||p.busy) return null; const L=PD._L||pdLights(); let best=null;
+  PD.animals.forEach(a=>{ const sp=a.k==="sheep"?null:PD_SPECIES.find(s=>s.k===a.k); if(!sp) return; const d=Math.hypot(a.x-p.x,a.y-p.y); if(d>16) return; const lit=pdLightAt(a.x,a.y,L); if(lit<0.25) return; if(pdLOS(PDW,p.x,p.y,a.x,a.y)<0.3) return; const sc=lit*(1-d/18); if(!best||sc>best.sc) best={a,sp,d,lit,sc}; });
+  if(PD.flags.kingfisher&&PD.t<PD.flags.kingfisher&&pdNearWater(p.x,p.y,20)) best=best||{a:null,sp:PD_SPECIES.find(s=>s.k==="kingfisher"),d:12,lit:1,sc:0.4};
+  return best;
+}
+function pdTakePhoto(){
+  const T=pdPhotoTarget(); if(!T) return pdMsg("Nothing to photograph in range. Animals need to be close and lit.","info");
+  const p=PD.p, dark=pdDaylight(PD.t)<0.3, still=!p.path.length;
+  let q=(T.d<6?1.4:T.d<11?1:0.6)+(T.lit>0.8?0.8:T.lit>0.45?0.4:0)+(still?0.4:0)+(p.torch==="red"?-0.3:0)+pdPerk("nat")*0.5+(T.a&&T.a.state==="flee"?-0.6:0);
+  const stars=Math.max(1,Math.min(3,Math.round(q))); PD.flags.flashUntil=performance.now()+180;
+  if(dark){ pdNoise_(p.x,p.y,4,"player","shutter","a camera shutter"); if(T.a&&T.a.k!=="pony"&&T.a.k!=="cow"&&pdRand()<0.5) T.a.state="flee"; }
+  PD.r.phone=Math.max(0,PD.r.phone-1);
+  const M=PD.meta, A=S.pd.album=S.pd.album||{}, prev=A[T.sp.k], isNew=!prev;
+  if(!M.photos[T.sp.k]||M.photos[T.sp.k]<stars) M.photos[T.sp.k]=stars;
+  if(!prev||prev.stars<stars) A[T.sp.k]={stars,date:todayISO(),where:PD.label,t:pdHM(PD.t)};
+  pdXP((isNew?40:8)+stars*8,isNew?"New species: "+T.sp.n:"Photo: "+T.sp.n,T.a?T.a.x:p.x,T.a?T.a.y:p.y);
+  pdMsg(`📷 ${T.sp.n}, ${"★".repeat(stars)}${"☆".repeat(3-stars)}${isNew?" · NEW for your album!":prev&&prev.stars<stars?" · better than your last one!":""}`,"moment");
+  if(T.a&&["deer","barnowl","fox","badger","pony"].includes(T.a.k)) pdMoment(T.a.k,{deer:"Roe deer at the wood edge, in the half light. You got the shot.",barnowl:"A barn owl, white and silent, caught on camera.",fox:"A fox, eyes shining, caught in your torchlight.",badger:"A badger, striped face down, snuffling right past you.",pony:"Dartmoor ponies, shaggy and unbothered."}[T.a.k],4);
+}
+/* ---------- end of night: XP and rank ---------- */
+function pdMetaEnd(){
+  const M=PD.meta, E=PD.ended, J=S.pd; if(!M) return;
+  pdContracts();
+  pdXP(E.stars*20,`${E.stars} star night`); if(E.kind==="dawn") pdXP(30,"Made it to morning");
+  Object.keys(PD.stats.moments).forEach(k=>pdXP(12,"Moment: "+k));
+  const ex=pdExplored(); if(ex>=20) pdXP(Math.round(ex/4),`Explored ${ex}% of the map`);
+  const total=M.xp.reduce((s,x)=>s+x.n,0), before=pdRank(J.xp||0);
+  J.xp=(J.xp||0)+total; const after=pdRank(J.xp);
+  J.perkPts=(J.perkPts||0)+Math.max(0,after.r-before.r);
+  E.xp=total; E.rankBefore=before; E.rankAfter=after; E.contracts=M.contracts.map(c=>({n:PD_CONTRACTS[c.id].n(c.arg),done:c.done,xp:PD_CONTRACTS[c.id].xp}));
+  E.unlocked=Object.entries(PD_LOC_RANK).filter(([k,r])=>r>before.r&&r<=after.r).map(([k])=>k);
+}
+/* ============================================================
    PITCH DARK (game): UI, input, audio, start + end screens
    ============================================================ */
 let PD_RAF=null, PD_LAST=0, PD_HUDAT=0, PD_SAVEAT=0, PD_REAL=null;
@@ -4911,6 +5090,7 @@ function pdAudioInit(){ if(PDA.ctx||!PDA.on) return; try{ const C=window.AudioCo
   PDA.wind=mk("lowpass",400); PDA.rain=mk("highpass",2500); }catch(e){ PDA.ctx=null; } }
 function pdAudioTick(){ const a=PDA.ctx; if(!a||!PD) return; const on=PDA.on&&!PD.paused&&!PD.ended, inside=PD.p.state!=="free";
   const w=pdWindNow(); PDA.wind.g.gain.setTargetAtTime(on?Math.min(0.22,w/90)*(inside?0.55:1):0,a.currentTime,0.4); PDA.wind.fl.frequency.setTargetAtTime(250+w*14+Math.sin(a.currentTime*0.7)*60,a.currentTime,0.5);
+  const alarm=Math.max(0,...PD.npcs.filter(n=>n.person&&!n.spotted).map(n=>n.notice)); if(alarm>0.45&&on&&(!PDA.hb||a.currentTime-PDA.hb>Math.max(0.45,1.1-alarm*0.6))){ PDA.hb=a.currentTime; pdAudio("heart"); }
   PDA.rain.g.gain.setTargetAtTime(on&&pdRaining()?(PD.env.rain>=2?0.12:0.06)*(inside?1.3:1):0,a.currentTime,0.6); }
 function pdBeep(f0,f1,dur,type="sine",vol=0.15,delay=0){ const a=PDA.ctx; if(!a||!PDA.on) return; const o=a.createOscillator(), g=a.createGain(), t=a.currentTime+delay; o.type=type; o.frequency.setValueAtTime(f0,t); o.frequency.exponentialRampToValueAtTime(Math.max(20,f1),t+dur); g.gain.setValueAtTime(0.0001,t); g.gain.exponentialRampToValueAtTime(vol,t+0.03); g.gain.exponentialRampToValueAtTime(0.0001,t+dur); o.connect(g); g.connect(a.destination); o.start(t); o.stop(t+dur+0.05); }
 function pdThud(vol=0.1,f=900,dur=0.06,delay=0){ const a=PDA.ctx; if(!a||!PDA.on) return; const s=a.createBufferSource(); s.buffer=PDA.noise; const fl=a.createBiquadFilter(); fl.type="bandpass"; fl.frequency.value=f; const g=a.createGain(), t=a.currentTime+delay; g.gain.setValueAtTime(vol,t); g.gain.exponentialRampToValueAtTime(0.0001,t+dur); s.connect(fl); fl.connect(g); g.connect(a.destination); s.start(t,Math.random()); s.stop(t+dur+0.02); }
@@ -4920,6 +5100,9 @@ function pdAudio(kind,pos){ if(!PDA.ctx||!PD) return; const d=pos?Math.hypot(pos
   else if(kind==="step") pdThud(0.05,PD.twists.includes("frost")?2200:1100,0.05);
   else if(kind==="car") pdThud(0.08*v,120,1.6);
   else if(kind==="peg") pdThud(0.2,1600,0.05);
+  else if(kind==="ding"){ pdBeep(880,1320,0.18,"sine",0.08); pdBeep(1320,1760,0.2,"sine",0.06,0.09); }
+  else if(kind==="shutter"){ pdThud(0.15,3000,0.03); pdThud(0.12,2000,0.04,0.06); }
+  else if(kind==="heart"){ pdBeep(70,50,0.12,"sine",0.25); pdBeep(65,45,0.12,"sine",0.18,0.16); }
   else if(kind==="voices"||kind==="music") pdBeep(300,320,0.4,"triangle",0.04*v);
 }
 function pdAudioNoise(n){ if(n.src==="player"&&n.kind==="step") return pdAudio("step"); if(n.kind==="peg") return pdAudio("peg"); if(n.kind==="car") return pdAudio("car",n); if(n.kind==="music"||n.kind==="voices") return pdAudio("music",n); }
@@ -4929,7 +5112,7 @@ function pdOpen(){
   let root=pdEl("pd"); if(!root){ root=document.createElement("div"); root.id="pd"; root.className="pd"; document.body.appendChild(root); }
   root.innerHTML=`<canvas id="pdC"></canvas>
    <div class="pd-top"><div class="pd-clock"><b id="pdTime">--:--</b><span id="pdPhase"></span></div><div class="pd-wx" id="pdWx"></div><div class="grow"></div>
-     <button class="pd-ib" id="pdZoom" aria-label="Zoom">🔍</button><button class="pd-ib" id="pdSpd" aria-label="Speed">⏩</button><button class="pd-ib" id="pdSnd" aria-label="Sound">${PDA.on?"🔊":"🔇"}</button><button class="pd-ib" id="pdMenu" aria-label="Menu">☰</button></div>
+     <button class="pd-ib" id="pdMap" aria-label="Map and contracts">🗺</button><button class="pd-ib" id="pdZoom" aria-label="Zoom">🔍</button><button class="pd-ib" id="pdSpd" aria-label="Speed">⏩</button><button class="pd-ib" id="pdSnd" aria-label="Sound">${PDA.on?"🔊":"🔇"}</button><button class="pd-ib" id="pdMenu" aria-label="Menu">☰</button></div>
    <div class="pd-left"><div id="pdBodyW"></div><div class="pd-eye" id="pdEye"></div><div class="pd-res" id="pdRes"></div></div>
    <div class="pd-obj" id="pdObj"></div><div class="pd-msg" id="pdMsg"></div>
    <div class="pd-bar" id="pdBar"></div>
@@ -4941,7 +5124,7 @@ function pdOpen(){
   pdEl("pdZoom").onclick=()=>{ PDR.Z=PDR.Z===12?8:PDR.Z===8?18:12; };
   pdEl("pdSpd").onclick=()=>{ if(PD.speed==="sleep") return; PD.speed=PD.speed==="fast"?"walk":"fast"; pdHud(true); };
   pdEl("pdSnd").onclick=()=>{ PDA.on=!PDA.on; S.pdSound=PDA.on; save(); if(PDA.on) pdAudioInit(); pdEl("pdSnd").textContent=PDA.on?"🔊":"🔇"; };
-  pdEl("pdMenu").onclick=pdMenu;
+  pdEl("pdMenu").onclick=pdMenu; pdEl("pdMap").onclick=pdMapView; pdEl("pdObj").onclick=pdMapView;
   pdEl("pdMsg").onclick=pdLogView;
   window.addEventListener("resize",pdResize);
   PD_LAST=performance.now(); cancelAnimationFrame(PD_RAF); PD_RAF=requestAnimationFrame(pdLoop);
@@ -5005,7 +5188,7 @@ function pdHud(force){
   const st=[]; if(b.hunger>360) st.push("🍫"); if(b.thirst<30) st.push("🥤"); if(b.bladder>75) st.push("🚻"); if(b.warmth<38) st.push("🥶"); if(PD.heat>40) st.push("🚨");
   const v=PD._vis||{v:0,beacon:0}, lvl=v.beacon>=1?3:v.v>0.55?2:v.v>0.2?1:0;
   pdEl("pdEye").innerHTML=`<div class="pd-gem g${lvl}">${["🌑","👁️","👁️","🔦"][lvl]}</div><span>${["Hidden","Visible","Exposed","Lit up"][lvl]}</span>${st.length?`<div class="pd-st">${st.join(" ")}</div>`:""}`;
-  pdEl("pdRes").innerHTML=`🥤${r.water.toFixed(1)} 🍫${r.snacks}${K.flasks?` ☕${r.flask}`:""} 📱${Math.round(r.phone)}%${K.light?` 🔦${Math.round(r.torch)}%`:""}`;
+  const cf=PD.camp?pdComfort():null; pdEl("pdRes").innerHTML=(cf?`<b title="camp comfort">🏕️${"●".repeat(cf.n)}${"○".repeat(5-cf.n)}</b><br>`:"")+`🥤${r.water.toFixed(1)} 🍫${r.snacks}${K.flasks?` ☕${r.flask}`:""} 📱${Math.round(r.phone)}%${K.light?` 🔦${Math.round(r.torch)}%`:""}`;
   const last=PD.msgs[PD.msgs.length-1]; if(last&&(PD._newMsg||force)){ PD._newMsg=false; const m=pdEl("pdMsg"); m.className="pd-msg k-"+last.kind; m.innerHTML=`<span class="pd-mt">${pdHM(last.t)}</span> ${esc(last.text)}`; m.classList.remove("pop"); void m.offsetWidth; m.classList.add("pop"); }
   // action bar
   const near=PD.camp&&Math.hypot(p.x-PD.camp.x,p.y-PD.camp.y)<2.5, B=[];
@@ -5013,11 +5196,12 @@ function pdHud(force){
   if(p.busy){ const f=pdClamp((PD.t-p.busy.start)/Math.max(0.1,p.busy.until-p.busy.start)*100); B.push(`<div class="pd-busy"><span>${esc(p.busy.label)}…</span><div class="pd-m"><i style="width:${f}%"></i></div></div>`); }
   else if(p.state==="sleep") B.push(btn("wake","⏸ Wake up","wide"));
   else if(p.state==="shelter"){ B.push(btn("sleep","💤 Sleep","pri")); if(K.light) B.push(btn("torch",p.torch==="off"?"🔦 Off":p.torch==="red"?"🔴 Red":"🔦 On")); B.push(btn("kit","🎒 Kit")); if(e.cloud<0.6&&pdDaylight(PD.t)<0.2) B.push(btn("stars","⭐ Stars")); B.push(btn("exit","🚪 Get out")); }
-  else { if(K.light) B.push(btn("torch",p.torch==="off"?"🔦 Off":p.torch==="red"?"🔴 Red":"🔦 On"));
-    B.push(btn("sneak",p.sneak?"🤫 Sneaking":"🚶 Walking",p.sneak?"on":""));
+  else { if(K.light&&PD.r.torch>0) B.push(btn("torch",p.torch==="off"?"🔦 Off":p.torch==="red"?"🔴 Red":"🔦 On"));
+    B.push(btn("sneak",p.sneak?"🤫 Sneaking":"🚶 Walking",p.sneak?"on":"")); B.push(btn("prone",p.prone?"🧍 Stand":"🫥 Lie flat",p.prone?"on":""));
     if(near) B.push(btn("enter","⛺ Get in","pri")); else if(!PD.camp) B.push(btn("pitchq","⛺ Pitch here","pri"));
     B.push(btn("kit","🎒 Kit"));
     if(near) B.push(btn("pack","📦 Pack up")); else if(!PD.camp) B.push(btn("leave",PD.t>e.sunrise-60?"🌅 Walk out":"🚶 Walk out",PD.t>e.sunrise-60?"pri":"")); }
+  const phT=PD.meta&&pdPhotoTarget(); if(phT&&!p.busy&&p.state!=="sleep") B.unshift(btn("photo",`📷 ${phT.sp.i} Photo`,"pri cam"));
   const html=B.join(""); if(html!==PD._bar){ PD._bar=html; pdEl("pdBar").innerHTML=html; }
   const sp=pdEl("pdSpd"); if(sp) sp.classList.toggle("on",PD.speed==="fast");
 }
@@ -5025,6 +5209,7 @@ document.addEventListener("click",e=>{
   const b=e.target.closest("[data-pd]"); if(!b||!PD) return; const id=b.dataset.pd, arg=b.dataset.arg;
   pdAudioInit();
   if(id==="kit") return pdKitSheet();
+  if(id==="kitadd"){ const c=S.classes.find(x=>x.id===PD.classId); if(c&&arg){ c.items[arg]=1; save(); b.outerHTML=`<span class="chip ok">added for next time ✓</span>`; } return; }
   if(id==="pitchq") return pdPitchPreview();
   if(id==="wake"){ PD.p.state="shelter"; PD.speed="walk"; return pdHud(true); }
   if(id==="leave"&&!PD.camp&&PD.t<PD.env.sunrise-60){ ask("Walk out and end the night now?",{ok:"Walk out"}).then(ok=>{ if(ok){ pdAction("leave"); pdHud(true); } }); return; }
@@ -5049,10 +5234,33 @@ function pdKitSheet(){
      ${(K.poncho&&!c.sh.includes(K.poncho.id))||(K.tarp&&!c.sh.includes(K.tarp.id))?A("awning","🛖 Rig an awning over the head end",near&&!c.awning,c.awning?"done":"keeps rain and frost off"):""}
      ${["bivvy","tent"].includes(c.type)?A("vent",`${c.vented?"✅":"⬜"} Vent the shelter`,near,"less condensation, a bit colder"):""}
      ${K.stove?A("cook",`🍲 Cook a hot meal (${r.hot})`,near&&r.hot>0&&r.water>=0.5,"noisy, 20 min"):""}${K.stove&&K.flasks?A("boil","♨️ Boil water for the flask",near&&r.water>=0.5):""}</div>`:""}
+   ${c?`<div class="pd-sec"><h4>Camp comfort ${"●".repeat(pdComfort().n)}${"○".repeat(5-pdComfort().n)}</h4><p class="small muted" style="margin:0">${esc(pdComfort().why.join(" · ")||"Nothing yet")}. Comfort makes your sleep count for more. Add points with a hidden, sheltered, flat, dry pitch, an awning, food stashed and the shelter vented.</p></div>`:""}
+   ${pdMissingHTML()}
    <div class="pd-sec"><h4>Gear</h4>${A("phone",`📱 Check the forecast (${Math.round(r.phone)}%)`,r.phone>2,"a little light")}${K.bank?A("charge",`🔋 Charge phone (${r.bank} left)`,r.bank>0&&r.phone<70):""}
+     ${PD.meta&&PD.meta.cache&&!PD.meta.cacheFound?A("geo","📡 Geocache app (hot or cold)",r.phone>2,"uses battery"):""}
      ${K.filter?A("filter","💧 Filter water",pdNearWater(p.x,p.y,2)&&!inCamp,"stand by the water"):""}${tap?A("tap","🚰 Fill up at the tap",true):""}</div>`;
 }
 
+function pdMissingHTML(){
+  const K=pdKitCached(), c=S.classes.find(x=>x.id===PD.classId), own=S.inv.filter(usable), L=[];
+  const chk=(has,label,why,test)=>{ if(has) return; const it=own.find(i=>test(i)&&!(c&&c.items[i.id])); L.push(`<div class="pd-a locked"><span>🔒 ${label}<br><small>${why}</small></span>${it?`<button class="tog" data-pd="kitadd" data-arg="${it.id}">+ Add ${esc(K.name(it).slice(0,18))}</button>`:`<small>not in your kit</small>`}</div>`); };
+  chk(K.light,"Head torch","see, pitch and pack in the dark",i=>isLight(i)); chk(!K.light||K.red,"Red-light torch","barely visible to people",i=>isLight(i)&&redOf(i));
+  chk(K.flasks,"Flask","hot drinks at 3am",i=>/flask|insulated|thermos|vacuum/i.test(i.name)); chk(K.stove,"Stove + gas","hot food and refills",i=>RX.stove.test(i.name));
+  chk(K.headnet||PD.env.bugs<1,"Midge net","summer, water, dusk",i=>RX.headnet.test(i.name)); chk(K.socks,"Spare socks","dry feet = warm feet",i=>/sock/i.test(i.name));
+  chk(K.drybag,"Dry bag","a dry layer, whatever happens",i=>RX.drybag.test(i.name)); chk(K.metalPegs||!(K.main&&["tent","tarp","poncho"].includes(K.main.shelter)),"Metal pegs","grip frozen ground",i=>RX.ypeg.test(i.name));
+  chk(K.bank,"Power bank","phones die in the cold",i=>RX.power.test(i.name)); chk(K.filter||K.waterCap>=1.5,"Water filter","refill from streams",i=>/filter|sawyer|lifestraw/i.test(i.name));
+  return L.length?`<div class="pd-sec"><h4>Missing from this class</h4>${L.join("")}<p class="small muted">Adding kit here updates your real class in the planner, ready for next time.</p></div>`:""; }
+/* ---------- map, contracts, fog of war ---------- */
+function pdMapView(){ const m=pdEl("pdModal"); PD.paused=true; m.hidden=false; const M=PD.meta, ex=pdExplored();
+  m.innerHTML=`<div class="pd-card"><h3>🗺 ${esc(PD.label)} <span class="small muted">· ${ex}% explored</span></h3><canvas id="pdFog" width="300" height="300" class="pd-mini"></canvas>
+   <h3>📋 Tonight's contracts</h3>${M.contracts.map(c=>{ const C=PD_CONTRACTS[c.id], pr=C.prog(c.arg); return `<div class="pd-con ${c.done?"done":""}"><span>${c.done?"✅":"⬜"} ${esc(C.n(c.arg))}${pr&&!c.done?` <small>${esc(pr)}</small>`:""}</span><b>+${C.xp}</b></div>`; }).join("")}
+   <p class="small muted">✨ perfect pitches you've spotted · ⛺ your camp · 🧍 you. Litter: ${M.litterGot}/${M.litter.length} picked up${M.cache?` · geocache ${M.cacheFound?"found ✓":"somewhere out there (📡 in Kit)"}`:""}.</p>
+   <button class="pri" id="pdMapX">Back</button></div>`;
+  const cv=pdEl("pdFog"), x=cv.getContext("2d"), k=cv.width/PD_W; x.drawImage(PDR.ground,0,0,cv.width,cv.height); x.drawImage(PDR.trees,0,0,cv.width,cv.height);
+  x.fillStyle="#0b0f14"; for(let y=0;y<PD_W;y++) for(let X=0;X<PD_W;X++) if(!M.fog[pdIdx(X,y)]) x.fillRect(X*k,y*k,k+0.5,k+0.5);
+  x.font="13px system-ui"; x.textAlign="center"; M.perfect.forEach(p=>{ if(p.seen) x.fillText("✨",(p.x+0.5)*k,(p.y+0.5)*k+4); }); if(PD.camp) x.fillText("⛺",(PD.camp.x+0.5)*k,(PD.camp.y+0.5)*k+4); x.fillText("🧍",PD.p.x*k,PD.p.y*k+4);
+  x.strokeStyle="rgba(255,210,120,0.6)"; x.lineWidth=1.5; x.beginPath(); PD.stats.trail.forEach(([a,b],i)=>i?x.lineTo(a*k,b*k):x.moveTo(a*k,b*k)); x.stroke();
+  pdEl("pdMapX").onclick=()=>{ m.hidden=true; PD.paused=false; }; }
 /* ---------- pitch preview ---------- */
 function pdPitchPreview(){
   const p=PD.p, K=pdKitCached(), s=pdSite(PDW,p.x-0.5,p.y-0.5,PD.env), m=pdEl("pdModal");
@@ -5122,14 +5330,25 @@ function pdEndScreen(){
     <p class="small muted">${esc(PD.label)} · ${esc(PD.className)} · slept ${(PD.b.slept/60).toFixed(1)} h · spotted ${PD.stats.spotted}× · lowest warmth ${Math.round(PD.stats.minW)}</p>
     ${E.moments.length?`<h3>✨ Moments</h3><ul class="pd-notes">${E.moments.map(k=>`<li>${esc(PD.stats.moments[k].text)}</li>`).join("")}</ul>`:""}
     ${(PD.newAch||[]).length?`<div class="gach">${PD.newAch.map(a=>`<div>🏅 <b>${esc(a.n)}</b><br><span class="small muted">${esc(a.d)}</span></div>`).join("")}</div>`:""}
+    ${E.xp!=null?`<div class="pd-xp"><div class="row" style="justify-content:space-between"><b>+${E.xp} XP</b><span>${esc(E.rankAfter.name)}${E.rankAfter.r>E.rankBefore.r?" · RANK UP! ⭐ +1 perk point":""}</span></div><div class="pd-m xpb"><i style="width:${Math.round(E.rankAfter.cur/E.rankAfter.need*100)}%"></i></div><small class="muted">${E.rankAfter.next?`${E.rankAfter.need-E.rankAfter.cur} XP to ${esc(E.rankAfter.next)}`:"Max rank"}</small>
+      ${(E.unlocked||[]).length?`<p>🔓 Unlocked: <b>${E.unlocked.map(k=>({hill:"Storm Hill",river:"Midsummer River",moor:"Dartmoor Commons"})[k]||k).join(", ")}</b></p>`:""}
+      <details><summary class="small">Where the XP came from</summary>${PD.meta.xp.map(x=>`<div class="small">+${x.n} ${esc(x.why)}</div>`).join("")}</details></div>`:""}
+    ${E.contracts?`<h3>📋 Contracts</h3>${E.contracts.map(c=>`<div class="pd-con ${c.done?"done":""}"><span>${c.done?"✅":"❌"} ${esc(c.n)}</span><b>${c.done?"+"+c.xp:""}</b></div>`).join("")}`:""}
+    ${pdKitReport()}
     <h3>📝 Night Notes</h3>${L.map((l,i)=>`<div class="item"><div class="nm"><span>${esc(l.t)}</span></div>${l.id?`<button class="tog pri" data-pdpack="${l.id}">+ Pack ${esc(l.n.replace(/\s*\(.*?\)\s*/g," ").slice(0,22))}</button>`:""}</div>`).join("")}
-    <div class="row" style="margin-top:12px;flex-wrap:wrap"><button class="pri" id="pdAgain">▶ Another night</button><button id="pdBack">Back to the app</button></div></div>`;
+    <div class="row" style="margin-top:12px;flex-wrap:wrap"><button class="pri" id="pdAgain">▶ Another night</button><button id="pdLog">📓 Log as practice night</button><button id="pdBack">Back to the app</button></div></div>`;
   pdMiniMap(pdEl("pdMini"));
   m.querySelectorAll("[data-pdpack]").forEach(b=>b.onclick=()=>{ const c=S.classes.find(x=>x.id===PD.classId); if(c){ c.items[b.dataset.pdpack]=1; save(); b.outerHTML=`<span class="chip ok">packed ✓</span>`; } });
   pdEl("pdAgain").onclick=()=>{ pdClose(); PD=null; renderPlay(); };
+  pdEl("pdLog").onclick=()=>{ const c=S.classes.find(x=>x.id===PD.classId)||cls(), t=thermal(Object.assign({},c,{wx:Object.assign({},c.wx,{low:Math.round(PD.env.low)})}),{noCalib:true}), mw=PD.stats.minW;
+    S.trips.push({id:"t_"+Date.now().toString(36),date:todayISO(),loc:"🎮 "+PD.label,classId:c.id,className:c.name,low:Math.round(PD.env.low),felt:mw>=60?0:mw>=45?-1:-2,rating:t.rating,margin:t.margin,notes:`Practice night in Pitch Dark: ${PD_ENDS[PD.ended.kind][1]}, ${PD.ended.stars}★. Slept ${(PD.b.slept/60).toFixed(1)} h, lowest warmth ${Math.round(mw)}.`,weight:weights(c).pack,practice:true}); save();
+    pdEl("pdLog").outerHTML=`<span class="chip ok">Logged on the Trips tab ✓</span>`; };
   pdEl("pdBack").onclick=()=>{ pdClose(); PD=null; renderPlay(); };
 }
 
+function pdKitReport(){ const st=PD.stats, K=pdKitCached(); if(st.minMargin==null) return "";
+  const m=st.minMargin, verdict=m>=2?"Your sleep system had warmth to spare.":m>=0?"Just warm enough at the coldest point.":m>=-3?`About ${Math.round(-m)}°C short at the coldest point: a chilly but survivable night.`:`About ${Math.round(-m)}°C short at the coldest point. Add insulation before doing this for real.`;
+  return `<h3>🎒 How your kit did</h3><p class="small">Coldest point: ${pdHM(st.minMarginAt)}, ${Math.round(st.minMarginT)}°C. ${verdict} Pack: ${K.packKg.toFixed(1)} kg.${PD.camp||PD.campHist?` Best camp comfort: ${PD.stats.bestComfort??"–"}/5.`:""}</p>`; }
 /* ---------- start screen (Play tab) ---------- */
 function pdStartHTML(){
   const opts=S.classes.map(c=>`<option value="${c.id}" ${c.id===(S.pdClass||S.active)?"selected":""}>${esc(c.name)}</option>`).join(""), loc=S.pdLoc||"towpath", J=S.pd||{runs:0,journal:[],ach:{},seen:{}};
@@ -5137,16 +5356,24 @@ function pdStartHTML(){
   const c=S.classes.find(x=>x.id===(S.pdClass||S.active))||cls(), K=pdKit(c);
   return `<div class="card pd-hero"><h2>🌑 Pitch Dark</h2><p class="muted" style="margin:-4px 0 8px"><i>One night out, with your real kit.</i></p>
     <p class="small">Walk in at dusk, find a hidden spot, pitch, and get through the night. Dog walkers, farmers, foxes, frost and your own snoring are all against you. Your kit decides how warm, dry and hidden you are.</p></div>
+   ${pdRankHTML(J)}
    ${S.pdSave&&S.pdSave.v===3?`<div class="card row" style="justify-content:space-between"><span>🌙 Night in progress: <b>${esc(S.pdSave.label)}</b>, ${pdHM(S.pdSave.t)}</span><button class="pri" id="pdResume">▶ Resume</button></div>`:""}
-   <div class="card"><h3 style="margin-top:0">Where</h3><div class="pd-locs">${locs.map(([k,i,n,s])=>`<button class="pd-loc ${loc===k?"on":""}" data-pdloc="${k}"><span class="pd-li">${i}</span><b>${n}</b><small>${s}</small>${(J.best&&Object.keys(J.best).some(b=>b.startsWith(k+"|")))?`<em>${"★".repeat(Math.max(...Object.entries(J.best).filter(([b])=>b.startsWith(k+"|")).map(([,v])=>v.stars)))}</em>`:""}</button>`).join("")}</div>
+   <div class="card"><h3 style="margin-top:0">Where</h3><div class="pd-locs">${locs.map(([k,i,n,s])=>{ const need=PD_LOC_RANK[k]||0, lock=pdRank(J.xp||0).r<need; return lock?`<button class="pd-loc lock" disabled><span class="pd-li">🔒</span><b>${n}</b><small>Unlocks at rank ${need+1}: ${PD_RANKS[need]}</small></button>`:`<button class="pd-loc ${loc===k?"on":""}" data-pdloc="${k}"><span class="pd-li">${i}</span><b>${n}</b><small>${s}</small>${(J.best&&Object.keys(J.best).some(b=>b.startsWith(k+"|")))?`<em>${"★".repeat(Math.max(...Object.entries(J.best).filter(([b])=>b.startsWith(k+"|")).map(([,v])=>v.stars)))}</em>`:""}</button>`; }).join("")}</div>
      ${loc==="real"?pdRealHTML():""}</div>
    <div class="card"><div class="grid2"><label>Loadout<select id="pdClass">${opts}</select></label>
      <label>Difficulty<select id="pdDiff"><option value="easy" ${S.pdDiff==="easy"?"selected":""}>Gentle</option><option value="normal" ${!S.pdDiff||S.pdDiff==="normal"?"selected":""}>Wild camper</option><option value="hard" ${S.pdDiff==="hard"?"selected":""}>Hardcore</option></select></label></div>
      <p class="small muted" style="margin:6px 0 0">${K.packKg.toFixed(1)} kg · shelter: ${K.main?esc(K.name(K.main)):"none"} · ${K.light?(K.red?"red-light torch":"torch"):"no torch"} · ${K.snacks} snacks${K.flasks?` · ${K.flasks} flask${K.flasks>1?"s":""}`:""}${K.stove?" · stove":""}</p>
+     ${pdRank(J.xp||0).r>=1?`<label class="small" style="display:flex;gap:6px;margin-top:8px;align-items:center"><input type="checkbox" id="pdChal" ${S.pdChal?"checked":""} style="width:auto"> 🚫🔦 No-torch challenge (+30% XP)</label>`:""}
      <div class="row" style="margin-top:10px"><button class="pri" id="pdGo" ${loc==="real"&&!(PD_REAL&&PD_REAL.ready)?"disabled":""}>▶ Start the night</button><button id="pdDaily">📅 Daily challenge</button></div></div>
    ${pdRecordHTML(J)}
    <p class="small muted center"><a href="#" id="pdClassic">Classic story mode</a></p>`;
 }
+function pdRankHTML(J){ const R=pdRank(J.xp||0), pts=J.perkPts||0, P=J.perks||{};
+  return `<div class="card pd-rank"><div class="row" style="justify-content:space-between"><b>⭐ ${esc(R.name)}</b><span class="small muted">Rank ${R.r+1} · ${J.xp||0} XP</span></div><div class="pd-m xpb"><i style="width:${Math.round(R.cur/R.need*100)}%"></i></div><small class="muted">${R.next?`${R.need-R.cur} XP to ${esc(R.next)}. Every night earns XP, even the bad ones.`:"Max rank. Legend."}</small>
+    <details class="sec" data-sec="pdPerks" ${pts||isOpen("pdPerks",false)?"open":""}><summary><span class="st">🧬 Perks</span><span class="sm">${pts?`<b style="color:#ffd27a">${pts} point${pts>1?"s":""} to spend</b>`:"earn points by ranking up"}</span></summary>
+    <div class="pd-perks">${PD_PERKS.map(p=>{ const l=P[p.id]||0, can=pts>0&&l<p.max; return `<div class="pd-perk ${l?"on":""}"><span class="pd-li">${p.i}</span><div><b>${p.n}</b> <small>${l}/${p.max}</small><br><small class="muted">${p.d}</small></div>${can?`<button class="tog pri" data-perk="${p.id}">+1</button>`:""}</div>`; }).join("")}</div></details>
+    <details class="sec" data-sec="pdAlbum" ${isOpen("pdAlbum",false)?"open":""}><summary><span class="st">📷 Wildlife album</span><span class="sm">${Object.keys(J.album||{}).length}/${PD_SPECIES.length} species</span></summary>
+    <div class="pd-album">${PD_SPECIES.map(s=>{ const a=(J.album||{})[s.k]; return a?`<div class="pd-sp got"><span>${s.i}</span><b>${s.n}</b><small>${"★".repeat(a.stars)}${"☆".repeat(3-a.stars)}<br>${esc(a.where)} · ${a.t}</small></div>`:`<div class="pd-sp"><span>❔</span><b>???</b><small>${esc(s.hint)}</small></div>`; }).join("")}</div></details></div>`; }
 function pdRecordHTML(J){ if(!J.runs) return ""; const got=PD_ACH.filter(a=>J.ach[a.id]);
   return `<details class="card sec" data-sec="pdRec" ${isOpen("pdRec",false)?"open":""}><summary><span class="st">📓 Journal</span><span class="sm">${J.dawns}/${J.runs} nights · ${got.length}/${PD_ACH.length} badges · ${Object.keys(J.seen).length} moments</span></summary>
     ${J.journal.slice(0,8).map(j=>`<div class="pd-j"><b>${esc(j.loc)}</b> <span class="small muted">${j.date} · ${esc(j.cls)}</span> <span class="pd-stars s">${"★".repeat(j.stars)}</span><br><i class="small">“${esc(j.line)}”</i></div>`).join("")}
@@ -5193,6 +5420,7 @@ async function pdStartReal(classId,diff){
 document.addEventListener("click",e=>{
   if(!e.target.closest||!e.target.closest("#v-play")) return; const b=e.target.closest("button,a"); if(!b) return;
   if(b.dataset.pdloc){ S.pdLoc=b.dataset.pdloc; save(); pdRenderStart(); return; }
+  if(b.dataset.perk){ const J=S.pd, id=b.dataset.perk, P=J.perks=J.perks||{}, def=PD_PERKS.find(p=>p.id===id); if((J.perkPts||0)>0&&(P[id]||0)<def.max){ P[id]=(P[id]||0)+1; J.perkPts--; save(); toast(`${def.n} level ${P[id]}`); pdRenderStart(); } return; }
   if(b.id==="pdClassic"){ e.preventDefault(); S.playMode="classic"; save(); renderPlay(); return; }
   if(b.id==="pdStory"){ e.preventDefault(); S.playMode="pd"; save(); renderPlay(); return; }
   if(b.id==="pdRetry"&&PD_REAL) return pdPickReal(PD_REAL.lat,PD_REAL.lon);
@@ -5202,9 +5430,9 @@ document.addEventListener("click",e=>{
     const cid=$("#pdClass").value, diff=$("#pdDiff").value, loc=S.pdLoc||"towpath"; S.pdClass=cid; S.pdDiff=diff; S.pdSound=PDA.on; save(); PDA.on=S.pdSound!==false;
     if(b.id==="pdDaily"){ const d=todayISO(), seed=+d.replace(/-/g,""), keys=["towpath","hill","river","moor"]; PD=null; pdStart({classId:cid,preset:keys[seed%4],seed,diff:"normal",date:d}); PD.daily=d; pdOpen(); return; }
     if(loc==="real"){ b.disabled=true; b.textContent="Getting the forecast…"; pdStartReal(cid,diff).then(()=>pdOpen()).catch(err=>{ toast("Couldn't start: "+err.message); renderPlay(); }); return; }
-    PD=null; pdStart({classId:cid,preset:loc,diff}); pdOpen(); return; }
+    PD=null; pdStart({classId:cid,preset:loc,diff,challenge:$("#pdChal")&&$("#pdChal").checked?"notorch":null}); pdOpen(); return; }
 });
-document.addEventListener("change",e=>{ if(!e.target.closest||!e.target.closest("#v-play")) return; if(e.target.id==="pdClass"){ S.pdClass=e.target.value; save(); pdRenderStart(); } });
+document.addEventListener("change",e=>{ if(!e.target.closest||!e.target.closest("#v-play")) return; if(e.target.id==="pdChal"){ S.pdChal=e.target.checked; save(); return; } if(e.target.id==="pdClass"){ S.pdClass=e.target.value; save(); pdRenderStart(); } });
 
 document.querySelectorAll("details[data-sec]").forEach(d=>{const v=S.ui&&S.ui[d.dataset.sec];if(v!=null)d.open=v;});
 render();
