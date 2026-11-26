@@ -307,6 +307,17 @@ with sync_playwright() as p:
     ok("real world built from OpenStreetMap data",E("PDW&&PDW.kind==='real'&&PDW.t.includes(PD_T.WATER)&&PDW.t.includes(PD_T.PATH)&&PDW.t.includes(PD_T.CROP)"))
     ok("real night uses the forecast",E("PD.src==='real'&&PD.env.low===0"),E("PD&&PD.env.low"))
     E("pdEnd('walkedhome')"); pg.wait_for_timeout(400); pg.click("#pdBack") if pg.query_selector("#pdBack") else None
+    # pre-built offline area (tools/build_area.py output), served instead of asking Overpass
+    area={"name":"nantwich","bbox":[53.03,-2.61,53.11,-2.45],"grid":[3,3],"elev":[50,52,54,51,53,55,52,54,56],"els":[]}
+    for el in OVP["elements"]:
+        if el["type"]=="node": area["els"].append({"t":"n","la":el["lat"],"lo":el["lon"],"g":el["tags"]})
+        else: area["els"].append({"t":"w","g":el["tags"],"c":[x for p in el["geometry"] for x in (p["lat"],p["lon"])]})
+    import os; os.makedirs("../data",exist_ok=True); tmp_area="../data/nantwich.json"; had=os.path.exists(tmp_area)
+    if not had: json.dump(area,open(tmp_area,"w"))
+    E("PD=null;PD_REAL=null;for(const k in PD_AREA_CACHE) delete PD_AREA_CACHE[k];S.pdLoc='real';save()"); tab("data"); tab("play")
+    E("pdPickReal(53.1005,-2.5620)"); pg.wait_for_timeout(900)
+    ok("Nantwich area loads from the built-in file, no map servers needed",E("PD_REAL&&PD_REAL.ready&&PD_REAL.offline")=="Nantwich and around" and "Shropshire Union Canal" in pg.inner_text("#gmSite"))
+    if not had: os.remove(tmp_area)
     E("PD=null;S.pdLoc='towpath';S.pdSave=null;save()")
 
     section("Export / import / reset")
