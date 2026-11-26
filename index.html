@@ -120,6 +120,17 @@ details.sub>summary{font-size:13px;color:var(--accent);font-weight:600}
 .gscene .gtext{font-size:17px;line-height:1.55;margin:4px 0 12px}.gres{font-size:14px;color:var(--muted);font-style:italic;border-left:2px solid var(--line);padding-left:8px;margin:0 0 10px}
 .gchoices{display:flex;flex-direction:column;gap:8px}.gch{display:flex;justify-content:space-between;align-items:center;gap:8px;text-align:left;padding:12px;font-size:15px;border-radius:12px;background:var(--panel2)}
 .gch.locked{opacity:.55}.ghs{white-space:nowrap;font-size:12px}.gh{margin-left:4px}.gh.up{color:var(--ok)}.gh.dn{color:var(--bad)}
+.gmapbox{position:relative;height:300px;border-radius:12px;overflow:hidden;background:#1d2a22;touch-action:none;user-select:none;margin-top:6px}
+.gmapbox.small-map{height:190px;margin-top:0}
+.gm-tiles img{position:absolute;left:0;top:0;width:256px;height:256px;max-width:none;pointer-events:none}
+.gm-tiles img.err{visibility:hidden}
+.gm-ov{position:absolute;inset:0;width:100%;height:100%;pointer-events:none}
+.gm-lab{font-size:11px;fill:#fff;paint-order:stroke;stroke:#000;stroke-width:3px}
+.gm-ui{position:absolute;right:6px;top:6px;display:flex;flex-direction:column;gap:4px}
+.gm-ui button{width:34px;height:34px;padding:0;border-radius:8px;background:#000a;color:#fff;font-size:18px;border:1px solid #fff3}
+.gm-attr{position:absolute;right:0;bottom:0;font-size:9px;background:#fffc;color:#333;padding:1px 4px;border-top-left-radius:4px}
+body.nightmode .gmapbox{filter:brightness(.55) sepia(.6) hue-rotate(-30deg)}
+.gsite{margin-top:8px;padding:8px;border-radius:10px;background:var(--panel2)}
 .gdelta{white-space:nowrap;font-style:normal}.gach{display:grid;grid-template-columns:repeat(auto-fill,minmax(150px,1fr));gap:8px;margin-top:10px}.gach>div{background:var(--panel2);border-radius:10px;padding:8px;font-size:13px}
 .ggrades{display:grid;grid-template-columns:repeat(5,1fr);gap:6px;margin:12px 0}.gg{background:var(--panel2);border-radius:10px;padding:6px 2px;text-align:center;display:flex;flex-direction:column}.gg b{font-size:22px}.gg span{font-size:10px;color:var(--muted)}
 .gA b,.gB b{color:var(--ok)}.gC b{color:var(--warn)}.gD b,.gE b{color:var(--bad)}
@@ -2517,10 +2528,10 @@ GAME_STORYLETS.push(
   text:"A Land Rover idles at a field gate. The farmer leans out. 'Off somewhere?' His eyes go to your pack.",
   choices:[{label:"Be honest: one night, no trace",effects:{morale:4,local:{farmer:1}},result:"'Top field's fine. Shut the gate. Gone by eight.' That's permission."},
            {label:"'Just walking'",effects:{suspicion:4},result:"'Right.' He doesn't believe you, and drives off."}]},
- {id:"local_farmer_dawn",phase:"dawn",when:{localAbove:{farmer:0}},weight:4,once:true,
+ {id:"local_farmer_dawn",phase:"dawn",when:{localAbove:{farmer:0},siteFlag:"farm"},weight:4,once:true,
   text:"The farmer's quad bike bumps along the hedge at first light. He slows, sees your neat pack and the empty patch of grass.",
   choices:[{label:"Wave and say thanks",effects:{morale:8,local:{farmer:1}},result:"A thumb up. You're welcome back, apparently."}]},
- {id:"local_farmer_angry",phase:"night",when:{localBelow:{farmer:0},hourBetween:[20,23],stealthMatters:true},weight:4,once:true,
+ {id:"local_farmer_angry",phase:"night",when:{localBelow:{farmer:0},siteFlag:"farm",hourBetween:[20,23],stealthMatters:true},weight:4,once:true,
   text:"Headlights swing into the field and stop. A door slams. Boots in the frost, coming straight for you.",
   choices:[{label:"Stand up, apologise, offer to go",effects:{suspicion:30,morale:-8,local:{farmer:1}},result:"'Go on then. And shut the gate.' You pack in the cold dark."},
            {label:"Stay put and hope",effects:{suspicion:45},result:"A torch in your face. 'Out. Now.'"}]},
@@ -2651,7 +2662,7 @@ GAME_STORYLETS.push(
   choices:[{label:"Stay perfectly still till it passes",effects:{warmth:-8,suspicion:-4,time:30},result:"The torch goes by. You're shaking by the end."},
            {label:"Do sit-ups in the bag to warm up",effects:{warmth:6,energy:-5,noise:3,near:1},result:"Warmer. The torch pauses, swings your way... then carries on."},
            {label:"Hot drink from the flask, slowly",requires:{uses:{flask:1}},effects:{use:"flask",warmth:10,noise:1},result:"The lid squeaks. You freeze. Nothing happens. Bliss."}]},
- {id:"night_car",phase:"night",when:{hourBetween:[22,2],stealthMatters:true},weight:3,once:true,
+ {id:"night_car",phase:"night",when:{hourBetween:[22,2],stealthMatters:true,siteFlag:"road"},weight:3,once:true,
   text:"{hour}. Headlights swing across the field from the lane and stop. Engine running. Nobody gets out.",
   choices:[{label:"Lie flat and wait",effects:{morale:-6,warmth:-3,time:30},result:"Ten minutes later it reverses away. Probably just someone on their phone. Probably."},
            {label:"Peek with the monocular",requires:{hasItem:["monocular"]},effects:{morale:3,time:15},result:"A couple sharing chips. Not interested in you at all."},
@@ -2782,6 +2793,7 @@ function gHourIn(h,[a,b]){ return a<=b?(h>=a&&h<=b):(h>=a||h<=b); }
 function gWhenOK(w){
   if(!w) return true; const h=gHourOf(G.time), m=G.meters;
   if(w.hourBetween&&!gHourIn(h,w.hourBetween)) return false;
+  if(w.siteFlag&&G.siteFlags&&!G.siteFlags[w.siteFlag]) return false;
   if(w.warmthBelow!=null&&!(m.warmth<w.warmthBelow)) return false; if(w.warmthAbove!=null&&!(m.warmth>w.warmthAbove)) return false;
   if(w.energyBelow!=null&&!(m.energy<w.energyBelow)) return false; if(w.dryBelow!=null&&!(m.dry<w.dryBelow)) return false;
   if(w.moraleBelow!=null&&!(m.morale<w.moraleBelow)) return false; if(w.suspicionAbove!=null&&!(m.suspicion>w.suspicionAbove)) return false;
@@ -2839,7 +2851,7 @@ function gStart(classId,scenKey,difficulty,seed){
   gNext(); gSave();
 }
 function gSave(){ S.game=G; save(); }
-function gLoad(){ if(S.game&&S.game.v===1){ G=S.game; G.localDelta=G.localDelta||{}; G.pending=G.pending||[]; G.lowAt=G.lowAt||{}; G.near=G.near||0; if(G.flaskAt==null) G.flaskAt=G.time; G.km=G.km||0; if(!G.res) gSysInit(); G.scen=GAME_SCEN[G.scenKey]||GAME_SCEN.towpath; if(G.scenKey==="plan") G.scen=Object.assign({},GAME_SCEN.plan); return true;} return false; }
+function gLoad(){ if(S.game&&S.game.v===1){ G=S.game; G.localDelta=G.localDelta||{}; G.pending=G.pending||[]; G.lowAt=G.lowAt||{}; G.near=G.near||0; if(G.flaskAt==null) G.flaskAt=G.time; G.km=G.km||0; if(!G.res) gSysInit(); G.scen=G.scenKey==="map"&&G.scen?G.scen:(GAME_SCEN[G.scenKey]||GAME_SCEN.towpath); if(G.scenKey==="plan") G.scen=Object.assign({},GAME_SCEN.plan); return true;} return false; }
 
 /* ---------- physics per turn ---------- */
 const gMult=()=>({easy:0.6,normal:1,hard:1.3}[G.difficulty]||1);
@@ -2924,6 +2936,7 @@ function gDynamic(id){
   const c=gClass(); { const sx=gSysDynamic(id); if(sx) return sx; if(id==="camp_hub") return null; }
   if(id==="intro") return {id,text:G.scen.intro||(G.scenKey==="towpath"?"Half three on a November afternoon. The light is already thinking about leaving. {pack} on your back, the towpath ahead, and a night out in front of you.":"Late afternoon. {pack} on your back, and a night out ahead of you."),
     sub:gIntroVoice(),choices:[{label:"Set off",effects:{morale:3}}]};
+  if(id==="pitch_choose"&&G.real) return gmPitchScene();
   if(id==="pitch_choose") return {id,text:"Time to find somewhere to sleep. Four options in the failing light:",choices:[
     {label:"Woodland edge: sheltered, hidden, rooty",effects:{pitch:"woodland",morale:-2},result:"Dark under the trees, out of the wind and out of sight. Roots everywhere."},
     {label:"Behind a hedge line: screened, flat-ish",effects:{pitch:"hedge"},result:"The hedge breaks the wind and hides you from the lane."},
@@ -2987,7 +3000,8 @@ function gDynamic(id){
     const ch=[{label:"Push the pace",effects:{energy:-Math.round(2+kg*0.45),warmth:3,time:20,km:2},result:kg>=12?"You make good time, but the hip belt is grinding.":"You make good time."},
       {label:"Steady walking pace",effects:{km:2},result:"One foot, then the other."}];
     if((G.uses.snack||0)>0) ch.push({label:"Stop, snack and rest the shoulders",requires:{uses:{snack:1}},effects:{use:"snack",energy:10,morale:3,warmth:-3,time:15,noProgress:true},result:"Pack off. The cold finds your sweaty back almost at once."});
-    return {id,text:amb+" "+left,sub:`<i>${esc(feel.trim())}</i>`,choices:ch};
+    const wp=G.real?gmNextWaypoint():null;
+    return {id,text:(wp?`You pass ${wp}. `:"")+amb+" "+left,sub:`<i>${esc(feel.trim())}</i>`,choices:ch};
   }
   if(id==="camp_wee") return {id,text:G.wx.low>=8?"Last job before bed. It's warm and buggy, and the bag is right there.":"Last job before bed. The cold has teeth now, and the bag is right there.",choices:[
     {label:"Go for a wee first, well away from the water",effects:{warmth:-3,time:10,setFlag:"weed",noise:1},result:"Thirty seconds of misery. Future you is grateful."},
@@ -3009,7 +3023,8 @@ function gDynamic(id){
     return {id,text:`${amb} ${body}`,choices:ch};
   }
   if(id==="night_sound"){
-    const real=gRand()<(0.3+(G.pitch==="canal"?0.2:0)+(G.meters.suspicion>40?0.15:0)+(G.scen.route==="moor"?-0.15:0));
+    const sf=G.siteFlags||{};
+    const real=gRand()<(0.3+(sf.path?0.15:0)+(sf.house?0.1:0)-(G.real&&G.real.site.wood&&G.real.site.wood.d===0?0.15:0)+(G.pitch==="canal"?0.2:0)+(G.meters.suspicion>40?0.15:0)+(G.scen.route==="moor"?-0.15:0));
     const txt=["Something moves in the leaves, close. Heavy. Then it stops.","A crunch. Then another. Footsteps? On the path, or in the field?","A light flickers beyond the hedge for a second, then it's gone.","A twig snaps somewhere behind your head."][Math.floor(gRand()*4)];
     const ch=[{label:"Lie still and listen",hide:true,effects:real?{suspicion:4,morale:-4,time:20}:{morale:-3,warmth:-2,time:20},result:real?"Voices, low. Two people and a dog, passing ten yards off. They never see you.":"Ten minutes of nothing. A badger, probably. Your heart takes longer to settle."}];
     if(gHas("headtorch")) ch.push({label:"Torch on it",hide:true,effects:real?{light:14,morale:-5,near:2,time:10}:{light:3,morale:4,time:10},result:real?["Two startled faces in your beam. 'Bloody hell!' Now they definitely know you're here.","A dog walker, shielding their eyes. 'Christ, you scared me.' They hurry off, phone already out.","A lad on a bike, stopped dead. He stares, then pedals off fast."][Math.floor(gRand()*3)]:["Two green eyes. A fox, deeply unimpressed. You laugh, quietly.","A muntjac, frozen, then gone in two bounds.","A hedgehog, snuffling, completely unbothered by you."][Math.floor(gRand()*3)]});
@@ -3233,7 +3248,7 @@ function renderPlay(){
   const root=$("#playRoot"); if(!root) return;
   if(!G) gLoad();
   document.body.classList.toggle("nightmode",currentView==="play"&&G&&!G.ended&&G.phase==="night");
-  if(!G||(!G.scene&&!G.ended)){ root.innerHTML=gStartScreen(); return; }
+  if(!G||(!G.scene&&!G.ended)){ root.innerHTML=gStartScreen(); const sel=$("#gScen"); if(sel) sel.value=S.gameScen||"towpath"; if((S.gameScen||"towpath")==="map") gmMountSetup(); return; }
   if(G.ended){ root.innerHTML=gEndScreen(); return; }
   const sc=G.scene;
   root.innerHTML=`<div class="card gtop">
@@ -3252,6 +3267,7 @@ function renderPlay(){
       <button class="tog" data-gquit>⏹ Quit</button>
     </div>
     <div id="gPanel"></div>`;
+  if(G.real){ root.querySelector(".gtop").insertAdjacentHTML("afterend",gmPlayHTML()); gmMountPlay(); }
 }
 function gStartScreen(){
   const opts=S.classes.map(c=>`<option value="${c.id}" ${c.id===S.active?"selected":""}>${esc(c.name)}</option>`).join("");
@@ -3260,11 +3276,12 @@ function gStartScreen(){
     <p class="small">Play one night wild camping with a real loadout from your planner. Your warmth stack, mats, shelter, stealth score, pack weight and food decide what happens. No one dies. Bad nights end with walking home.</p>
     <div class="grid2">
       <label>Loadout (class)<select id="gClass">${opts}</select></label>
-      <label>Scenario<select id="gScen"><option value="towpath">Off the Towpath: Hurleston, November (−1°C)</option><option value="storm">Storm Night: 35 mph gusts, rain all night (6°C)</option><option value="midsummer">Midsummer Midges: warm, still, buggy (11°C)</option><option value="dartmoor">Dartmoor Commons: legal camp, open moor (3°C)</option><option value="plan">This class's Plan conditions${c.wx.src?" ("+esc(c.wx.src.split(" · ")[0])+")":""}</option></select></label>
+      <label>Scenario<select id="gScen" data-gscen><option value="towpath">Off the Towpath: Hurleston, November (−1°C)</option><option value="storm">Storm Night: 35 mph gusts, rain all night (6°C)</option><option value="midsummer">Midsummer Midges: warm, still, buggy (11°C)</option><option value="dartmoor">Dartmoor Commons: legal camp, open moor (3°C)</option><option value="map">🗺️ Real map: pick your spot (uses GPX + live forecast)</option><option value="plan">This class's Plan conditions${c.wx.src?" ("+esc(c.wx.src.split(" · ")[0])+")":""}</option></select></label>
       <label>Difficulty<select id="gDiff"><option value="easy">Walk in the park (exact numbers)</option><option value="normal" selected>Wild camper</option><option value="hard">Hardcore (no hints)</option></select></label>
     </div>
     <div class="small muted" style="margin-top:8px">Selected class: ${kg(weights(c).pack)} pack · stealth ${st.score} · sleep system ~${t.rating.toFixed(0)}°C at −1°C.</div>
     <div class="row" style="margin-top:12px"><button class="pri" id="gGo">▶ Start the night</button>${S.game&&S.game.ended?`<button id="gLast">Last result</button>`:""}</div></div>
+    ${(S.gameScen||"towpath")==="map"?gmSetupHTML():""}
     ${gStatsCard()}
     <div class="card small muted"><b>How to play:</b> tap a choice. Icons hint at what it does: 🔥 warmth · ⚡ energy · 💧 dry · 🙂 morale · 👁️ suspicion (keep it low). Choices marked 🔒 need kit you didn't bring. Your kit, the cold and the dark do the rest.</div>`;
 }
@@ -3295,8 +3312,14 @@ function gEndScreen(){
 document.addEventListener("click",e=>{
   if(!e.target.closest("#v-play")) return;
   const b=e.target.closest("button"); if(!b) return;
-  if(b.id==="gGo"){ gStart($("#gClass").value,$("#gScen").value,$("#gDiff").value); renderPlay(); window.scrollTo(0,0); return; }
-  if(b.id==="gLast"){ G=S.game; G.scen=GAME_SCEN[G.scenKey]||GAME_SCEN.towpath; renderPlay(); return; }
+  if(b.id==="gGo"){ if($("#gScen").value==="map"){ b.disabled=true; b.textContent="Getting the forecast…"; gmStart($("#gClass").value,$("#gDiff").value).then(()=>{ renderPlay(); window.scrollTo(0,0); }); return; }
+    gStart($("#gClass").value,$("#gScen").value,$("#gDiff").value); renderPlay(); window.scrollTo(0,0); return; }
+  if(b.id==="gmUseClass"){ const M=S.gameMap=S.gameMap||{}; M.route=null; M.noRoute=false; M.lat=null; save(); renderPlay(); return; }
+  if(b.id==="gmNoRoute"){ const M=S.gameMap=S.gameMap||{}; M.route=null; M.noRoute=true; save(); renderPlay(); return; }
+  if(b.id==="gmRouteEnd"){ const r=gmRouteFor(cls()); if(r){ const p=r.pts[r.pts.length-1]; gmPick(p[0],p[1]); } return; }
+  if(b.id==="gmNear"){ if(!navigator.geolocation) return toast("Location isn't available on this device");
+    navigator.geolocation.getCurrentPosition(p=>{ gmSetupMap&&gmSetupMap.setView(p.coords.latitude,p.coords.longitude,15); },()=>toast("Couldn't get your location"),{timeout:10000}); return; }
+  if(b.id==="gLast"){ G=S.game; if(G.scenKey!=="map") G.scen=GAME_SCEN[G.scenKey]||GAME_SCEN.towpath; renderPlay(); return; }
   if(b.dataset.gch!=null){ gChoose(+b.dataset.gch); renderPlay(); window.scrollTo(0,0); return; }
   if(b.dataset.ghome!=null){ ask(`Pack up and walk out? It's about ${gWalkOut()} back. Sometimes it's the smart call.`,{ok:"Walk home"}).then(ok=>{if(ok){gEnd("walkedhome");}}); return; }
   if(b.dataset.gquit!=null){ ask("Quit this night? Progress will be lost.",{ok:"Quit",danger:true}).then(ok=>{if(ok){G=null;delete S.game;save();renderPlay();}}); return; }
@@ -3305,7 +3328,9 @@ document.addEventListener("click",e=>{
   if(b.dataset.gact!=null){ gDoAction(G.result.lessons[+b.dataset.gact].action); return; }
   if(b.dataset.glogtrip!=null){ gLogPractice(); return; }
   if(b.dataset.gagain!=null){ G=null; delete S.game; save(); renderPlay(); return; }
-  if(b.dataset.greplay!=null){ const s=G.seed,cid=G.classId,sk=G.scenKey,d=G.difficulty; gStart(cid,sk,d,s); renderPlay(); return; }
+  if(b.dataset.greplay!=null){ const s=G.seed,cid=G.classId,sk=G.scenKey,d=G.difficulty;
+    if(sk==="map"){ gmStart(cid,d).then(()=>{ if(G&&G.real){ G.seed=s; } renderPlay(); }); return; }
+    gStart(cid,sk,d,s); renderPlay(); return; }
   if(b.dataset.gshare!=null){ const t=`🌑 Pitch Dark: ${G.scen.name}\n${GAME_ENDINGS[G.ended.kind].title}\n\n`+G.log.map(x=>`${x.t} ${x.choice}${x.result?" — "+x.result:""}`).join("\n")+(G.result.story?`\n\n${G.result.story}`:"")+`\n\nGrades: `+Object.entries(G.result.grades).map(([k,v])=>`${k} ${v}`).join(", ");
     (navigator.clipboard?navigator.clipboard.writeText(t):Promise.reject()).then(()=>toast("Story copied"),()=>download("pitch-dark-night.txt",t,"text/plain")); return; }
 });
@@ -3342,6 +3367,9 @@ function gSysPassive(minutes){
   // batteries: phones die in the cold
   R.phone=Math.max(0,R.phone-(1.5+(T<3&&!G.flags.phoneWarm?4:0))*steps);
   if(R.phone<=0&&!G.lowAt.phoneDead) G.lowAt.phoneDead=gFmtTime(G.time);
+  // real-map site effects: road noise, moonlight
+  if(G.phase==="night"&&G.siteFlags&&G.siteFlags.roadNoise&&gRand()<0.25*steps) G.flags.noSleepHour=true;
+  if(G.flags.fullMoon&&G.stealthMatters&&(G.phase==="night"||G.phase==="camp")&&!(G.real&&G.real.site.wood&&G.real.site.wood.d===0)) m.suspicion+=1.2*steps;
   // hot water bottle cooling
   if(G.flags.hwbAt!=null&&G.phase==="night"){ const h=(G.time-G.flags.hwbAt)/60; if(h<5) m.warmth+=2.2*steps; }
   // weather arriving on schedule
@@ -3438,6 +3466,311 @@ function gSysLessons(add){
   if(G.flags._sweatLesson) add("You arrived soaked in sweat and it chilled you all evening. Strip a layer before the climbs, and keep dry sleep socks.",owned.find(i=>/sock/i.test(i.name))&&!inClass(owned.find(i=>/sock/i.test(i.name)).id)?{type:"pack",id:owned.find(i=>/sock/i.test(i.name)).id,label:"+ Pack spare socks"}:null);
   if(G.res.torch<=0&&gLines().some(l=>isLight(l.it))) add("Your torch ran flat. Charge it before you go, and use red light where you can.",null);
 }
+/* ============================================================
+   PITCH DARK: REAL MAP MODE
+   A tiny slippy map (OpenStreetMap tiles), GPX route overlay,
+   and a site survey of the spot you tap (OpenStreetMap features via Overpass + Open-Meteo elevation)
+   ============================================================ */
+const GM_LAYERS={map:{url:"https://tile.openstreetmap.org/{z}/{x}/{y}.png",attr:"© OpenStreetMap contributors",max:19},
+  topo:{url:"https://tile.opentopomap.org/{z}/{x}/{y}.png",attr:"© OpenStreetMap contributors, SRTM · style © OpenTopoMap (CC-BY-SA)",max:17}};
+const gmProj=(lat,lon,z)=>{const s=256*2**z, r=Math.PI/180, sl=Math.sin(lat*r);
+  return [(lon+180)/360*s, (0.5-Math.log((1+sl)/(1-sl))/(4*Math.PI))*s];};
+const gmUnproj=(x,y,z)=>{const s=256*2**z, n=Math.PI-2*Math.PI*y/s;
+  return [180/Math.PI*Math.atan(0.5*(Math.exp(n)-Math.exp(-n))), x/s*360-180];};
+class GMap{
+  constructor(el,o={}){
+    this.el=el; this.lat=o.lat??53.067; this.lon=o.lon??-2.522; this.z=o.z??12; this.layer=o.layer||"map";
+    this.tiles=new Map(); this.lines=[]; this.marks=[]; this.onTap=o.onTap||null; this.onMove=o.onMove||null;
+    el.classList.add("gmap");
+    el.innerHTML=`<div class="gm-tiles"></div><svg class="gm-ov"></svg><div class="gm-ui"><button type="button" data-gmz="1" aria-label="Zoom in">+</button><button type="button" data-gmz="-1" aria-label="Zoom out">−</button><button type="button" data-gml aria-label="Switch map style">⛰</button></div><div class="gm-attr"></div>`;
+    this.tl=el.querySelector(".gm-tiles"); this.ov=el.querySelector(".gm-ov");
+    el.querySelectorAll("[data-gmz]").forEach(b=>b.onclick=e=>{e.stopPropagation();this.zoomBy(+b.dataset.gmz);});
+    el.querySelector("[data-gml]").onclick=e=>{e.stopPropagation(); this.layer=this.layer==="map"?"topo":"map"; this.z=Math.min(this.z,GM_LAYERS[this.layer].max); this.tiles.forEach(t=>t.remove()); this.tiles.clear(); this.render(); this.onMove&&this.onMove(this);};
+    const P=new Map(); let start=null, pinch=null;
+    el.addEventListener("pointerdown",e=>{ if(e.target.closest(".gm-ui")) return; el.setPointerCapture(e.pointerId); P.set(e.pointerId,[e.clientX,e.clientY]);
+      if(P.size===1) start={x:e.clientX,y:e.clientY,t:Date.now(),c:gmProj(this.lat,this.lon,this.z),moved:false};
+      if(P.size===2){ const [a,b]=[...P.values()]; pinch={d:Math.hypot(a[0]-b[0],a[1]-b[1])}; }});
+    el.addEventListener("pointermove",e=>{ if(!P.has(e.pointerId)) return; P.set(e.pointerId,[e.clientX,e.clientY]);
+      if(P.size===2&&pinch){ const [a,b]=[...P.values()], d=Math.hypot(a[0]-b[0],a[1]-b[1]); if(d/pinch.d>1.5){this.zoomBy(1);pinch.d=d;} else if(d/pinch.d<0.66){this.zoomBy(-1);pinch.d=d;} if(start) start.moved=true; return; }
+      if(!start) return; const dx=e.clientX-start.x, dy=e.clientY-start.y; if(Math.abs(dx)+Math.abs(dy)>6) start.moved=true;
+      if(start.moved){ [this.lat,this.lon]=gmUnproj(start.c[0]-dx,start.c[1]-dy,this.z); this.render(); }});
+    const up=e=>{ if(!P.has(e.pointerId)) return; P.delete(e.pointerId); if(P.size<2) pinch=null;
+      if(start&&P.size===0){ if(!start.moved&&Date.now()-start.t<600&&this.onTap){ const r=el.getBoundingClientRect(); this.onTap(this.toLatLon(e.clientX-r.left,e.clientY-r.top)); }
+        else if(start.moved) this.onMove&&this.onMove(this); start=null; }};
+    el.addEventListener("pointerup",up); el.addEventListener("pointercancel",up);
+    el.addEventListener("wheel",e=>{ e.preventDefault(); this.zoomBy(e.deltaY<0?1:-1); },{passive:false});
+    this.ro=new ResizeObserver(()=>this.render()); this.ro.observe(el);
+    this.render();
+  }
+  size(){ return [this.el.clientWidth||320,this.el.clientHeight||260]; }
+  origin(){ const [w,h]=this.size(), c=gmProj(this.lat,this.lon,this.z); return [c[0]-w/2,c[1]-h/2]; }
+  toXY(lat,lon){ const o=this.origin(), p=gmProj(lat,lon,this.z); return [p[0]-o[0],p[1]-o[1]]; }
+  toLatLon(x,y){ const o=this.origin(); return gmUnproj(o[0]+x,o[1]+y,this.z); }
+  zoomBy(d){ const L=GM_LAYERS[this.layer]; this.z=Math.max(5,Math.min(L.max,this.z+d)); this.render(); this.onMove&&this.onMove(this); }
+  setView(lat,lon,z){ this.lat=lat; this.lon=lon; if(z!=null) this.z=z; this.render(); }
+  fit(pts,pad=30){ if(!pts.length) return; const la=pts.map(p=>p[0]), lo=pts.map(p=>p[1]);
+    const [w,h]=this.size(); let z=GM_LAYERS[this.layer].max;
+    for(;z>5;z--){ const a=gmProj(Math.max(...la),Math.min(...lo),z), b=gmProj(Math.min(...la),Math.max(...lo),z); if(b[0]-a[0]<w-pad*2&&b[1]-a[1]<h-pad*2) break; }
+    this.setView((Math.max(...la)+Math.min(...la))/2,(Math.max(...lo)+Math.min(...lo))/2,Math.min(z,16)); }
+  render(){
+    const [w,h]=this.size(), o=this.origin(), z=this.z, n=2**z, L=GM_LAYERS[this.layer];
+    const x0=Math.floor(o[0]/256), y0=Math.floor(o[1]/256), x1=Math.floor((o[0]+w)/256), y1=Math.floor((o[1]+h)/256), keep=new Set();
+    for(let x=x0;x<=x1;x++) for(let y=y0;y<=y1;y++){ if(y<0||y>=n) continue; const k=`${z}/${x}/${y}`; keep.add(k);
+      let t=this.tiles.get(k); if(!t){ t=document.createElement("img"); t.alt=""; t.draggable=false; t.decoding="async"; t.loading="eager"; t.referrerPolicy="strict-origin-when-cross-origin"; if(this.layer==="map") t.crossOrigin="anonymous";
+        t.src=L.url.replace("{z}",z).replace("{x}",((x%n)+n)%n).replace("{y}",y); t.onerror=()=>t.classList.add("err"); this.tl.appendChild(t); this.tiles.set(k,t); }
+      t.style.transform=`translate(${Math.round(x*256-o[0])}px,${Math.round(y*256-o[1])}px)`; }
+    this.tiles.forEach((t,k)=>{ if(!keep.has(k)){ t.remove(); this.tiles.delete(k);} });
+    this.el.querySelector(".gm-attr").textContent=L.attr;
+    this.ov.setAttribute("viewBox",`0 0 ${w} ${h}`);
+    const xy=p=>this.toXY(p[0],p[1]).map(v=>v.toFixed(1)).join(",");
+    this.ov.innerHTML=this.lines.map(l=>`<polyline points="${l.pts.map(xy).join(" ")}" fill="none" stroke="${l.color||"#ff7043"}" stroke-width="${l.w||4}" stroke-linecap="round" stroke-linejoin="round" ${l.dash?`stroke-dasharray="${l.dash}"`:""} opacity="${l.op??0.9}"/>`).join("")+
+      this.marks.map(m=>{ const [x,y]=this.toXY(m.lat,m.lon); return m.ring?`<circle cx="${x}" cy="${y}" r="${m.ring}" fill="none" stroke="${m.color||"#fff"}" stroke-width="2" stroke-dasharray="4 3"/>`:
+        `<g transform="translate(${x.toFixed(1)},${y.toFixed(1)})"><circle r="${m.r||11}" fill="${m.color||"#263238"}" stroke="#fff" stroke-width="2"/><text text-anchor="middle" dy="5" font-size="${m.fs||13}">${m.icon||""}</text>${m.label?`<text class="gm-lab" text-anchor="middle" y="${(m.r||11)+14}">${esc(m.label)}</text>`:""}</g>`; }).join("");
+  }
+  destroy(){ this.ro&&this.ro.disconnect(); }
+}
+
+/* ---------- geometry helpers (metres) ---------- */
+function gmMetric(lat0){ const r=Math.PI/180; return p=>[(p[1])*111320*Math.cos(lat0*r),(p[0])*110540]; }
+function gmDistSeg(P,A,B){ const dx=B[0]-A[0], dy=B[1]-A[1], L=dx*dx+dy*dy; let t=L?((P[0]-A[0])*dx+(P[1]-A[1])*dy)/L:0; t=Math.max(0,Math.min(1,t)); return Math.hypot(P[0]-(A[0]+t*dx),P[1]-(A[1]+t*dy)); }
+function gmInPoly(P,poly){ let c=false; for(let i=0,j=poly.length-1;i<poly.length;j=i++){ const a=poly[i],b=poly[j]; if((a[1]>P[1])!==(b[1]>P[1])&&P[0]<(b[0]-a[0])*(P[1]-a[1])/(b[1]-a[1])+a[0]) c=!c; } return c; }
+function gmFeatureDist(lat,lon,el){
+  const M=gmMetric(lat), P=M([lat,lon]);
+  const rings=[]; if(el.geometry) rings.push(el.geometry.map(g=>M([g.lat,g.lon])));
+  if(el.members) el.members.forEach(m=>{ if(m.geometry&&m.role!=="inner") rings.push(m.geometry.map(g=>M([g.lat,g.lon]))); });
+  if(el.lat!=null&&!rings.length) return {d:Math.hypot(...[0,1].map(i=>M([el.lat,el.lon])[i]-P[i])),inside:false};
+  let d=Infinity, inside=false;
+  rings.forEach(r=>{ for(let i=1;i<r.length;i++) d=Math.min(d,gmDistSeg(P,r[i-1],r[i]));
+    const closed=r.length>3&&Math.hypot(r[0][0]-r[r.length-1][0],r[0][1]-r[r.length-1][1])<1; if(closed&&gmInPoly(P,r)) inside=true; });
+  return {d:inside?0:d,inside};
+}
+
+/* ---------- site survey ---------- */
+const GM_OVERPASS="https://overpass-api.de/api/interpreter";
+function gmQuery(lat,lon){ const a=(r)=>`(around:${r},${lat},${lon})`;
+  return `[out:json][timeout:25];(
+way${a(500)}["natural"="wood"];way${a(500)}["landuse"="forest"];relation${a(500)}["landuse"="forest"];relation${a(500)}["natural"="wood"];
+way${a(500)}["waterway"~"^(canal|river|stream)$"];way${a(300)}["natural"="water"];
+way${a(400)}["highway"];
+way${a(300)}["building"];
+way${a(600)}["landuse"~"^(farmyard|residential)$"];
+way${a(150)}["landuse"~"^(farmland|meadow|grass)$"];way${a(200)}["natural"~"^(heath|moor|grassland|scrub|fell)$"];
+node${a(900)}["amenity"~"^(pub|drinking_water)$"];node${a(4000)}["place"~"^(village|hamlet|town|suburb)$"];
+);out tags geom qt;
+is_in(${lat},${lon})->.a;(area.a["boundary"="national_park"];area.a["boundary"="protected_area"];area.a["designation"="access_land"];);out tags;`; }
+async function gmSurvey(lat,lon){
+  const q=gmQuery(lat.toFixed(5),lon.toFixed(5));
+  const ring=[[0,0],[0.0027,0],[-0.0027,0],[0,0.0045],[0,-0.0045]];
+  const [osm,el]=await Promise.all([
+    fetch(GM_OVERPASS,{method:"POST",body:"data="+encodeURIComponent(q),headers:{"Content-Type":"application/x-www-form-urlencoded"}}).then(r=>{ if(!r.ok) throw new Error("Map data service is busy. Try again in a minute."); return r.json(); }),
+    fetch(`https://api.open-meteo.com/v1/elevation?latitude=${ring.map(o=>(lat+o[0]).toFixed(5)).join(",")}&longitude=${ring.map(o=>(lon+o[1]).toFixed(5)).join(",")}`).then(r=>r.ok?r.json():null).catch(()=>null)
+  ]);
+  return gmAnalyse(lat,lon,osm.elements||[],el&&el.elevation);
+}
+function gmAnalyse(lat,lon,els,elev){
+  const S0={lat,lon,ele:null,relief:0}, best=(test,name)=>{ let b=null; els.forEach(e=>{ if(e.type==="area"||!test(e.tags||{})) return; const r=gmFeatureDist(lat,lon,e); if(!b||r.d<b.d) b={d:Math.round(r.d),inside:r.inside,name:(e.tags||{}).name||null,tags:e.tags||{}}; }); return b; };
+  const wood=best(t=>t.natural==="wood"||t.landuse==="forest");
+  const water=best(t=>/^(canal|river|stream)$/.test(t.waterway||"")||t.natural==="water");
+  const PATH=/^(footway|path|bridleway|track|cycleway|steps)$/, ROAD=/^(primary|secondary|tertiary|unclassified|residential|trunk|motorway|service|living_street)/;
+  const path=best(t=>PATH.test(t.highway||"")), road=best(t=>ROAD.test(t.highway||"")), bigRoad=best(t=>/^(primary|trunk|motorway|secondary)/.test(t.highway||""));
+  const house=best(t=>!!t.building), farm=best(t=>t.landuse==="farmyard"||/farm/i.test(t.building||"")||/farm/i.test(t.name||""));
+  const homes=best(t=>t.landuse==="residential");
+  const cover=best(t=>/^(farmland|meadow|grass)$/.test(t.landuse||"")||/^(heath|moor|grassland|scrub|fell)$/.test(t.natural||""));
+  const pub=best(t=>t.amenity==="pub"), tap=best(t=>t.amenity==="drinking_water"), village=best(t=>!!t.place);
+  const areas=els.filter(e=>e.type==="area").map(e=>e.tags||{});
+  const park=areas.find(t=>t.boundary==="national_park")||areas.find(t=>t.boundary==="protected_area");
+  const access=areas.some(t=>t.designation==="access_land");
+  const s=Object.assign(S0,{wood,water,path,road,bigRoad,house,farm,homes,cover,pub,tap,village,park:park?park.name||"a protected area":null,access});
+  if(Array.isArray(elev)&&elev.length===5&&elev[0]!=null){ s.ele=Math.round(elev[0]); s.relief=Math.round(elev[0]-(elev[1]+elev[2]+elev[3]+elev[4])/4); }
+  return gmClassify(s);
+}
+function gmClassify(s){
+  const near=(f,m)=>f&&f.d<=m;
+  const coverType=s.cover?(s.cover.tags.landuse||s.cover.tags.natural):null;
+  const moorish=/heath|moor|fell|grassland/.test(coverType||"")&&(s.ele||0)>=250;
+  let pitch="hedge";
+  if(near(s.wood,15)) pitch="woodland";
+  else if(near(s.water,60)) pitch="canal";
+  else if(s.relief>=12||moorish||(s.ele||0)>=400) pitch="hilltop";
+  const dartmoor=/dartmoor/i.test(s.park||"");
+  s.legal=dartmoor; // Dartmoor's permitted areas: the only place wild camping is generally allowed in England
+  s.pitch=pitch;
+  s.route=dartmoor||moorish?"moor":(s.water&&/canal/.test(s.water.tags.waterway||"")&&s.water.d<400)?"canal":"field";
+  // stealth/suspicion pressures from what's really around you
+  let sus=0; const flags={};
+  if(near(s.path,40)){ sus+=12; flags.path=true; } else if(near(s.path,120)){ sus+=5; flags.path=true; }
+  if(near(s.house,150)){ sus+=12; flags.house=true; } else if(near(s.house,300)) sus+=4;
+  if(near(s.homes,250)){ sus+=8; flags.house=true; }
+  if(near(s.road,120)){ sus+=4; flags.road=true; } if(near(s.bigRoad,400)) flags.roadNoise=true;
+  if(near(s.farm,400)) flags.farm=true;
+  if(near(s.water,300)) flags.water=true;
+  if(s.wood&&s.wood.inside&&s.wood.d===0) sus-=6;
+  if(s.legal) sus=Math.round(sus*0.3);
+  s.sus=Math.max(-8,sus); s.flags=flags;
+  s.damp=pitch==="canal"||(s.water&&s.water.d<120);
+  s.windy=pitch==="hilltop";
+  return s;
+}
+const gmM=d=>d==null?"":d<1000?`${Math.round(d/10)*10||d} m`:`${(d/1000).toFixed(1)} km`;
+function gmDescribe(s){
+  const L=[], nm=(f,fallback)=>f&&f.name?f.name:fallback;
+  if(s.wood&&s.wood.d===0) L.push(`Inside ${nm(s.wood,"woodland")}.`); else if(s.wood&&s.wood.d<200) L.push(`${gmM(s.wood.d)} from the edge of ${nm(s.wood,"a wood")}.`);
+  if(s.cover&&!(s.wood&&s.wood.d===0)) L.push({farmland:"Farmland.",meadow:"Meadow.",grass:"Grass.",heath:"Open heath.",moor:"Open moorland.",scrub:"Scrubby ground.",grassland:"Rough grassland.",fell:"Open fell."}[s.cover.tags.landuse||s.cover.tags.natural]||"");
+  if(s.water&&s.water.d<400) L.push(`${gmM(s.water.d)} from ${nm(s.water,{canal:"a canal",river:"a river",stream:"a stream"}[s.water.tags.waterway]||"water")}.`);
+  if(s.path&&s.path.d<300) L.push(`${gmM(s.path.d)} from ${s.path.name||({track:"a farm track",bridleway:"a bridleway",cycleway:"a cycle path"}[s.path.tags.highway]||"a footpath")}.`);
+  if(s.road&&s.road.d<400) L.push(`${gmM(s.road.d)} from ${s.road.name||"a road"}.`);
+  if(s.house&&s.house.d<400) L.push(`Nearest building ${gmM(s.house.d)} away${s.farm&&s.farm.d<400?` (${s.farm.name||"a farm"} nearby)`:""}.`);
+  if(s.village) L.push(`${s.village.name||"A village"} is ${gmM(s.village.d)} away.`);
+  if(s.ele!=null) L.push(`${s.ele} m up${s.relief>=12?", higher than the land around it":s.relief<=-12?", in a dip":""}.`);
+  if(s.park) L.push(s.legal?`In ${s.park}: wild camping is allowed in the permitted areas (check the Dartmoor camping map).`:`In ${s.park}.`);
+  return L.filter(Boolean);
+}
+function gmVerdict(s){
+  const pros=[], cons=[];
+  if(s.wood&&s.wood.d===0) pros.push("cover and shelter"); if(s.sus<=0) pros.push("well hidden"); if(s.legal) pros.push("legal to camp");
+  if(s.tap&&s.tap.d<900) pros.push("water tap nearby"); if(s.pub&&s.pub.d<900) pros.push(`${s.pub.name||"a pub"} for a pint`);
+  if(s.flags.path) cons.push("people on the path"); if(s.flags.house) cons.push("houses close by"); if(s.flags.roadNoise) cons.push("road noise");
+  if(s.damp) cons.push("damp air off the water"); if(s.windy) cons.push("exposed to wind");
+  return {pros,cons};
+}
+
+/* ---------- sunrise/sunset (NOAA approximation) ---------- */
+function gmSun(lat,lon,iso){
+  const d=new Date(iso+"T12:00:00Z"), r=Math.PI/180, J=d/86400000+2440587.5, n=Math.round(J-2451545+0.0008);
+  const Js=n-lon/360, M=(357.5291+0.98560028*Js)%360, C=1.9148*Math.sin(M*r)+0.02*Math.sin(2*M*r)+0.0003*Math.sin(3*M*r);
+  const lam=(M+C+180+102.9372)%360, Jt=2451545+Js+0.0053*Math.sin(M*r)-0.0069*Math.sin(2*lam*r);
+  const dec=Math.asin(Math.sin(lam*r)*Math.sin(23.44*r)), w=Math.acos((Math.sin(-0.833*r)-Math.sin(lat*r)*Math.sin(dec))/(Math.cos(lat*r)*Math.cos(dec)));
+  const toLocal=j=>{ const ms=(j-2440587.5)*86400000, t=new Date(ms); const parts=new Intl.DateTimeFormat("en-GB",{timeZone:"Europe/London",hour:"2-digit",minute:"2-digit",hour12:false}).formatToParts(t); const h=+parts.find(p=>p.type==="hour").value, m=+parts.find(p=>p.type==="minute").value; return h+m/60; };
+  return {sunrise:toLocal(Jt-w/(2*Math.PI)), sunset:toLocal(Jt+w/(2*Math.PI))};
+}
+const GM_CLIMATE={1:[1,7],2:[1,8],3:[2,10],4:[4,13],5:[7,16],6:[10,19],7:[12,21],8:[12,21],9:[10,18],10:[7,14],11:[4,10],12:[2,7]};
+function gmMoon(iso){ const d=new Date(iso+"T22:00:00Z"), p=((d-new Date("2000-01-06T18:14:00Z"))/86400000/29.530588853)%1; return (p+1)%1; }
+const gmMoonName=p=>p<0.04||p>0.96?"new moon":p<0.22?"waxing crescent":p<0.29?"first quarter":p<0.46?"waxing gibbous":p<0.54?"full moon":p<0.71?"waning gibbous":p<0.79?"last quarter":"waning crescent";
+const gmMoonLight=p=>1-Math.abs(0.5-p)*2; // 0 new, 1 full
+
+/* ---------- route helpers ---------- */
+function gmRouteFor(c){ const M=S.gameMap||{}; if(M.noRoute) return null; return M.route||c.route||null; }
+function gmNearestOnRoute(r,lat,lon){ let best=Infinity,km=0,idx=0; r.pts.forEach((p,i)=>{ const d=hav([lat,lon],p); if(d<best){best=d;km=p[3];idx=i;} }); return {dKm:best,km,idx}; }
+
+/* ---------- setup UI (start screen, when "Real map" is chosen) ---------- */
+let gmSetupMap=null, gmPlayMap=null;
+function gmSetupHTML(){
+  const M=S.gameMap||{}, c=cls(), r=gmRouteFor(c);
+  const days=[0,1,2,3,4,5,6].map(i=>{ const d=addDays(todayISO(),i); return `<option value="${d}" ${M.date===d?"selected":""}>${i===0?"Tonight":i===1?"Tomorrow":dayLabel(d)}</option>`; }).join("");
+  const s=M.site;
+  return `<div class="card" id="gmSetup"><h3 style="margin-top:0">🗺️ Pick your spot</h3>
+    <p class="small muted" style="margin-top:-4px">Tap the map where you'd camp. The game looks up what's really there: woods, water, paths, roads, houses and height.</p>
+    <div id="gmSetupMap" class="gmapbox"></div>
+    <div class="row" style="margin-top:8px;flex-wrap:wrap">
+      ${c.route?`<button class="tog" id="gmUseClass">Use ${esc(c.route.name.slice(0,24))}</button>`:""}
+      <label class="tog btn" style="cursor:pointer">📂 Load GPX<input type="file" id="gmGpx" accept=".gpx,application/gpx+xml" hidden></label>
+      <button class="tog" id="gmNear">📍 Near me</button>
+      ${r?`<button class="tog" id="gmRouteEnd">⛺ Camp at route end</button><button class="tog" id="gmNoRoute">✕ Route</button>`:""}
+    </div>
+    ${r?`<div class="small muted" style="margin-top:6px">Route: <b>${esc(r.name)}</b> · ${r.distKm.toFixed(1)} km · ↑${r.up} m${r.wpts.length?` · ${r.wpts.length} waypoints`:""}</div>`:""}
+    <label style="margin-top:8px">Night of<select id="gmDate">${days}<option value="typical" ${M.date==="typical"?"selected":""}>Typical for this month (no forecast)</option></select></label>
+    <div id="gmSite">${s?gmSiteCard(s):`<div class="small muted" style="margin-top:8px">No spot picked yet.</div>`}</div>
+  </div>`;
+}
+function gmSiteCard(s){
+  const v=gmVerdict(s), pt={woodland:"🌲 Woodland",hedge:"🌿 Field edge",canal:"💧 By the water",hilltop:"⛰ High and open"}[s.pitch];
+  return `<div class="gsite"><div class="row" style="justify-content:space-between"><b>${pt}</b><span class="chip ${s.sus<=4?"ok":s.sus<=12?"":"warn"}">${s.legal?"legal":s.sus<=4?"well hidden":s.sus<=12?"some risk":"exposed"}</span></div>
+    <ul class="warnings small" style="margin:6px 0">${gmDescribe(s).map(x=>`<li>${esc(x)}</li>`).join("")}</ul>
+    ${v.pros.length?`<div class="small">👍 ${esc(v.pros.join(" · "))}</div>`:""}${v.cons.length?`<div class="small">👎 ${esc(v.cons.join(" · "))}</div>`:""}</div>`;
+}
+function gmMountSetup(){
+  const el=$("#gmSetupMap"); if(!el) return;
+  gmSetupMap&&gmSetupMap.destroy();
+  const M=S.gameMap=S.gameMap||{}, c=cls(), r=gmRouteFor(c);
+  gmSetupMap=new GMap(el,{lat:M.lat??53.067,lon:M.lon??-2.522,z:M.z??12,layer:M.layer,onTap:([lat,lon])=>gmPick(lat,lon),onMove:m=>{M.lat=m.lat;M.lon=m.lon;M.z=m.z;M.layer=m.layer;save();}});
+  gmDrawSetup(); if(r&&M.lat==null) gmSetupMap.fit(r.pts.map(p=>[p[0],p[1]]));
+}
+function gmDrawSetup(){
+  if(!gmSetupMap) return; const M=S.gameMap||{}, r=gmRouteFor(cls());
+  gmSetupMap.lines=r?[{pts:r.pts,color:"#ff7043"}]:[];
+  gmSetupMap.marks=[]; if(r){ const a=r.pts[0]; gmSetupMap.marks.push({lat:a[0],lon:a[1],icon:"🚶",color:"#2e7d32",r:10,fs:11}); (r.wpts||[]).slice(0,30).forEach(w=>gmSetupMap.marks.push({lat:w.lat,lon:w.lon,icon:"•",r:5,color:"#ffb74d",fs:9})); }
+  if(M.spot) gmSetupMap.marks.push({lat:M.spot[0],lon:M.spot[1],icon:"⛺",color:"#37474f",r:13,label:M.site?({woodland:"woods",hedge:"field edge",canal:"by water",hilltop:"high"}[M.site.pitch]):"checking…"});
+  gmSetupMap.render();
+}
+async function gmPick(lat,lon){
+  const M=S.gameMap=S.gameMap||{}; M.spot=[+lat.toFixed(5),+lon.toFixed(5)]; M.site=null; save(); gmDrawSetup();
+  const box=$("#gmSite"); if(box) box.innerHTML=`<div class="small muted" style="margin-top:8px">Checking the spot…</div>`;
+  const go=$("#gGo"); if(go) go.disabled=true;
+  try{ const s=await gmSurvey(lat,lon); if(!M.spot||M.spot[0]!==+lat.toFixed(5)) return; M.site=s; save(); if($("#gmSite")) $("#gmSite").innerHTML=gmSiteCard(s); gmDrawSetup(); }
+  catch(e){ if($("#gmSite")) $("#gmSite").innerHTML=`<div class="small warn" style="margin-top:8px">${esc(e.message||"Couldn't look up that spot")}. Check your signal, or tap again.</div>`; }
+  if(go) go.disabled=false;
+}
+async function gmStart(classId,diff){
+  const M=S.gameMap||{}, c=S.classes.find(x=>x.id===classId)||cls(), s=M.site;
+  if(!s) return toast("Tap the map to pick where you'll camp first");
+  const r=gmRouteFor(c), iso=M.date&&M.date!=="typical"?M.date:todayISO(), month=+iso.slice(5,7);
+  const sun=gmSun(s.lat,s.lon,iso);
+  let wx=null, sunset=sun.sunset, sunrise=sun.sunrise, src="typical for the month";
+  if(M.date!=="typical"){
+    try{ const n=await fetchNight(s.lat,s.lon,s.ele,iso,{}); const k=classify(n);
+      wx={low:n.low,high:n.high,humid:n.humid,windAvg:n.windAvg,rain:k.rain,wind:k.wind,bugs:k.bugs,ground:n.low<=0?"frozen":"normal"};
+      if(n.sunset) sunset=+n.sunset.slice(11,13)+(+n.sunset.slice(14,16))/60; if(n.sunrise) sunrise=+n.sunrise.slice(11,13)+(+n.sunrise.slice(14,16))/60; src="forecast for "+dayLabel(iso); }
+    catch(e){ toast("No forecast (offline?), using typical weather for the month"); }
+  }
+  if(!wx){ const [lo,hi]=GM_CLIMATE[month], lapse=Math.round((s.ele||50)/150); wx={low:lo-lapse,high:hi-lapse,humid:85,windAvg:s.windy?14:8,rain:month>=10||month<=2?1:0,wind:s.windy?1:0,bugs:month>=6&&month<=8&&s.damp?2:month>=5&&month<=9?1:0,ground:lo-lapse<=0?"frozen":"normal"}; }
+  if(s.damp) wx.humid=Math.max(wx.humid,88); if(s.windy) wx.wind=Math.max(wx.wind,1);
+  if(s.legal===false&&s.route==="moor") wx.ground="soft";
+  // walk: from the route start to the nearest route point to your spot, plus the bit off-route
+  let walkKm=3.5, up=0, wps=[], pts=null, onRoute=null;
+  if(r){ onRoute=gmNearestOnRoute(r,s.lat,s.lon); walkKm=Math.max(0.5,onRoute.km+onRoute.dKm); up=climb(r.pts,0,onRoute.km).up;
+    wps=(r.wpts||[]).map(w=>({name:w.name,km:nearestKm(r.pts,w)})).filter(w=>w.km<=onRoute.km+0.2).sort((a,b)=>a.km-b.km);
+    pts=r.pts.slice(0,onRoute.idx+1).filter((p,i,a)=>i%Math.max(1,Math.ceil(a.length/200))===0||i===a.length-1).map(p=>[p[0],p[1]]); }
+  const place=s.village&&s.village.name?s.village.name:(s.wood&&s.wood.name)||(s.water&&s.water.name)||"the map";
+  const moon=gmMoon(iso);
+  GAME_SCEN.map={name:`Real map: ${place}`,sub:src,route:s.route,month,wx,sunset,sunrise,stealthMatters:!s.legal,
+    intro:`${r?`${r.name}. ${walkKm.toFixed(1)} km to your spot${up>40?`, ${up} m of climbing`:""}`:`A short walk in to your spot near ${place}`}. ${({woodland:"You're heading for the trees.",hedge:"You're heading for a field edge.",canal:"You're heading for the water.",hilltop:"You're heading up high."})[s.pitch]} ${gmMoonName(moon)[0].toUpperCase()+gmMoonName(moon).slice(1)} tonight. {pack} on your back.`,
+    place:[s.path&&s.path.name||"the path",s.wood&&s.wood.name||"the wood edge",s.water&&s.water.name||"the field",s.road&&s.road.name||"the lane"]};
+  gStart(c.id,"map",diff);
+  G.real={site:s,pts,camp:[s.lat,s.lon],start:r?[r.pts[0][0],r.pts[0][1]]:null,walkKm,up,wps,routeName:r?r.name:null,date:iso,moon,src};
+  G.siteFlags=s.flags;
+  G.walkLeft=Math.max(2,Math.min(7,Math.round(walkKm/1.6))); G.walkTotal=G.walkLeft; G.km=0;
+  if(moon>0.4&&moon<0.6) G.flags.fullMoon=true;
+  gSave();
+}
+/* in-game map card */
+function gmPlayHTML(){ if(!G||!G.real) return ""; return `<div class="card" style="padding:8px"><div id="gmPlayMap" class="gmapbox small-map"></div>
+  <div class="small muted" style="margin-top:4px">${G.real.routeName?esc(G.real.routeName)+" · ":""}${G.phase==="walk"?`${Math.max(0,G.real.walkKm*(G.walkLeft/(G.walkTotal||1))).toFixed(1)} km to go`:"⛺ "+esc(gmDescribe(G.real.site)[0]||"")}${G.real.src?` · ${esc(G.real.src)}`:""}</div></div>`; }
+function gmMountPlay(){
+  const el=$("#gmPlayMap"); if(!el||!G||!G.real) return;
+  gmPlayMap&&gmPlayMap.destroy();
+  const R=G.real, frac=G.phase==="walk"?1-(G.walkLeft/(G.walkTotal||1)):1;
+  gmPlayMap=new GMap(el,{lat:R.camp[0],lon:R.camp[1],z:15,layer:(S.gameMap||{}).layer});
+  const line=R.pts||(R.start?[R.start,R.camp]:null);
+  const marks=[{lat:R.camp[0],lon:R.camp[1],icon:"⛺",color:"#37474f",r:12}];
+  if(line){ const n=Math.max(1,Math.round((line.length-1)*frac)), done=line.slice(0,n+1);
+    gmPlayMap.lines=[{pts:line,color:"#90a4ae",w:3,dash:"6 5",op:0.8},{pts:done,color:"#ff7043",w:4}];
+    const me=done[done.length-1]; if(G.phase==="walk") marks.push({lat:me[0],lon:me[1],icon:"🚶",color:"#2e7d32",r:11});
+    if(G.phase==="walk") gmPlayMap.fit(line); }
+  gmPlayMap.marks=marks; gmPlayMap.render();
+}
+function gmNextWaypoint(){ if(!G.real||!G.real.wps.length) return null; const doneKm=G.real.walkKm*(1-(G.walkLeft/(G.walkTotal||1)));
+  const w=G.real.wps.find(x=>x.km>=doneKm-0.3&&!G.flags["wp_"+x.name]); if(w&&w.km<=doneKm+G.real.walkKm/(G.walkTotal||1)){ G.flags["wp_"+w.name]=true; return w.name; } return null; }
+
+function gmPitchScene(){
+  const s=G.real.site, D=gmDescribe(s), v=gmVerdict(s);
+  const base={woodland:{pitch:"woodland",morale:-2},hedge:{pitch:"hedge"},canal:{pitch:"canal",dry:-3},hilltop:{pitch:"hilltop",morale:6}}[s.pitch];
+  const ch=[{label:"Pitch right here",effects:Object.assign({},base,{suspicion:Math.round(s.sus*0.6)}),result:`${D.slice(0,2).join(" ")}${v.cons.length?" Downside: "+v.cons[0]+".":""}`}];
+  if(s.path&&s.path.d<80) ch.push({label:`Move further from ${s.path.name||"the path"}`,effects:Object.assign({},base,{suspicion:Math.round(s.sus*0.2),energy:-5,time:25}),result:"Another ten minutes of stumbling, but the path is out of sight now."});
+  if(s.wood&&s.wood.d>0&&s.wood.d<250) ch.push({label:`Head into ${s.wood.name||"the wood"} (${gmM(s.wood.d)})`,effects:{pitch:"woodland",suspicion:Math.round(s.sus*0.3),energy:-4,time:20,morale:-2},result:"Under the trees. Darker, rootier, hidden."});
+  if(s.pitch==="hilltop") ch.push({label:"Drop down off the top, out of the wind",effects:{pitch:"hedge",suspicion:Math.round(s.sus*0.6)+2,energy:-3,time:20},result:"Less view, much less wind."});
+  if(s.pitch==="canal") ch.push({label:"Back off from the water a bit",effects:{pitch:"hedge",suspicion:Math.round(s.sus*0.5),energy:-3,time:15},result:"Away from the damp, a little more in view."});
+  if(gHas("monocular")) ch.push({label:"Scout first with the monocular",requires:{hasItem:["monocular"]},effects:Object.assign({},base,{suspicion:Math.round(s.sus*0.6)-8,energy:-2}),result:"You spot who uses which path and tuck in where neither will pass."});
+  return {id:"pitch_choose",text:`You reach your spot as the light goes. ${D.slice(0,3).join(" ")}`,choices:ch};
+}
+
+document.addEventListener("change",async e=>{
+  if(!e.target.closest||!e.target.closest("#v-play")) return;
+  if(e.target.id==="gScen"){ S.gameScen=e.target.value; save(); renderPlay(); return; }
+  if(e.target.id==="gmDate"){ (S.gameMap=S.gameMap||{}).date=e.target.value; save(); return; }
+  if(e.target.id==="gmGpx"){ const f=e.target.files[0]; if(!f) return;
+    try{ const r=parseGPX(await f.text(),f.name); const M=S.gameMap=S.gameMap||{}; M.route=r; M.noRoute=false; M.lat=null; save(); renderPlay(); gmSetupMap&&gmSetupMap.fit(r.pts.map(p=>[p[0],p[1]])); toast(`Loaded ${r.name}: ${r.distKm.toFixed(1)} km`); }
+    catch(err){ toast(err.message||"Couldn't read that GPX"); } }
+});
 
 document.querySelectorAll("details[data-sec]").forEach(d=>{const v=S.ui&&S.ui[d.dataset.sec];if(v!=null)d.open=v;});
 render();

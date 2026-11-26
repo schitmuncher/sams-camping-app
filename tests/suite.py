@@ -16,7 +16,11 @@ FC={"hourly":{"time":times,"temperature_2m":temps,"relative_humidity_2m":hum,"pr
     "daily":{"time":days,"temperature_2m_max":[8]*16,"sunrise":[d+"T07:50" for d in days],"sunset":[d+"T15:58" for d in days]}}
 GEO={"results":[{"name":"Nantwich","admin2":"Cheshire East","country_code":"GB","latitude":53.07,"longitude":-2.52,"elevation":45}]}
 mode={"fc":"ok"}
+import base64
+PNG=base64.b64decode("iVBORw0KGgoAAAANSUhEUgAAAAEAAAABCAYAAAAfFcSJAAAADUlEQVR42mNk+M9QDwADhgGAWjR9awAAAABJRU5ErkJggg==")
+OVP=json.load(open(__file__.rsplit("/",1)[0]+"/overpass_fixture.json")) if "/" in __file__ else json.load(open("overpass_fixture.json"))
 def fc_route(r):
+    if "/v1/elevation" in r.request.url: return r.fulfill(json={"elevation":[60,58,59,57,61]})
     if mode["fc"]=="fail": r.abort()
     elif mode["fc"]=="500": r.fulfill(status=500,body="err")
     else: r.fulfill(json=FC)
@@ -26,7 +30,7 @@ def geo_route(r):
 with sync_playwright() as p:
     b=p.chromium.launch(executable_path="/usr/bin/google-chrome",args=["--no-sandbox"])
     ctx=b.new_context(viewport={"width":390,"height":844},accept_downloads=True); ctx.grant_permissions(["clipboard-read","clipboard-write"])
-    ctx.route("**/api.open-meteo.com/**",fc_route); ctx.route("**/geocoding-api.open-meteo.com/**",geo_route)
+    ctx.route("**/api.open-meteo.com/**",fc_route); ctx.route("**/tile.*/**",lambda r:r.fulfill(body=PNG,content_type="image/png",headers={"Access-Control-Allow-Origin":"*"})); ctx.route("**/overpass-api.de/**",lambda r:r.fulfill(json=OVP)); ctx.route("**/geocoding-api.open-meteo.com/**",geo_route)
     pg=ctx.new_page()
     pg.on("pageerror",lambda e:errs.append("pageerror: "+str(e)))
     pg.on("console",lambda m:errs.append("console: "+m.text) if m.type=="error" and "favicon" not in m.text else None)
@@ -215,6 +219,35 @@ with sync_playwright() as p:
     ok("kit status row shown",pg.evaluate("(()=>{gStart('cls_winter','towpath','normal',15);renderPlay();return document.querySelector('#playRoot').innerText.includes(' L')})()"))
     pg.click("[data-gagain]") if pg.query_selector("[data-gagain]") else None
     E("G=null;delete S.game;S.gameStats=null;S.gameLocals=null;save()")
+
+    section("Game: real map mode")
+    tab("play"); pg.select_option("#gScen","map"); pg.wait_for_timeout(200)
+    ok("map shows with tiles",pg.is_visible("#gmSetupMap") and E("document.querySelectorAll('#gmSetupMap img').length")>0)
+    E("gmPick(53.1070,-2.5680)"); pg.wait_for_timeout(400)
+    ok("spot inside a wood reads as woodland",E("S.gameMap.site.pitch")=="woodland" and "Hurleston Wood" in pg.inner_text("#gmSite"))
+    E("gmPick(53.1005,-2.5620)"); pg.wait_for_timeout(400)
+    s=E("S.gameMap.site")
+    ok("canal-side spot: water, path and farm detected",s["pitch"]=="canal" and s["flags"].get("path") and s["flags"].get("farm") and s["route"]=="canal",json.dumps(s["flags"]))
+    ok("pros and cons shown","people on the path" in pg.inner_text("#gmSite"))
+    box=pg.query_selector("#gmSetupMap").bounding_box(); pg.mouse.click(box["x"]+90,box["y"]+110); pg.wait_for_timeout(400)
+    ok("tapping the map picks a spot",E("!!S.gameMap.spot&&!!S.gameMap.site"))
+    pg.set_input_files("#gmGpx","loop.gpx"); pg.wait_for_timeout(400)
+    ok("GPX loads into the map",E("!!(S.gameMap.route&&S.gameMap.route.pts.length>5)"))
+    pg.click("#gmRouteEnd"); pg.wait_for_timeout(400)
+    E("gmPick(53.1005,-2.5620)"); pg.wait_for_timeout(400)
+    pg.click("#gGo"); pg.wait_for_timeout(1200)
+    ok("real-map night starts with in-game map",pg.is_visible("#gmPlayMap") and E("!!(G&&G.real)"))
+    ok("forecast drives the night",E("G.real.src").startswith("forecast"),E("G.real.src"))
+    for i in range(90):
+        if pg.query_selector("[data-gagain]"): break
+        if "reach your spot" in pg.inner_text(".gscene"): ok("pitch scene describes the real spot","Shropshire Union Canal" in pg.inner_text(".gscene"))
+        bs=pg.query_selector_all(".gch:not(.locked)")
+        if not bs: break
+        bs[0].click()
+    ok("real-map night reaches an ending",pg.is_visible("[data-gagain]"))
+    ok("sunrise/sunset maths sane",E("(()=>{const s=gmSun(53.07,-2.52,'2026-12-21'),m=gmSun(53.07,-2.52,'2026-06-21');return s.sunset>15.5&&s.sunset<16.3&&m.sunset>21.2&&m.sunset<21.9&&m.sunrise>4.5&&m.sunrise<5.1})()"))
+    pg.click("[data-gagain]") if pg.query_selector("[data-gagain]") else None
+    E("G=null;delete S.game;S.gameScen='towpath';save()")
 
     section("Export / import / reset")
     tab("data")

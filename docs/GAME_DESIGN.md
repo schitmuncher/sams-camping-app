@@ -2,7 +2,7 @@
 
 *A button-based text survival game played with your real camping kit, built into Camp Kit Planner as a **Play** mode.*
 
-Status: design draft v2 (Nov 2026), with Gemini's creative input merged in (full notes in `docs/game-content/gemini-creative-notes.md`). **M1 built, M2 content added** (Play tab): four scenarios (towpath, storm, midsummer, Dartmoor), ~85 storylets with persistent locals, midge, wind and overheating mechanics, achievements, meter-delta feedback. M1: engine, five meters, all phases, 50+ scenes (10 walk-in by Gemini), dynamic pitch/food/bed/dawn scenes, six endings, debrief with grades, turning point and Night Notes actions, practice-night logging, save/resume, red night theme, balancing bot.
+Status: design draft v2 (Nov 2026), with Gemini's creative input merged in (full notes in `docs/game-content/gemini-creative-notes.md`). **M1 built, M2 content added, M3 real map mode built (stage 1: map, GPX, site survey; stage 2 next: illustrated camp scene)** (Play tab): four scenarios (towpath, storm, midsummer, Dartmoor), ~85 storylets with persistent locals, midge, wind and overheating mechanics, achievements, meter-delta feedback. M1: engine, five meters, all phases, 50+ scenes (10 walk-in by Gemini), dynamic pitch/food/bed/dawn scenes, six endings, debrief with grades, turning point and Night Notes actions, practice-night logging, save/resume, red night theme, balancing bot.
 
 ---
 

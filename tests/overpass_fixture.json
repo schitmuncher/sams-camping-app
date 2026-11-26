@@ -1,0 +1,10 @@
+{"elements":[
+ {"type":"way","id":1,"tags":{"natural":"wood","name":"Hurleston Wood"},"geometry":[{"lat":53.1060,"lon":-2.5700},{"lat":53.1060,"lon":-2.5660},{"lat":53.1080,"lon":-2.5660},{"lat":53.1080,"lon":-2.5700},{"lat":53.1060,"lon":-2.5700}]},
+ {"type":"way","id":2,"tags":{"waterway":"canal","name":"Shropshire Union Canal"},"geometry":[{"lat":53.1000,"lon":-2.5800},{"lat":53.1000,"lon":-2.5500}]},
+ {"type":"way","id":3,"tags":{"highway":"footway","name":"the towpath"},"geometry":[{"lat":53.1002,"lon":-2.5800},{"lat":53.1002,"lon":-2.5500}]},
+ {"type":"way","id":4,"tags":{"highway":"primary","name":"A51"},"geometry":[{"lat":53.1120,"lon":-2.5800},{"lat":53.1120,"lon":-2.5500}]},
+ {"type":"way","id":5,"tags":{"building":"farm","name":"Hurleston Farm"},"geometry":[{"lat":53.1030,"lon":-2.5602},{"lat":53.1030,"lon":-2.5598},{"lat":53.1033,"lon":-2.5598},{"lat":53.1033,"lon":-2.5602},{"lat":53.1030,"lon":-2.5602}]},
+ {"type":"way","id":6,"tags":{"landuse":"farmland"},"geometry":[{"lat":53.1003,"lon":-2.5800},{"lat":53.1003,"lon":-2.5500},{"lat":53.1059,"lon":-2.5500},{"lat":53.1059,"lon":-2.5800},{"lat":53.1003,"lon":-2.5800}]},
+ {"type":"node","id":7,"lat":53.1045,"lon":-2.5550,"tags":{"place":"hamlet","name":"Hurleston"}},
+ {"type":"node","id":8,"lat":53.1010,"lon":-2.5620,"tags":{"amenity":"pub","name":"The Barbridge Inn"}}
+]}
