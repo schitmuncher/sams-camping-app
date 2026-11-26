@@ -170,7 +170,7 @@ body.pd-on{overflow:hidden}
 .pd-door{display:flex;align-items:center;gap:8px;margin-top:10px}.pd-compass{position:relative;width:54px;height:54px;border-radius:50%;background:#0a1018;border:1px solid #fff3}
 .pd-compass i{position:absolute;left:50%;top:50%;font-style:normal;width:0;height:0}.pd-compass i b{position:absolute;transform:translate(-50%,-50%)}.pd-wind b{color:#90caf9;font-size:20px}.pd-doorI b{width:12px;height:12px;border-radius:50%;background:#ffb74d;box-shadow:0 0 6px #ffb74d}.pd-compass .pd-tent{position:absolute;left:50%;top:50%;transform:translate(-50%,-50%);font-size:16px}
 .pd-shs label{display:inline-flex;gap:6px;margin:4px 10px 4px 0;font-size:14px}
-.pd-say{font-size:17px;line-height:1.45;font-style:italic;margin:0 0 10px}
+.pd-say{white-space:pre-line;font-size:17px;line-height:1.45;font-style:italic;margin:0 0 10px}
 .pd-log p{margin:4px 0;font-size:13px}.pd-log .k-danger{color:#ff8a80}.pd-log .k-moment{color:#ffe082}
 .pd-endc .pd-endh{display:flex;gap:12px;align-items:center}.pd-bigi{font-size:44px}.pd-endc h2{margin:0}.pd-stars{color:#ffd27a;font-size:22px;letter-spacing:2px}.pd-stars.s{font-size:13px}
 .pd-mini{width:100%;max-width:300px;display:block;margin:8px auto;border-radius:12px;aspect-ratio:1}
@@ -208,6 +208,12 @@ body.nightmode{--bg:#120707;--panel:#1d0c0c;--panel2:#2a1212;--line:#4a2020;--te
   .view{display:none!important}#v-pack{display:block!important}
   .chip{background:#eee!important;color:#000}
 }
+.pd-next{display:flex;flex-direction:column;gap:3px;background:rgba(255,210,122,.08);border:1px solid rgba(255,210,122,.35);border-radius:12px;padding:10px 12px}
+.pd-next b{font-size:18px}.pd-next .big{margin-top:8px;font-size:17px;padding:12px}
+.pd-kt{background:rgba(120,200,255,.08);border:1px solid rgba(120,200,255,.3);border-radius:10px;padding:8px 10px;margin:10px 0}
+.pd-kt h3{margin:0 0 6px}.pd-kt table{width:100%;border-collapse:collapse;font-size:13px}.pd-kt td,.pd-kt th{padding:3px 4px;border-bottom:1px solid rgba(255,255,255,.08);text-align:left}
+.pd-prog{margin:12px 0;border:1px solid rgba(255,255,255,.12);border-radius:10px;padding:6px 10px}.pd-prog>summary{cursor:pointer;font-size:14px}
+.pd-ktc select{flex:1;min-width:0}
 </style>
 </head>
 <body>
@@ -4195,6 +4201,7 @@ function pdKit(c){
 function pdStart(o){
   const c=S.classes.find(x=>x.id===o.classId)||cls(), K=pdKit(c), seed=o.seed??Math.floor(Math.random()*1e9), R=pdRng(seed^0x5bd1e995);
   const W=o.world||pdGenerate(o.preset||"towpath",seed); PDW=W; PD_W=W.w;
+  const startOpts=o.world?null:{preset:o.preset,seed,diff:o.diff,month:o.month,wx:o.wx,twists:o.twists,mission:o.mission,date:o.date,challenge:o.challenge,label:o.label};
   const P=PD_PRESETS[o.preset]||{}, wx=o.wx||{low:P.low??5,high:P.high??11,humid:P.humid??85,windAvg:P.wind??8,rain:P.rain??0,bugs:(P.month>=6&&P.month<=8)?2:0};
   const date=o.date||todayISO(), month=o.month||P.month||+date.slice(5,7);
   const lat=W.origin?W.origin[0]:{towpath:53.1,hill:53.07,river:53.2,moor:50.58}[o.preset]||53, lon=W.origin?W.origin[1]:{towpath:-2.57,hill:-2.73,river:-2.52,moor:-3.77}[o.preset]||-2.5;
@@ -4230,6 +4237,7 @@ function pdStart(o){
   Object.keys(c.worn||{}).forEach(id=>{ const it=item(id); if(it&&it.kind==="layer") PD.p.worn[id]=1; });
   if(!Object.keys(PD.p.worn).length&&K.layers.length) PD.p.worn[K.layers[K.layers.length-1].id]=1;
   PD.challenge=o.challenge||null;
+  PD.startOpts=startOpts; PD.kitTest=o.kitTest||null;
   pdSchedule(R); pdMetaInit(R);
   pdMsg(o.intro||pdIntro(K),"story");
   setTimeout(()=>PD&&PD.meta&&pdMsg("📋 Tonight's contracts: "+PD.meta.contracts.map(c=>PD_CONTRACTS[c.id].n(c.arg)).join(" · ")+". Tap 🗺 to see them.","info"),30);
@@ -4457,10 +4465,17 @@ const PD_NIGHT=[
  {id:"lamp",when:()=>!PD.env.legal&&PDW.flags.farm,t:"A powerful lamp sweeps the next field. Lampers, out after rabbits. The beam swings your way.",c:[{l:"Lie completely still",e:{morale:-4,time:10},r:"The beam passes over you twice and moves on."},{l:"Torch on so they know you're there",e:{heat:15,morale:2},r:"A shout, a wave of the lamp, and they head the other way. Someone will mention it to the farmer."}]},
  {id:"pack",when:()=>PD.camp&&!PD.camp.stashed&&PD.r.snacks>0,t:"Scrabbling and rustling right by your head. Something's at your pack.",c:[{l:"Bang the ground and hiss",e:{noise:8,stash:1},r:"Whatever it was bolts. You stuff the food deep in the pack."},{l:"Torch it",e:{stash:1,noise:2},r:"Two green eyes. A fox, which backs off slowly, offended."},{l:"Leave it",e:{snack:-1,morale:-5},r:"In the morning: wrappers everywhere."}]},
  {id:"cramp",when:()=>PD.b.thirst<45||PD.b.energy<40,t:"Your calf locks into cramp. You're dehydrated.",c:[{l:"Drink and stretch it out",req:()=>PD.r.water>=0.25,e:{energy:3,time:5},r:"It eases. Drink more tomorrow."},{l:"Ride it out",e:{morale:-6,energy:-4}}]},
+ {id:"drips",when:()=>PD.camp&&["bivvy","tent"].includes(PD.camp.type)&&!PD.camp.vented&&PD.env.humid>=75,t:"Something cold drips on your face. Then again. The inside of the {sh} is running with condensation.",c:[{l:"Crack the vent open (drier, but a draught gets in)",e:{vent:1,warmth:-4,dry:5,time:3}},{l:"Wipe it down with the towel",req:()=>pdKitCached().towel,e:{dry:6,energy:-2,time:6,noise:2}},{l:"Pull the hood tight and ignore it",e:{dry:-8,morale:-3}}]},
+ {id:"hip",when:()=>PD.camp&&PD.camp.site.comfort<0.8,t:"Your hip has gone completely numb on the hard ground. Every position aches.",c:[{l:"Roll over and rearrange the mat (rustly)",e:{noise:5,morale:2,energy:2,time:4},r:"Better. The nylon crackle sounded deafening, though."},{l:"Stuff spare clothes under your hip",e:{warmth:-3,morale:3,time:6},r:"It helps, but those clothes aren't keeping you warm now."},{l:"Stay still and put up with it",e:{morale:-5,energy:-4}}]},
+ {id:"veer",pre:()=>{ PD.env.windDir=PD.camp.door+(pdRand()-0.5)*0.3; pdThermalCache(true); },when:()=>PD.camp&&PD.camp.type!=="hammock"&&pdWindNow()>7&&Math.abs(pdAng(PD.camp.door,PD.env.windDir))>1.2,t:"The wind has swung round. It's coming straight in through the door now, and the {sh} is bellying.",c:[{l:"Get out and turn the shelter round (cold, noisy, 15 min)",e:{door:1,warmth:-6,noise:7,time:15},r:"Fingers numb, pegs out, pegs in. Back to the wind again. Quieter already."},{l:"Wedge the rucksack across the door",e:{warmth:-2,dry:-3,time:3},r:"It blocks the worst of it."},{l:"Put up with it",e:{warmth:-7,morale:-4},r:"The draught finds every gap all night."}]},
+ {id:"steps",when:()=>PD.camp&&!PD.env.legal,t:"Footsteps. Slow and heavy, coming through the grass towards you. They stop. Breathing.",c:[{l:"Lie dead still",e:{morale:-4,time:5},r:()=>pdRand()<0.7?"A huge warm snort right by the door. A cow. It loses interest and wanders off.":"A torch clicks on twenty metres away, sweeps once, clicks off. Footsteps going away. Was that the farmer?"},{l:"Torch on to see",e:{heat:6,morale:2},r:"Two sheep, staring at you. Anyone across the field just saw your light, though."},{l:"Call out \"Hello?\"",e:{heat:10,noise:9,morale:-2},r:"Silence. Then hooves thudding away. Your voice carried a long way."}]},
+ {id:"frost",when:()=>pdTemp(PD.t)<1.5&&PD.camp,t:"You can hear frost crackle on the {sh}. The cold is coming up through the ground into your back.",c:[{l:"Hot water bottle: boil up (noisy, and the flame shows)",req:()=>pdKitCached().stove&&PD.r.water>=0.5,e:{warmth:14,noise:7,water:-0.5,heat:4,time:12},r:"A Nalgene of boiling water down by your feet. Bliss, for hours."},{l:"Put the empty pack under your legs",e:{warmth:5,noise:3,time:4}},{l:"Hat on, hood cinched",req:()=>pdKitCached().hat,e:{warmth:6,time:2}},{l:"Curl up and grit your teeth",e:{morale:-5,warmth:-2}}]},
+ {id:"buzz",when:()=>PD.r.phone>15&&PD.t>PD.env.sunset+200,t:"Your phone buzzes in the bag. A text: \"You alive?? 😂\"",c:[{l:"Reply (screen glow under the hood)",e:{phone:-4,morale:6,heat:2},r:"\"Toasty 👍\" A small lie. You feel better."},{l:"Leave it till morning",e:{morale:-2},r:"They'll worry a bit. They know your plan, at least."}]},
+ {id:"early",when:()=>PD.camp&&!PD.env.legal&&PD.t>PD.env.sunrise-110&&PD.t<PD.env.sunrise-50,t:"Still dark. The first car of the morning on the far road. Pack now, in the dark and the cold, and be long gone? Or grab another hour?",c:[{l:"Pack up now, quietly, red light only",e:{pack:1,morale:-2,energy:-3},r:"Numb fingers, everything stuffed in anyhow. But you'll be gone before anyone's about."},{l:"Another hour of sleep",e:{},r:"You burrow back in. Just one more hour…"}]},
  {id:"stars",when:()=>PD.env.cloud<0.4,t:"You wake, and the cloud has cleared. The whole sky is out.",c:[{l:"Watch for five minutes",e:{morale:10,warmth:-2,time:8},r:"The Milky Way, faint over the hedge. You'll remember this."},{l:"Back to sleep",e:{}}]}
 ];
-function pdNightEvent(){ const pool=PD_NIGHT.filter(ev=>!PD.flags["ne_"+ev.id]&&ev.when()); if(!pool.length) return false; const ev=pool[Math.floor(pdRand()*pool.length)]; PD.flags["ne_"+ev.id]=1;
-  PD.p.state="shelter"; PD.speed="walk"; PD.dialog={text:ev.t.replace("{sh}",PD.camp?PD.camp.type:"bag"),choices:ev.c.map(c=>({l:c.l,req:c.req?c.req():true,e:c.e,r:c.r||"Done."}))}; pdUIDialog&&pdUIDialog(); return true; }
+function pdNightEvent(){ const pool=PD_NIGHT.filter(ev=>!PD.flags["ne_"+ev.id]&&ev.when()); if(!pool.length) return false; const ev=pool[Math.floor(pdRand()*pool.length)]; PD.flags["ne_"+ev.id]=1; if(ev.pre) ev.pre(); PD.stats.dilemmas=(PD.stats.dilemmas||0)+1;
+  PD.p.state="shelter"; PD.speed="walk"; PD.dialog={text:ev.t.replace("{sh}",PD.camp?PD.camp.type:"bag"),choices:ev.c.map(c=>({l:c.l,req:c.req?c.req():true,e:Object.assign({},c.e),r:typeof c.r==="function"?c.r():(c.r||"Done.")}))}; pdUIDialog&&pdUIDialog(); return true; }
 function pdTip(id,text){ S.pdTips=S.pdTips||{}; if(S.pdTips[id]) return; S.pdTips[id]=1; pdMsg("💡 "+text,"tip"); }
 function pdMoment(id,text,morale=6){ if(PD.stats.moments[id]) return; PD.stats.moments[id]={t:PD.t,text}; PD.b.morale=pdClamp(PD.b.morale+morale); pdMsg("✨ "+text,"moment"); }
 
@@ -4568,14 +4583,14 @@ function pdConfront(n){
 }
 function pdChoose(i){
   const D=PD.dialog; if(!D) return; const ch=D.choices[i], n=PD.npcs.find(x=>x.id===D.npc), e=ch.e||{};
-  ["warmth","dry","energy"].forEach(k=>{ if(e[k]) PD.b[k]=pdClamp(PD.b[k]+e[k]); }); if(e.time) PD.t+=e.time; if(e.flask&&PD.r.flask>0){ PD.r.flask--; } if(e.stash&&PD.camp) PD.camp.stashed=true; if(e.awning&&PD.camp) PD.camp.awning=true; if(e.noise) pdNoise_(PD.p.x,PD.p.y,e.noise,"player","rustle");
+  ["warmth","dry","energy"].forEach(k=>{ if(e[k]) PD.b[k]=pdClamp(PD.b[k]+e[k]); }); if(e.time) PD.t+=e.time; if(e.flask&&PD.r.flask>0){ PD.r.flask--; } if(e.stash&&PD.camp) PD.camp.stashed=true; if(e.awning&&PD.camp) PD.camp.awning=true; if(e.noise) pdNoise_(PD.p.x,PD.p.y,e.noise,"player","rustle"); if(e.vent&&PD.camp){ PD.camp.vented=true; pdThermalCache(true); } if(e.door&&PD.camp){ PD.camp.door=PD.env.windDir+Math.PI; PD.camp.loose=false; PD.flags.flapping=false; pdThermalCache(true); } if(e.water) PD.r.water=Math.max(0,PD.r.water+e.water); if(e.phone) PD.r.phone=Math.max(0,PD.r.phone+e.phone); 
   PD.heat=pdClamp(PD.heat+(e.heat||0)-(pdPerk("talk")&&e.heat<0?8:0)); PD.b.morale=pdClamp(PD.b.morale+(e.morale||0)); if(e.snack) PD.r.snacks=Math.max(0,PD.r.snacks+e.snack);
   if(e.local&&n&&n.local){ S.gameLocals=S.gameLocals||{}; S.gameLocals[n.local]=pdClamp((S.gameLocals[n.local]||0)+e.local,-3,5); }
   let res=ch.r;
   if(e.ask){ const ok=pdRand()<(0.35+0.2*pdPerk("talk")+((S.gameLocals||{})[n&&n.local]||0)*0.15+(PD.stats.lnt>=4?0.1:0)); res=ok?"A long pause. \"Gone by seven. And I mean gone.\" You can stay.":"\"No. Pack up and go.\" Not up for discussion."; if(!ok){ e.mustMove=true; PD.heat=pdClamp(PD.heat+10); } }
   if(e.mustMove){ PD.flags.mustMove={at:PD.t,from:PD.camp?[PD.camp.x,PD.camp.y]:[PD.p.x,PD.p.y],by:PD.t+60,who:n?n.k:"farmer"}; res+=" You need to pack up and move well away (or walk out) within the hour."; }
   if(n){ n.state="leave"; n.spotted=true; const ex=pdEdgeFor(n.k==="car"?"car":"walker"); n.path=pdPath(n.x,n.y,ex[0]+0.5,ex[1]+0.5,"npc")||[]; PD.npcs.filter(d=>d.owner===n.id).forEach(d=>d.state="heel"); }
-  pdMsg(res,"story"); PD.dialog=null;
+  pdMsg(res,"story"); PD.dialog=null; if(e.pack&&PD.camp) pdAction("pack");
 }
 
 /* ---------- player actions ---------- */
@@ -4658,10 +4673,11 @@ function pdForecastText(){ const e=PD.env, bits=[`${pdHM(PD.t)}. ${Math.round(pd
 /* ---------- main step ---------- */
 function pdStep(dtReal){
   if(!PD||PD.ended||PD.paused||PD.dialog) return;
-  let dt=dtReal*PD_SPEED[PD.speed]; if(PD.speed==="walk"&&!PD.p.path.length&&!PD.p.busy&&PD.p.state==="free") dt*=1; // idle time still runs
+  let dt=dtReal*PD_SPEED[PD.speed]; if(PD.speed==="sleep"&&pdQuiet()) dt*=3.5; // nothing happening: skip the dead hours if(PD.speed==="walk"&&!PD.p.path.length&&!PD.p.busy&&PD.p.state==="free") dt*=1; // idle time still runs
   if(PD.p.busy&&PD.speed==="walk") dt*=4; // busy work passes faster
   while(dt>0){ const d=Math.min(dt,0.5); dt-=d; pdTick(d); if(PD.ended||PD.dialog) break; }
 }
+function pdQuiet(){ const p=PD.p, b=PD.b; if(b.warmth<42||b.bladder>85||PD.flags.flapping||PD.flags.mustMove) return false; return !PD.npcs.some(n=>(n.person||n.k==="dog"||n.k==="car")&&n.state!=="leave"&&Math.hypot(n.x-p.x,n.y-p.y)<45); }
 function pdTick(dt){
   const p=PD.p, e=PD.env;
   PD.t+=dt;
@@ -4706,6 +4722,7 @@ function pdTick(dt){
 }
 
 /* ---------- endings and score ---------- */
+function pdKitTest(cid){ const L=S.pdLastNight; if(!L) return; PD=null; pdStart(Object.assign({},L.opts,{classId:cid,kitTest:L})); if(L.opts.mission) PD.mission=L.opts.mission; pdMsg(`🧪 Kit test: the same night as before (same weather, same people, same twists), with ${PD.className} instead of ${L.className}.`,"story"); }
 function pdEnd(kind){
   if(PD.ended) return; const b=PD.b, st=PD.stats, e=PD.env, dark=(e.sunrise-e.sunset)/60;
   const g=(v,cuts)=>v>=cuts[0]?"A":v>=cuts[1]?"B":v>=cuts[2]?"C":v>=cuts[3]?"D":"E";
@@ -4717,7 +4734,9 @@ function pdEnd(kind){
   J.runs++; if(kind==="dawn") J.dawns++; Object.keys(st.moments).forEach(m=>J.seen[m]=(J.seen[m]||0)+1);
   const key=(PD.preset||"real:"+PD.label)+"|"+PD.classId; if(!J.best[key]||stars>J.best[key].stars) J.best[key]={stars,date:todayISO(),grades};
   J.journal.unshift({date:todayISO(),night:PD.date,loc:PD.label,cls:PD.className,kind,stars,grades,moments:Object.keys(st.moments),line:pdJournalLine(kind)}); J.journal=J.journal.slice(0,60);
-  pdMissionEnd(); pdMetaEnd(); PD.newAch=pdAchCheck(J); S.pdSave=null; save();
+  pdMissionEnd(); pdMetaEnd(); PD.newAch=pdAchCheck(J); S.pdSave=null;
+  if(PD.startOpts&&!PD.hike) S.pdLastNight={opts:PD.startOpts,label:PD.label,className:PD.className,classId:PD.classId,kind,stars,grades,minW:Math.round(st.minW),slept:+(b.slept/60).toFixed(1),margin:st.minMargin!=null?Math.round(st.minMargin):null,kg:+PD_K.packKg.toFixed(1),spotted:st.spotted};
+  save();
 }
 const PD_ENDS={dawn:["🌅","You made it","Night done, kit packed, gone without a trace."],walkedhome:["🚶","Walked out","You called it and walked home. That's a skill too."],bailed:["🥶","Too cold","Your body made the decision. You packed up shivering and walked out."],exhausted:["😮‍💨","Exhausted","Nothing left in the tank. You walked out on fumes."],calledit:["🌧️","Called it","The night won this one. Home, kettle, bed."],movedon:["🔦","Moved on","You didn't get far enough away in time. Night over."],overslept:["😴","Overslept","Dog walkers found your camp at nine. Awkward."],failed:["❌","Mission failed","Not this time. Ray's seen worse. Have another go."]};
 function pdJournalLine(kind){ const m=Object.values(PD.stats.moments).map(x=>x.text); if(m.length) return m[Math.floor(pdRand()*m.length)];
@@ -5127,11 +5146,11 @@ function pdMetaInit(R){
   if(hasWood&&R()<0.6*nat) S_(rng(1290,1600),"tawny");
   if(PD.preset==="hill") S_(PD.t0,"sheep");
   PD.sched.sort((a,b)=>a.at-b.at);
-  // tonight's contracts: three, suited to the place
-  const pool=["litter","cache","hidden","ghost","sleep","warm","explore","perfect","early","album"]; if(pdKitCached().stove) pool.push("hot");
+  // tonight's contracts: two, suited to the place (litter is still picked up as part of Leave No Trace, just not a chore)
+  const pool=["cache","hidden","ghost","sleep","warm","perfect","early","album"]; if(pdKitCached().stove) pool.push("hot");
   const sp=["fox","barnowl","hare","hedgehog","bat"].concat(hasWater?["heron"]:[],hasWood?["deer","badger","tawny"]:[],W.flags.moor?["pony"]:[]);
-  const picks=[]; while(picks.length<3){ const id=pool[Math.floor(R()*pool.length)]; if(!picks.some(c=>c.id===id)) picks.push({id,arg:id==="litter"?Math.min(M.litter.length,PD_CONTRACTS.litter.make()):null}); }
-  if(R()<0.6) picks[2]={id:"photo",arg:sp[Math.floor(R()*sp.length)]};
+  const picks=[]; while(picks.length<2){ const id=pool[Math.floor(R()*pool.length)]; if(!picks.some(c=>c.id===id)) picks.push({id,arg:id==="litter"?Math.min(M.litter.length,PD_CONTRACTS.litter.make()):null}); }
+  if(R()<0.6) picks[1]={id:"photo",arg:sp[Math.floor(R()*sp.length)]};
   M.contracts=picks.filter(c=>c.id!=="cache"||M.cache).map(c=>({id:c.id,arg:c.arg,done:false}));
   if(PD.challenge==="notorch"){ PD.r.torch=0; }
 }
@@ -5262,6 +5281,7 @@ function phTick(dt){ // dt in game minutes
     PH.km=Math.min(PH.r.distKm,PH.km+sp*dt/60);
     b.energy-=dt*0.06*P.e*(1+K.packKg/14)*(1+Math.max(0,sl)*8); b.feet-=dt*0.012*P.e*(K.socks?0.8:1); b.thirst-=dt*0.06*P.e; b.sweat=pdClamp(b.sweat+dt*(P.heat-6+phTemp()/4)*0.02);
     b.warmth+=(Math.min(95,60+P.heat*2+phTemp()*1.2)-b.warmth)*0.02*dt;
+    if(PH.flags&&PH.flags.campAt&&PH.km>=PH.flags.campAt){ PH.flags.campAt=0; PH.moving=false; phLog("You made it. Time to find a pitch.","moment"); phDialog({text:"You've reached the spot you were aiming for.",choices:[{l:"⛺ Find a pitch here",f:()=>phCamp()},{l:"🥾 Keep going",f:()=>{ PH.moving=true; }}]}); }
     if(PH.km>=PH.nextEv){ PH.nextEv=PH.km+1.6+Math.random()*1.8; phEvent(); }
     const wp=(PH.r.wpts||[]).find(w=>!PH.wpDone[w.name]&&Math.abs(nearestKm(PH.r.pts,w)-PH.km)<0.15); if(wp){ PH.wpDone[wp.name]=1; phLog(`📍 You pass ${wp.name}.`,"moment"); }
     if(PH.km>=PH.r.distKm){ PH.moving=false; phLog("🏁 End of the route.","moment"); phDialog({text:`You've walked the whole of ${PH.r.name}. ${PH.camps.length?`${PH.camps.length} night${PH.camps.length>1?"s":""} out on the way.`:""}`,choices:[{l:"Finish the hike",f:()=>phFinish(true)}]}); }
@@ -5271,8 +5291,21 @@ function phTick(dt){ // dt in game minutes
   if(phRain()){ b.dry-=dt*(K.poncho||K.shelters.some(s=>+s.rain>=2)?0.03:0.18); }
   ["warmth","energy","dry","morale","thirst","feet"].forEach(k=>b[k]=pdClamp(b[k]));
   if(!PH.flags) PH.flags={};
-  if(PH.t>PH.sunset-75&&!PH.flags.duskWarn){ PH.flags.duskWarn=true; phLog(`🌆 About an hour of light left. Start thinking about where to camp. (${(PH.r.distKm-PH.km).toFixed(1)} km to go)`,"warn"); }
+  if(PH.t>PH.sunset-75&&!PH.flags.duskWarn&&PH.moving){ PH.flags.duskWarn=true; phDecide("dusk"); }
+  if(PH.t>PH.sunset+35&&!PH.flags.darkWarn&&PH.moving){ PH.flags.darkWarn=true; phDecide("dark"); }
   if(b.energy<=2){ PH.moving=false; phDialog({text:"Your legs have gone. You need to stop.",choices:[{l:"⛺ Camp right here",f:()=>phCamp()},{l:"🚕 Call it and get a lift home",f:()=>phFinish(false)}]}); }
+}
+function phNextWp(){ const w=(PH.r.wpts||[]).map(w=>({name:w.name,km:nearestKm(PH.r.pts,w)})).filter(w=>w.km>PH.km+0.3&&!PH.wpDone[w.name]).sort((a,b)=>a.km-b.km)[0]; return w||null; }
+function phDecide(kind){ // the "camp early or push on" call, with the numbers in front of you
+  PH.moving=false; const P=PH_PACE[PH.pace], K=pdKitCachedFor(PH.classId), left=PH.r.distKm-PH.km, wp=phNextWp(), toWp=wp?wp.km-PH.km:null;
+  const hrs=km=>km/(P.kmh*(K.light?0.75:0.45)), fmt=h=>h<1?Math.round(h*60)+" min":h.toFixed(1)+" h";
+  const light=Math.max(0,Math.round(PH.sunset-PH.t));
+  const text=kind==="dusk"?`🌆 About ${light} minutes of daylight left. Your legs: ${Math.round(PH.b.energy)}%. ${wp?`Next waypoint ${wp.name} is ${toWp.toFixed(1)} km on (about ${fmt(hrs(toWp))} in fading light).`:`${left.toFixed(1)} km to the end of the route.`}\n\nCamp now and you'll pitch in daylight with time to pick a good spot. Push on and you'll be pitching in the dark: slower, noisier, and you can't see what's around you.`
+    :`🌑 It's properly dark now. ${K.light?"Head torch on, the world shrinks to a circle of light.":"No torch. You're feeling your way."} Every km is slower from here, and morale is dropping.`;
+  const ch=[{l:"⛺ Camp here, now",f:()=>phCamp()}];
+  if(wp&&toWp<6) ch.push({l:`🥾 Push on to ${wp.name} (${toWp.toFixed(1)} km), then camp`,f:()=>{ PH.flags.campAt=wp.km; phLog(`You push on for ${wp.name}.`,"story"); PH.moving=true; }});
+  ch.push({l:kind==="dusk"?"🔦 Keep walking and decide later":"🔦 Keep going in the dark",f:()=>{ PH.b.morale=pdClamp(PH.b.morale-(kind==="dark"?6:2)); phLog(kind==="dusk"?"You keep walking into the dusk.":"You keep going. It's slow.","story"); PH.moving=true; }});
+  phDialog({text,choices:ch});
 }
 function phRain(){ const e=PH.env; return !!(e&&e.rain>=1&&((PH.t/60)%24)>14&&Math.sin(PH.t/37)>0.3); }
 let PH_K=null; function pdKitCachedFor(id){ if(!PH_K||PH_K.c.id!==id) PH_K=pdKit(S.classes.find(x=>x.id===id)||cls()); return PH_K; }
@@ -5490,7 +5523,7 @@ function pdHud(force){
   if(!PD||!pdEl("pd")) return; const b=PD.b, p=PD.p, e=PD.env, r=PD.r, K=pdKitCached();
   pdEl("pdTime").textContent=pdHM(PD.t); pdEl("pdObj").textContent="🎯 "+pdObjective();
   const ph=PD.t<e.sunset-20?"Afternoon":PD.t<e.sunset+45?"Dusk":PD.t<e.sunrise-60?"Night":PD.t<e.sunrise+30?"Dawn":"Morning";
-  pdEl("pdPhase").textContent=ph+(PD.speed==="sleep"?" · 💤":PD.speed==="fast"?" · ⏩":"");
+  pdEl("pdPhase").textContent=ph+(PD.speed==="sleep"?(pdQuiet()?" · 💤💤":" · 💤"):PD.speed==="fast"?" · ⏩":"");
   const moonP=e.moon, moonIcon=["🌑","🌒","🌓","🌔","🌕","🌖","🌗","🌘"][Math.round(moonP*8)%8], w=pdWindNow();
   pdEl("pdWx").innerHTML=`<span>${Math.round(pdTemp(PD.t))}°C</span><span title="wind"><i class="pd-arrow" style="transform:rotate(${(e.windDir+Math.PI)*180/Math.PI+90}deg)">➤</i>${Math.round(w)}</span><span>${pdRaining()?"🌧️":e.cloud>0.7?"☁️":pdDaylight(PD.t)<0.3?moonIcon:"⛅"}</span>`;
   pdEl("pdBodyW").innerHTML=pdBodySVG()+`<div class="pd-ms">${pdBar(b.warmth,"w")}${pdBar(b.energy,"e")}${pdBar(b.dry,"d")}${pdBar(b.morale,"m")}</div>`;
@@ -5631,6 +5664,15 @@ function pdLessons(){
   if(!out.length) add("A clean night. Nothing to change.");
   return out;
 }
+function pdKitTestHTML(){ const T=PD.kitTest; if(!T) return ""; const E=PD.ended, st=PD.stats, ord="EDCBA";
+  const row=(n,a,b,better)=>`<tr><td>${n}</td><td>${a}</td><td>${b}</td><td>${better==null?"":better>0?"⬆️":better<0?"⬇️":"＝"}</td></tr>`;
+  const gr=Object.keys(E.grades).filter(k=>E.grades[k]!=="–"&&T.grades[k]&&T.grades[k]!=="–").map(k=>row(k,T.grades[k],E.grades[k],ord.indexOf(E.grades[k])-ord.indexOf(T.grades[k]))).join("");
+  const mg=st.minMargin!=null?Math.round(st.minMargin):null;
+  return `<div class="pd-kt"><h3>🧪 Kit test result</h3><table><tr><th></th><th>${esc(T.className)}</th><th>${esc(PD.className)}</th><th></th></tr>
+   ${row("Stars","★".repeat(T.stars)||"–","★".repeat(E.stars)||"–",E.stars-T.stars)}${gr}
+   ${row("Lowest warmth",T.minW,Math.round(st.minW),Math.round(st.minW)-T.minW)}${row("Sleep",T.slept+" h",(PD.b.slept/60).toFixed(1)+" h",Math.sign(PD.b.slept/60-T.slept))}
+   ${T.margin!=null&&mg!=null?row("Coldest-point margin",(T.margin>0?"+":"")+T.margin+"°C",(mg>0?"+":"")+mg+"°C",Math.sign(mg-T.margin)):""}${row("Pack weight",T.kg+" kg",PD_K.packKg.toFixed(1)+" kg",Math.sign(T.kg-PD_K.packKg))}</table>
+   <p class="small muted">Same weather, same people, same twists. Only the kit (and your choices) changed.</p></div>`; }
 function pdEndScreen(){
   const E=PD.ended, m=pdEl("pdModal"), d=PD_ENDS[E.kind]||PD_ENDS.walkedhome, L=pdLessons();
   m.hidden=false; m.id="pdModal"; m.innerHTML=`<div class="pd-card pd-endc" id="pdEnd"><div class="pd-endh"><span class="pd-bigi">${d[0]}</span><div><h2>${d[1]}</h2><div class="pd-stars">${"★".repeat(E.stars)}${"☆".repeat(5-E.stars)}</div></div></div>
@@ -5638,18 +5680,22 @@ function pdEndScreen(){
     ${E.mission?`<div class="pd-xp ${E.mission.ok?"ok":"bad"}"><b>${E.mission.ok?"🎯 Mission complete: ":"🎯 Mission failed: "}${esc(E.mission.t)}</b>${E.mission.res.map(r=>`<div class="small">${r.ok?"✅":"❌"} ${esc(r.n)}</div>`).join("")}${E.mission.ok?`<p class="small"><i>${esc(E.mission.win)}</i></p>`:""}</div>`:""}
     <canvas id="pdMini" width="300" height="300" class="pd-mini"></canvas>
     <div class="ggrades">${Object.entries(E.grades).map(([k,v])=>`<div class="gg g${v}"><b>${v}</b><span>${k}</span></div>`).join("")}</div>
+    ${pdKitTestHTML()}
     <p class="small muted">${esc(PD.label)} · ${esc(PD.className)} · slept ${(PD.b.slept/60).toFixed(1)} h · spotted ${PD.stats.spotted}× · lowest warmth ${Math.round(PD.stats.minW)}</p>
     ${E.moments.length?`<h3>✨ Moments</h3><ul class="pd-notes">${E.moments.map(k=>`<li>${esc(PD.stats.moments[k].text)}</li>`).join("")}</ul>`:""}
     ${(PD.newAch||[]).length?`<div class="gach">${PD.newAch.map(a=>`<div>🏅 <b>${esc(a.n)}</b><br><span class="small muted">${esc(a.d)}</span></div>`).join("")}</div>`:""}
+    ${pdKitReport()}
+    <h3>📝 Night Notes</h3>${L.map((l,i)=>`<div class="item"><div class="nm"><span>${esc(l.t)}</span></div>${l.id?`<button class="tog pri" data-pdpack="${l.id}">+ Pack ${esc(l.n.replace(/\s*\(.*?\)\s*/g," ").slice(0,22))}</button>`:""}</div>`).join("")}
+    <details class="pd-prog"><summary>⭐ +${E.xp||0} XP${E.rankAfter&&E.rankBefore&&E.rankAfter.r>E.rankBefore.r?" · <b>RANK UP!</b>":""}${(E.unlocked||[]).length?" · 🔓 new place":""}${E.contracts?` · contracts ${E.contracts.filter(c=>c.done).length}/${E.contracts.length}`:""}</summary>
     ${E.xp!=null?`<div class="pd-xp"><div class="row" style="justify-content:space-between"><b>+${E.xp} XP</b><span>${esc(E.rankAfter.name)}${E.rankAfter.r>E.rankBefore.r?" · RANK UP! ⭐ +1 perk point":""}</span></div><div class="pd-m xpb"><i style="width:${Math.round(E.rankAfter.cur/E.rankAfter.need*100)}%"></i></div><small class="muted">${E.rankAfter.next?`${E.rankAfter.need-E.rankAfter.cur} XP to ${esc(E.rankAfter.next)}`:"Max rank"}</small>
       ${(E.unlocked||[]).length?`<p>🔓 Unlocked: <b>${E.unlocked.map(k=>({hill:"Storm Hill",river:"Midsummer River",moor:"Dartmoor Commons"})[k]||k).join(", ")}</b></p>`:""}
       <details><summary class="small">Where the XP came from</summary>${PD.meta.xp.map(x=>`<div class="small">+${x.n} ${esc(x.why)}</div>`).join("")}</details></div>`:""}
     ${E.contracts?`<h3>📋 Contracts</h3>${E.contracts.map(c=>`<div class="pd-con ${c.done?"done":""}"><span>${c.done?"✅":"❌"} ${esc(c.n)}</span><b>${c.done?"+"+c.xp:""}</b></div>`).join("")}`:""}
-    ${pdKitReport()}
-    <h3>📝 Night Notes</h3>${L.map((l,i)=>`<div class="item"><div class="nm"><span>${esc(l.t)}</span></div>${l.id?`<button class="tog pri" data-pdpack="${l.id}">+ Pack ${esc(l.n.replace(/\s*\(.*?\)\s*/g," ").slice(0,22))}</button>`:""}</div>`).join("")}
-    <div class="row" style="margin-top:12px;flex-wrap:wrap">${PD.hike&&E.kind==="dawn"&&PD.hike.km<PD.hike.r.distKm?`<button class="pri" id="phCont">🥾 Carry on: ${(PD.hike.r.distKm-PD.hike.km).toFixed(1)} km to go</button>`:""}${E.mission&&!E.mission.ok?`<button class="pri" id="pdRetry">↻ Retry mission</button>`:""}<button class="${E.mission&&!E.mission.ok?"":"pri"}" id="pdAgain">▶ ${E.mission&&E.mission.ok&&pdCampNext()?"Next mission":"Another night"}</button><button id="pdLog">📓 Log as practice night</button><button id="pdBack">Back to the app</button></div></div>`;
+    </details>
+    <div class="row" style="margin-top:12px;flex-wrap:wrap">${PD.hike&&E.kind==="dawn"&&PD.hike.km<PD.hike.r.distKm?`<button class="pri" id="phCont">🥾 Carry on: ${(PD.hike.r.distKm-PD.hike.km).toFixed(1)} km to go</button>`:""}${E.mission&&!E.mission.ok?`<button class="pri" id="pdRetry">↻ Retry mission</button>`:""}<button class="${E.mission&&!E.mission.ok?"":"pri"}" id="pdAgain">▶ ${E.mission&&E.mission.ok&&pdCampNext()?"Next mission":"Another night"}</button>${PD.startOpts&&!PD.hike&&S.classes.length>1?`<button id="pdKT">🧪 Same night, different kit</button>`:""}<button id="pdLog">📓 Log as practice night</button><button id="pdBack">Back to the app</button></div></div>`;
   pdMiniMap(pdEl("pdMini"));
   m.querySelectorAll("[data-pdpack]").forEach(b=>b.onclick=()=>{ const c=S.classes.find(x=>x.id===PD.classId); if(c){ c.items[b.dataset.pdpack]=1; save(); b.outerHTML=`<span class="chip ok">packed ✓</span>`; } });
+  if(pdEl("pdKT")) pdEl("pdKT").onclick=()=>{ pdClose(); PD=null; S.pdKTOpen=1; renderPlay(); setTimeout(()=>{ const k=$("#pdKTcard"); if(k) k.scrollIntoView({block:"start"}); },50); };
   pdEl("pdAgain").onclick=()=>{ const nx=E.mission&&E.mission.ok&&pdCampNext(), cid=PD.classId; pdClose(); PD=null; if(nx){ pdStartMission(nx,cid); pdOpen(); } else renderPlay(); };
   if(pdEl("phCont")) pdEl("phCont").onclick=()=>phResumeAfterCamp();
   if(pdEl("pdRetry")) pdEl("pdRetry").onclick=()=>{ const m=PD_CAMP.find(x=>x.id===E.mission.id), cid=PD.classId; pdClose(); PD=null; pdStartMission(m,cid); pdOpen(); };
@@ -5666,35 +5712,41 @@ function pdKitReport(){ const st=PD.stats, K=pdKitCached(); if(st.minMargin==nul
 function pdStartHTML(){
   const opts=S.classes.map(c=>`<option value="${c.id}" ${c.id===(S.pdClass||S.active)?"selected":""}>${esc(c.name)}</option>`).join(""), loc=S.pdLoc||"towpath", J=S.pd||{runs:0,journal:[],ach:{},seen:{}};
   const locs=[["towpath","🛶","Off the Towpath","Hurleston canal, November, −1°C"],["hill","🌬️","Storm Hill","Exposed hill farm, October, gusts and rain"],["river","🦟","Midsummer River","Meadows and willows, June, midges"],["moor","🐴","Dartmoor Commons","Legal wild camp, tors and ponies"],["real","🗺️","Real map","Anywhere in the UK, real forecast"]];
-  const c=S.classes.find(x=>x.id===(S.pdClass||S.active))||cls(), K=pdKit(c);
-  return `<div class="card pd-hero"><h2>🌑 Pitch Dark</h2><p class="muted" style="margin:-4px 0 8px"><i>One night out, with your real kit.</i></p>
-    <p class="small">Walk in at dusk, find a hidden spot, pitch, and get through the night. Dog walkers, farmers, foxes, frost and your own snoring are all against you. Your kit decides how warm, dry and hidden you are.</p></div>
-   ${pdCampHTML()}
-   ${pdRankHTML(J)}
-   ${S.pdHikeSave?`<div class="card row" style="justify-content:space-between"><span>🥾 Hike in progress: <b>${esc(S.pdHikeSave.r.name)}</b>, km ${S.pdHikeSave.km.toFixed(1)}</span><button class="pri" id="phResume">▶ Resume</button></div>`:""}
+  const c=S.classes.find(x=>x.id===(S.pdClass||S.active))||cls(), K=pdKit(c), nx=pdCampNext(), R=pdRank(J.xp||0), LN=S.pdLastNight;
+  const kitLine=`${K.packKg.toFixed(1)} kg · ${K.main?esc(K.name(K.main)):"no shelter"} · ${K.light?(K.red?"red-light torch":"torch"):"no torch"} · ${K.snacks} snacks${K.flasks?` · flask`:""}${K.stove?" · stove":""}`;
+  return `${S.pdHikeSave?`<div class="card row" style="justify-content:space-between"><span>🥾 Hike in progress: <b>${esc(S.pdHikeSave.r.name)}</b>, km ${S.pdHikeSave.km.toFixed(1)}</span><button class="pri" id="phResume">▶ Resume</button></div>`:""}
    ${S.pdSave&&S.pdSave.v===3?`<div class="card row" style="justify-content:space-between"><span>🌙 Night in progress: <b>${esc(S.pdSave.label)}</b>, ${pdHM(S.pdSave.t)}</span><button class="pri" id="pdResume">▶ Resume</button></div>`:""}
-   <div class="card"><h3 style="margin-top:0">Where</h3><div class="pd-locs">${locs.map(([k,i,n,s])=>{ const need=PD_LOC_RANK[k]||0, lock=pdRank(J.xp||0).r<need; return lock?`<button class="pd-loc lock" disabled><span class="pd-li">🔒</span><b>${n}</b><small>Unlocks at rank ${need+1}: ${PD_RANKS[need]}</small></button>`:`<button class="pd-loc ${loc===k?"on":""}" data-pdloc="${k}"><span class="pd-li">${i}</span><b>${n}</b><small>${s}</small>${(J.best&&Object.keys(J.best).some(b=>b.startsWith(k+"|")))?`<em>${"★".repeat(Math.max(...Object.entries(J.best).filter(([b])=>b.startsWith(k+"|")).map(([,v])=>v.stars)))}</em>`:""}</button>`; }).join("")}</div>
-     ${loc==="real"?pdRealHTML():""}</div>
-   <div class="card"><div class="grid2"><label>Loadout<select id="pdClass">${opts}</select></label>
-     <label>Difficulty<select id="pdDiff"><option value="easy" ${S.pdDiff==="easy"?"selected":""}>Gentle</option><option value="normal" ${!S.pdDiff||S.pdDiff==="normal"?"selected":""}>Wild camper</option><option value="hard" ${S.pdDiff==="hard"?"selected":""}>Hardcore</option></select></label></div>
-     <p class="small muted" style="margin:6px 0 0">${K.packKg.toFixed(1)} kg · shelter: ${K.main?esc(K.name(K.main)):"none"} · ${K.light?(K.red?"red-light torch":"torch"):"no torch"} · ${K.snacks} snacks${K.flasks?` · ${K.flasks} flask${K.flasks>1?"s":""}`:""}${K.stove?" · stove":""}</p>
-     ${pdRank(J.xp||0).r>=1?`<label class="small" style="display:flex;gap:6px;margin-top:8px;align-items:center"><input type="checkbox" id="pdChal" ${S.pdChal?"checked":""} style="width:auto"> 🚫🔦 No-torch challenge (+30% XP)</label>`:""}
-     <div class="row" style="margin-top:10px"><button class="pri" id="pdGo" ${loc==="real"&&!(PD_REAL&&PD_REAL.ready)?"disabled":""}>▶ Start the night</button><button id="pdDaily">📅 Daily challenge</button></div></div>
-   ${pdRecordHTML(J)}
+   <div class="card pd-hero"><h2>🌑 Pitch Dark</h2><p class="small" style="margin:-4px 0 10px">One night out with your real kit. Find a hidden spot, pitch, get through the night, be gone by morning.</p>
+    <label>Your kit<select id="pdClass">${opts}</select></label><p class="small muted" style="margin:4px 0 10px">${kitLine}</p>
+    ${nx?`<div class="pd-next"><small class="muted">NEXT UP · Mission ${PD_CAMP.indexOf(nx)+1} of ${PD_CAMP.length}</small><b>${esc(nx.t)}</b><span class="small">${esc(nx.brief)}</span><button class="pri big" data-mission="${nx.id}">▶ Play</button></div>`
+       :`<div class="pd-next"><small class="muted">CAMPAIGN DONE · TODAY'S NIGHT</small><b>📅 Daily challenge</b><span class="small">The same night for everyone today.</span><button class="pri big" id="pdDaily">▶ Play</button></div>`}
+   </div>
+   ${LN&&S.classes.length>1?`<details class="card sec pd-ktc" id="pdKTcard" data-sec="pdKT" ${S.pdKTOpen||isOpen("pdKT",true)?"open":""}><summary><span class="st">🧪 Kit test</span><span class="sm">re-run your last night with other kit</span></summary>
+     <p class="small">Your last night: <b>${esc(LN.label)}</b> with <b>${esc(LN.className)}</b>, ${"★".repeat(LN.stars)||"no stars"} (warmth low ${LN.minW}${LN.margin!=null?`, ${LN.margin>0?"+":""}${LN.margin}°C at the coldest point`:""}). Play exactly the same night (same weather, people and twists) with a different loadout and compare.</p>
+     <div class="row"><select id="pdKTcls">${S.classes.filter(x=>x.id!==LN.classId).map(x=>`<option value="${x.id}">${esc(x.name)}</option>`).join("")}</select><button class="pri" id="pdKTgo">🧪 Test it</button></div></details>`:""}
+   ${pdCampHTML()}
+   <details class="card sec" data-sec="pdFree" ${loc==="real"||isOpen("pdFree",!nx)?"open":""}><summary><span class="st">🏕️ Free night</span><span class="sm">pick a place, a real map or a GPX hike</span></summary>
+     <div class="pd-locs">${locs.map(([k,i,n,s])=>{ const need=PD_LOC_RANK[k]||0, lock=R.r<need; return lock?`<button class="pd-loc lock" disabled><span class="pd-li">🔒</span><b>${n}</b><small>Unlocks at rank ${need+1}: ${PD_RANKS[need]}</small></button>`:`<button class="pd-loc ${loc===k?"on":""}" data-pdloc="${k}"><span class="pd-li">${i}</span><b>${n}</b><small>${s}</small>${(J.best&&Object.keys(J.best).some(b=>b.startsWith(k+"|")))?`<em>${"★".repeat(Math.max(...Object.entries(J.best).filter(([b])=>b.startsWith(k+"|")).map(([,v])=>v.stars)))}</em>`:""}</button>`; }).join("")}</div>
+     ${loc==="real"?pdRealHTML():""}
+     <label style="margin-top:8px">Difficulty<select id="pdDiff"><option value="easy" ${S.pdDiff==="easy"?"selected":""}>Gentle</option><option value="normal" ${!S.pdDiff||S.pdDiff==="normal"?"selected":""}>Wild camper</option><option value="hard" ${S.pdDiff==="hard"?"selected":""}>Hardcore</option></select></label>
+     ${R.r>=1?`<label class="small" style="display:flex;gap:6px;margin-top:8px;align-items:center"><input type="checkbox" id="pdChal" ${S.pdChal?"checked":""} style="width:auto"> 🚫🔦 No-torch challenge (+30% XP)</label>`:""}
+     <div class="row" style="margin-top:10px"><button class="pri" id="pdGo" ${loc==="real"&&!(PD_REAL&&PD_REAL.ready)?"disabled":""}>▶ Start the night</button>${nx?`<button id="pdDaily">📅 Daily challenge</button>`:""}</div></details>
+   <details class="card sec" data-sec="pdProg" ${isOpen("pdProg",false)||(J.perkPts||0)>0?"open":""}><summary><span class="st">⭐ ${esc(R.name)}</span><span class="sm">rank ${R.r+1} · ${J.xp||0} XP${(J.perkPts||0)?` · <b style="color:#ffd27a">perk to spend</b>`:""} · album ${Object.keys(J.album||{}).length}/${PD_SPECIES.length}</span></summary>
+     ${pdRankHTML(J)}${pdRecordHTML(J)}</details>
    <p class="small muted center"><a href="#" id="pdClassic">Classic story mode</a></p>`;
 }
-function pdCampHTML(){ const nx=pdCampNext();
-  return `<div class="card pd-camp"><h3 style="margin-top:0">🎯 Campaign: Training for the Big One</h3>
-   ${nx?`<p class="small"><b>${PD_CAMP.indexOf(nx)+1}. ${esc(nx.t)}</b>: ${esc(nx.brief)}</p><ul class="pd-notes">${nx.goals.map(g=>`<li>${esc(g.n)}${g.fail?" <small>(fail instantly if broken)</small>":""}</li>`).join("")}</ul><button class="pri" data-mission="${nx.id}">▶ Start mission ${PD_CAMP.indexOf(nx)+1}</button>`:`<p>🏆 Campaign complete. You did the Big One. Replay any mission for more stars.</p>`}
-   <div class="pd-mlist">${PD_CAMP.map((m,i)=>{ const d=((S.pd||{}).camp||{})[m.id], open=d||m===nx; return `<button class="pd-mi ${d?"done":""}" ${open?`data-mission="${m.id}"`:"disabled"}>${d?"✅":m===nx?"▶":"🔒"} ${i+1}. ${esc(m.t)}${d?` <small>${"★".repeat(d.stars)}</small>`:""}</button>`; }).join("")}</div></div>`; }
+function pdCampHTML(){ const nx=pdCampNext(), C=(S.pd||{}).camp||{}, done=PD_CAMP.filter(m=>C[m.id]).length;
+  return `<details class="card sec pd-camp" data-sec="pdCampL" ${isOpen("pdCampL",false)?"open":""}><summary><span class="st">🎯 Campaign: Training for the Big One</span><span class="sm">${done}/${PD_CAMP.length} missions</span></summary>
+   ${nx?`<p class="small"><b>${PD_CAMP.indexOf(nx)+1}. ${esc(nx.t)}</b></p><ul class="pd-notes">${nx.goals.map(g=>`<li>${esc(g.n)}${g.fail?" <small>(fail instantly if broken)</small>":""}</li>`).join("")}</ul>`:`<p>🏆 Campaign complete. You did the Big One. Replay any mission for more stars.</p>`}
+   <div class="pd-mlist">${PD_CAMP.map((m,i)=>{ const d=C[m.id], open=d||m===nx; return `<button class="pd-mi ${d?"done":""}" ${open?`data-mission="${m.id}"`:"disabled"}>${d?"✅":m===nx?"▶":"🔒"} ${i+1}. ${esc(m.t)}${d?` <small>${"★".repeat(d.stars)}</small>`:""}</button>`; }).join("")}</div></details>`; }
 function pdRankHTML(J){ const R=pdRank(J.xp||0), pts=J.perkPts||0, P=J.perks||{};
-  return `<div class="card pd-rank"><div class="row" style="justify-content:space-between"><b>⭐ ${esc(R.name)}</b><span class="small muted">Rank ${R.r+1} · ${J.xp||0} XP</span></div><div class="pd-m xpb"><i style="width:${Math.round(R.cur/R.need*100)}%"></i></div><small class="muted">${R.next?`${R.need-R.cur} XP to ${esc(R.next)}. Every night earns XP, even the bad ones.`:"Max rank. Legend."}</small>
+  return `<div class="pd-rank"><div class="row" style="justify-content:space-between"><b>⭐ ${esc(R.name)}</b><span class="small muted">Rank ${R.r+1} · ${J.xp||0} XP</span></div><div class="pd-m xpb"><i style="width:${Math.round(R.cur/R.need*100)}%"></i></div><small class="muted">${R.next?`${R.need-R.cur} XP to ${esc(R.next)}. Every night earns XP, even the bad ones.`:"Max rank. Legend."}</small>
     <details class="sec" data-sec="pdPerks" ${pts||isOpen("pdPerks",false)?"open":""}><summary><span class="st">🧬 Perks</span><span class="sm">${pts?`<b style="color:#ffd27a">${pts} point${pts>1?"s":""} to spend</b>`:"earn points by ranking up"}</span></summary>
     <div class="pd-perks">${PD_PERKS.map(p=>{ const l=P[p.id]||0, can=pts>0&&l<p.max; return `<div class="pd-perk ${l?"on":""}"><span class="pd-li">${p.i}</span><div><b>${p.n}</b> <small>${l}/${p.max}</small><br><small class="muted">${p.d}</small></div>${can?`<button class="tog pri" data-perk="${p.id}">+1</button>`:""}</div>`; }).join("")}</div></details>
     <details class="sec" data-sec="pdAlbum" ${isOpen("pdAlbum",false)?"open":""}><summary><span class="st">📷 Wildlife album</span><span class="sm">${Object.keys(J.album||{}).length}/${PD_SPECIES.length} species</span></summary>
     <div class="pd-album">${PD_SPECIES.map(s=>{ const a=(J.album||{})[s.k]; return a?`<div class="pd-sp got"><span>${s.i}</span><b>${s.n}</b><small>${"★".repeat(a.stars)}${"☆".repeat(3-a.stars)}<br>${esc(a.where)} · ${a.t}</small></div>`:`<div class="pd-sp"><span>❔</span><b>???</b><small>${esc(s.hint)}</small></div>`; }).join("")}</div></details></div>`; }
 function pdRecordHTML(J){ if(!J.runs) return ""; const got=PD_ACH.filter(a=>J.ach[a.id]);
-  return `<details class="card sec" data-sec="pdRec" ${isOpen("pdRec",false)?"open":""}><summary><span class="st">📓 Journal</span><span class="sm">${J.dawns}/${J.runs} nights · ${got.length}/${PD_ACH.length} badges · ${Object.keys(J.seen).length} moments</span></summary>
+  return `<details class="sec" data-sec="pdRec" ${isOpen("pdRec",false)?"open":""}><summary><span class="st">📓 Journal</span><span class="sm">${J.dawns}/${J.runs} nights · ${got.length}/${PD_ACH.length} badges · ${Object.keys(J.seen).length} moments</span></summary>
     ${J.journal.slice(0,8).map(j=>`<div class="pd-j"><b>${esc(j.loc)}</b> <span class="small muted">${j.date} · ${esc(j.cls)}</span> <span class="pd-stars s">${"★".repeat(j.stars)}</span><br><i class="small">“${esc(j.line)}”</i></div>`).join("")}
     <h3>Badges</h3><div class="gach">${PD_ACH.map(a=>`<div class="${J.ach[a.id]?"":"dim"}">${J.ach[a.id]?"🏅":"🔒"} <b>${esc(a.n)}</b><br><span class="small muted">${esc(a.d)}</span></div>`).join("")}</div></details>`; }
 function pdRealHTML(){
@@ -5751,6 +5803,7 @@ document.addEventListener("click",e=>{
   if(b.id==="pdGen"&&PD_REAL){ PD_REAL.generated=PD_REAL.site&&PD_REAL.site.route==="moor"?"moor":"towpath"; PD_REAL.ready=true; PD_REAL.site=PD_REAL.site||{pitch:"hedge",sus:5,flags:{},lat:PD_REAL.lat,lon:PD_REAL.lon}; const g=$("#pdGo"); if(g) g.disabled=false; $("#gmSite").innerHTML=`<div class="small muted" style="margin-top:8px">Using a made-up area. The forecast and sunset are still real for this spot.</div>`; return; }
   if(b.id==="phGo"){ const r=gmRouteFor(cls()), M=S.gameMap||{}; S.pdClass=$("#pdClass").value; save(); phStart(r,S.pdClass,M.date&&M.date!=="typical"?M.date:todayISO()); return; }
   if(b.id==="phResume"){ PH=S.pdHikeSave; PH_K=null; phOpen(); return; }
+  if(b.id==="pdKTgo"){ const cid=$("#pdKTcls").value; S.pdKTOpen=0; save(); pdKitTest(cid); pdOpen(); return; }
   if(b.id==="pdResume"){ if(pdLoadSave()){ pdOpen(); } else { toast("Couldn't load that night"); renderPlay(); } return; }
   if(b.id==="pdGo"||b.id==="pdDaily"){
     const cid=$("#pdClass").value, diff=$("#pdDiff").value, loc=S.pdLoc||"towpath"; S.pdClass=cid; S.pdDiff=diff; S.pdSound=PDA.on; save(); PDA.on=S.pdSound!==false;
