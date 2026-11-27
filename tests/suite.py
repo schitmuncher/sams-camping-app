@@ -180,6 +180,8 @@ with sync_playwright() as p:
 
     ok("lent-out item flagged when packed",E("(()=>{const l=classLines(cls())[0];l.it.lent='Tom';const w=warnings(cls()).some(x=>x[1].includes('Lent out'));delete l.it.lent;return w})()"))
     ok("lent-out kit isn't suggested",E("(()=>{const b=S.inv.filter(i=>i.kind==='bag');b.forEach(i=>i.lent='Tom');const ok=statusFor(cls(),it=>it.kind==='bag').status!=='owned'||classLines(cls()).some(l=>l.it.kind==='bag');b.forEach(i=>delete i.lent);return ok})()"))
+    ok("day trip (0 nights): no sleep-system or shelter alarms",E("(()=>{const c=JSON.parse(JSON.stringify(cls()));c.items={};c.wx.nights=0;S.inv.filter(i=>/torch|first aid/i.test(i.name)).forEach(i=>c.items[i.id]=1);const w=warnings(c).map(x=>x[1]).join('|');const k=kitCheck(c).ess.map(e=>e.label);return thermal(c).day&&!/No shelter|Sleep system rated|below your sleep/.test(w)&&!k.includes('Shelter')&&!k.includes('Sleeping mat')})()"))
+    ok("poncho with a bivvy doesn't demand pegs",E("(()=>{const c=JSON.parse(JSON.stringify(cls()));const bv=S.inv.find(i=>i.shelter==='bivvy'),po=S.inv.find(i=>i.shelter==='poncho');if(!bv||!po)return true;c.items={[bv.id]:1,[po.id]:1};return !warnings(c).some(x=>/no pegs/.test(x[1]))})()"))
     section("Suggest class")
     pg.click("#suggestBtn"); pg.wait_for_timeout(200)
     ok("draft created",E("!!cls().draft")); ok("reasons shown",'Why this kit' in pg.inner_text("#clsReasons"))

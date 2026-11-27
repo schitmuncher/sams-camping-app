@@ -956,6 +956,7 @@ function calibration(){
   const avg=t.reduce((s,x)=>s+(-(x.felt-expectedFeel(x.margin))*2),0)/t.length;
   return {offset:Math.max(-6,Math.min(6,Math.round(avg*2)/2)),n:t.length};
 }
+const isDayTrip=c=>!!c&&!!c.wx&&String(c.wx.nights)==='0';
 function thermal(c,opts={}){
   const lines=classLines(c), wx=c.wx, low=+wx.low;
   const rows=[]; let rating;
@@ -997,6 +998,7 @@ function thermal(c,opts={}){
   else if(margin<2){verdict="Just warm enough — little margin for error";cls_="p-warn";}
   else if(margin<=8){verdict="Good — warm enough without excess";cls_="p-ok";}
   else {verdict="Too warm — you could leave warmth (and weight) at home";cls_="p-hot";}
+  if(isDayTrip(c)) return {rows,layerEff,layerTotal:lt,rating:Number.isFinite(rating)?rating:low,margin:0,limitRating:null,verdict:"Day trip: no overnight sleep system needed",cls:"p-ok",pos:50,R,need,pads,hammock,onGround,low,day:true};
   return {rows,layerEff,layerTotal:lt,rating,margin,limitRating,verdict,cls:cls_,pos:Math.max(0,Math.min(100,50+margin*4)),R,need,pads,hammock,onGround,low};
 }
 /* ---- name matchers so suggestions/warnings work with anyone's gear ---- */
@@ -1041,17 +1043,18 @@ function warnings(c){
   const has=s=>lines.some(l=>l.it.shelter===s);
   const p=protection(c),low=+wx.low, pc=packCount();
   if(!lines.length){ w.push(["info",pc?"This class is empty — add items in Classes, or tap ✨ Suggest a class.":"Your kit is empty — add your gear on the Kit tab (🤖 Add with AI is quickest)."]); return w; }
-  if(!lines.some(l=>l.it.kind==="shelter")) w.push(["bad","No shelter in this class."]);
+  const day=isDayTrip(c); if(day) w.push(["info","Day trip (0 nights): sleep system, shelter and pegs aren't checked. In winter, still carry an emergency foil bag or bivvy in case you're stuck out."]);
+  if(!day&&!lines.some(l=>l.it.kind==="shelter")) w.push(["bad","No shelter in this class."]);
   if(+wx.rain===2&&p.rain<2) w.push(["bad","Heavy rain forecast but your shelter's rain rating is low. Take something rated 2/3 or better."]);
-  if(+wx.rain>=1&&!inClass(c,"drybag")) w.push(["warn","Rain expected — pack a dry bag for your sleeping bag and dry clothes."]);
+  if(+wx.rain>=1&&!inClass(c,"drybag")) w.push(["warn",day?"Rain expected — pack a dry bag for your spare layers and phone.":"Rain expected — pack a dry bag for your sleeping bag and dry clothes."]);
   if(+wx.wind===2){
-    if(p.wind<2) w.push(["bad","Gale-force gusts: your shelter is weak in wind. A bivvy or a low-pitched tent is safer."]);
+    if(p.wind<2&&!day) w.push(["bad","Gale-force gusts: your shelter is weak in wind. A bivvy or a low-pitched tent is safer."]);
     if(has("tarp")) w.push(["warn","Tarp in gusts: pitch it low and tight, never high on an exposed ridge."]);
     if(has("hammock")) w.push(["warn","Hammock in strong wind = a lot of cooling underneath."]);
     if(inClass(c,"stove",it=>!isGas(it))) w.push(["warn","Gas stove above ~15–20 mph needs a windbreak — cook in the porch or behind the tarp, with ventilation."]);
   }
   if(+wx.bugs>=1&&p.bug<2) w.push([+wx.bugs===2?"bad":"warn","Midges expected but no bug defence packed — add a head net or bug-net hat."]);
-  if(has("tent")||has("tarp")||has("poncho")){
+  if(!day&&(has("tent")||has("tarp")||(has("poncho")&&!has("bivvy")))){ // a poncho with a bivvy is rain gear / groundsheet, no pegs needed
     const hasY=inClass(c,"ypeg"), hasS=inClass(c,"spiral"), anyPeg=inClass(c,"peg");
     if(!anyPeg) w.push(["warn","Tent/tarp selected but no pegs."]);
     else if((wx.ground==="frozen"||wx.ground==="hard")&&hasS&&!hasY) w.push(["bad","Hard/frozen ground — spiral pegs won't go in. Take rigid metal pegs."]);
@@ -1062,7 +1065,7 @@ function warnings(c){
   const pk=lines.find(l=>RX.pack.test(l.it.name)&&l.it.cat==="Packs & Storage"&&!RX.drybag.test(l.it.name)&&!RX.rubble.test(l.it.name));
   if(pk&&c.worn[pk.it.id]) w.push(["warn",`${pk.it.name} is marked Worn, so its ${fmtW(pk.it.g)} isn't counted in your pack weight. Untick Worn on the rucksack.`]);
   const dk=darkHours(c);
-  if(dk.h>=14&&has("bivvy")&&!has("tent")&&!has("tarp")) w.push(["info",`About ${Math.round(dk.h)} hours of darkness — a long time lying flat in a bivvy. A tarp over it lets you sit up, cook and read.`]);
+  if(!day&&dk.h>=14&&has("bivvy")&&!has("tent")&&!has("tarp")) w.push(["info",`About ${Math.round(dk.h)} hours of darkness — a long time lying flat in a bivvy. A tarp over it lets you sit up, cook and read.`]);
   const bulky=lines.find(l=>l.it.kind==="layer"&&(+l.it.warmth||0)>=3&&l.it.g>=800);
   if(bulky&&lines.some(l=>l.it.kind==="bag")) w.push(["info",`Lay the ${bulky.it.name} over your sleeping bag like a quilt rather than wearing it inside, where it squashes the bag's filling.`]);
   if(wx.ground==="frozen"&&inClass(c,"trowel")) w.push(["info","Frozen ground: the trowel will struggle — plan where you'll go."]);
@@ -1078,10 +1081,10 @@ function warnings(c){
   if(!inClass(c,"headlamp")&&!inClass(c,"torch")) w.push(["warn","No head torch or torch packed."]);
   if(!inClass(c,"firstaid")) w.push(["warn","No first aid kit packed."]);
   const t=thermal(c);
-  if(t.limitRating!=null&&low<t.limitRating) w.push(["bad",`${low}°C is below your sleep system's limit (~${t.limitRating.toFixed(1)}°C). Don't go with this setup — add serious insulation or pick a milder night.`]);
+  if(day){} else if(t.limitRating!=null&&low<t.limitRating) w.push(["bad",`${low}°C is below your sleep system's limit (~${t.limitRating.toFixed(1)}°C). Don't go with this setup — add serious insulation or pick a milder night.`]);
   else if(t.margin<-2) w.push(["bad",`Sleep system rated ~${t.rating.toFixed(0)}°C vs a ${low}°C low. Add warm layers or another mat (see Cheapest warmth to add).`]);
-  if(t.margin>8) w.push(["info","Lots of spare warmth — leave some layers behind, or use the bag unzipped as a quilt."]);
-  if(t.hammock&&!t.onGround&&t.R<2) w.push(["bad","Hammock with little underneath: put a foam mat in the hammock (or use an underquilt)."]);
+  if(!day&&t.margin>8) w.push(["info","Lots of spare warmth — leave some layers behind, or use the bag unzipped as a quilt."]);
+  if(!day&&t.hammock&&!t.onGround&&t.R<2) w.push(["bad","Hammock with little underneath: put a foam mat in the hammock (or use an underquilt)."]);
   const nd=wx.nightsData||[];
   if(nd.length>1){const bad=nd.map((n,i)=>({n,i,t:thermal(withNight(c,n))})).filter(x=>x.t.margin<-2);
     if(bad.length) w.push(["warn",`Cold nights on this trip: ${bad.map(x=>`night ${x.i+1} (${x.n.name}, ${x.n.low}°C)`).join(", ")}.`]);}
@@ -2053,9 +2056,9 @@ const COOK_RX=/stove|burner|jetboil|cooker|pocket ?rocket/i;
 function stoveNeedsLighter(c){const st=classLines(c).filter(l=>COOK_RX.test(l.it.name)&&!isGas(l.it));
   return st.length>0&&!st.some(l=>/piezo|igniter|ignition|jetboil|auto[- ]?ignit/i.test(l.it.name));}
 const ESSENTIALS=[
- {label:"Shelter",lvl:"bad",test:it=>it.kind==="shelter",tpl:{name:"Lightweight 1–2 person tent",cat:"Shelter & Rigging",g:1500,kind:"shelter",shelter:"tent",rain:2,wind:2,bug:3,warmth:3},why:"Somewhere to sleep out of the weather."},
- {label:"Sleeping bag or quilt",lvl:"bad",test:it=>it.kind==="bag",tpl:{name:"3-season sleeping bag (comfort ~0°C)",cat:"Sleep & Thermal",g:1200,kind:"bag",comfort:0,limit:-6}},
- {label:"Sleeping mat",lvl:"bad",test:it=>it.kind==="pad",tpl:{name:"Insulated sleeping mat (R4)",cat:"Sleep & Thermal",g:500,kind:"pad",r:4}},
+ {label:"Shelter",lvl:"bad",when:c=>!isDayTrip(c),test:it=>it.kind==="shelter",tpl:{name:"Lightweight 1–2 person tent",cat:"Shelter & Rigging",g:1500,kind:"shelter",shelter:"tent",rain:2,wind:2,bug:3,warmth:3},why:"Somewhere to sleep out of the weather."},
+ {label:"Sleeping bag or quilt",lvl:"bad",when:c=>!isDayTrip(c),test:it=>it.kind==="bag",tpl:{name:"3-season sleeping bag (comfort ~0°C)",cat:"Sleep & Thermal",g:1200,kind:"bag",comfort:0,limit:-6}},
+ {label:"Sleeping mat",lvl:"bad",when:c=>!isDayTrip(c),test:it=>it.kind==="pad",tpl:{name:"Insulated sleeping mat (R4)",cat:"Sleep & Thermal",g:500,kind:"pad",r:4}},
  {label:"Rucksack",lvl:"bad",test:it=>RX.pack.test(it.name)&&!RX.drybag.test(it.name)&&!RX.rubble.test(it.name)&&!/power ?bank/i.test(it.name),tpl:{name:"50–65 L rucksack",cat:"Packs & Storage",g:1500}},
  {label:"Head torch",lvl:"bad",test:it=>RX.headlamp.test(it.name)||RX.torch.test(it.name),tpl:{name:"Head torch",cat:"Lighting & Power",g:80}},
  {label:"First aid kit",lvl:"bad",test:it=>RX.firstaid.test(it.name),tpl:{name:"First aid kit",cat:"Hygiene & First Aid",g:150}},
